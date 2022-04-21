@@ -1,0 +1,361 @@
+{# insert to html head title #}
+{% set searchParams = app.request.get('ec_client_product_search_type') %}
+{%- set title = searchParams['keyword'] ? '"' ~ searchParams['keyword'] ~ '" 的搜寻结果' : #all_products_label# -%}
+
+{# get CNY currency unit ratio #}
+{{ init_currency(5) }}
+{% set cnyCurRatio = cur_unit_ratio() %}
+{{ init_currency(1) }}
+
+{# In the case of Ajax, output JSON #}
+{%- if http_x == 'XMLHttpRequest' -%}
+
+{
+  "status": "ok",
+  "pager": {
+    "page": {{ _pager.page }},
+    "total_results": {{ _pager.adapter.getTotalResults }},
+    "limit": {{ _pager.limit }}
+  },
+  "products": [
+{%- for product in _pager.getResults -%}
+{%- set productskus = get_entity_manager().getRepository('EcCoreBundle:ProductSku').createQueryBuilder('ps').innerJoin('ps.product', 'p').where('p.id = :id').setParameter('id', product.id).getQuery().getResult() -%}
+{%- set productAvailable = false -%}
+{%- set isMultiplePrices = false -%}
+
+{# confirm the stock and the min price in sku #}
+{%- set minPrice = 0 -%}
+{%- set minNormalPrice = 0 -%}
+{%- for productsku in productskus -%}
+  {%- if (productsku.getStockUnlimited or (productsku.getStock > 0)) -%}
+    {%- set productAvailable = true -%}
+    {%- if minPrice == 0 -%}
+      {%- set minPrice = productsku.price -%}
+    {%- else -%}
+      {%- if (productsku.price != minPrice) -%}
+        {%- set isMultiplePrices = true -%}
+        {%- if (productsku.price < minPrice) -%}
+          {%- set minPrice = productsku.price -%}
+        {%- endif -%}
+      {%- endif -%}
+    {%- endif -%}
+    {% set normalPrice = productsku.attribute('二重価格表記：通常価格') %}
+    {%- if minNormalPrice == 0 -%}
+      {%- set minNormalPrice = normalPrice ? normalPrice : 0 -%}
+    {%- else -%}
+      {%- if (normalPrice != minNormalPrice) -%}
+        {%- if (normalPrice < minNormalPrice) -%}
+          {%- set minNormalPrice = normalPrice -%}
+        {%- endif -%}
+      {%- endif -%}
+    {%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- set productName = product.attribute('product name') ? product.attribute('product name') : product.name -%}
+{%- set primaryCategory = false -%}
+{%- for category in product.categories|reverse -%}
+  {%- if not primaryCategory -%}
+  {%- set isExcludeCategory = false -%}
+    {%- if category.name not in excludedCategories -%}
+      {%- set wrapedCategory = product_api.wrapProductCategory(category) -%}
+      {%- if (wrapedCategory.getAncestors|length > 0) -%}
+        {%- for categoryAncestor in wrapedCategory.getAncestors -%}
+          {%- if categoryAncestor.node.name in excludedCategories -%}
+              {%- set isExcludeCategory = true -%}
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+      {%- if not isExcludeCategory -%}
+        {% set primaryCategory = category %}
+      {%- endif -%}
+    {%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- if loop.index == 1 -%}
+    {
+{%- else -%}
+    , {
+{%- endif -%}
+      "url": "{{ path('ec_product_detail', {'id': product.id}) }}",
+      "image": "{% if product.attribute('商品画像') %}{% if product.attribute('商品画像') matches '/(\.jpg|\.jpeg|\.png|\.svg|\.gif)/i' %}{{ '/product_images/' ~ (product.brand ? product.brand.code ~ '/' : '') ~ product.attribute('商品画像') }}{% else %}{{ ('/uploads/media/' ~ get_entity_manager().find('MediaCoreBundle:Media', product.attribute('商品画像')).path) }}{% endif %}{% else %}{{ asset('assets/img/no-image.png') }}{% endif %}",
+      "name": {{ productName|striptags|json_encode()|raw }},
+      "brand": {{ (product.brand.getTransAttribute(lang_id) ? product.brand.getTransAttribute(lang_id) : product.brand.name)|json_encode()|raw }},
+      "category": {{ (primaryCategory.getTransAttribute(lang_id) ? primaryCategory.getTransAttribute(lang_id) : primaryCategory.name)|json_encode()|raw }},
+      "price": "{% if productAvailable %}{{ (minPrice * curRatio)|price_format(decimalPoint) }}日元<small>(人民币参考金额: 约{{ (minPrice * cnyCurRatio)|price_format(decimalPoint) }}元)</small>{% else %}{{ #no_stock# }}{% endif %}",
+      "normal_price": "{% if minNormalPrice %}{{ (minNormalPrice * curRatio)|price_format(decimalPoint) }}日元{% endif %}",
+      "released_at": {{ product.getReleasedAt|date('U') }}
+    }
+{%- endfor -%}
+  ]
+}
+
+{# In the case of not Ajax, output HTML #}
+{%- else -%}
+
+  {# get base currency unit #}
+  {%- set baseCurrency = get_entity_manager().find('EcCoreBundle:Currency', system_config('base_currency')) -%}
+  {%- set baseUnitFront = baseCurrency.getBeforeUnit() -%}
+  {%- set baseUnitBack = baseCurrency.getAfterUnit() -%}
+
+  {%- set productDispNum = system_config('product_disp_num') ? system_config('product_disp_num') : 20 -%}
+
+  {# end Variables Setting #}
+
+  {% TemplateInclude "header" %}
+  {# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+  {%- set breadcrumbList = [] -%}
+  {%- set breadcrumbListItem = {
+      name: title,
+      href: app.request.uri
+    }
+  -%}
+  {%- set breadcrumbList = breadcrumbList|merge([breadcrumbListItem]) -%}
+  {% TemplateInclude "breadcrumb list" %}
+
+  <section class="lc-contentSection">
+    <h1 class="lc-contentSection__searchTitle"><span class="js-searchTitle">{{ title }}</span></h1>
+    <div class="archiveController">
+      <p class="lc-pagingNavi">{{ #pagingnavi_prev# }}<em>{{ _pager.adapter.getTotalResults }}</em>{{ #pagingnavi_middle# }}<em>{{ (_pager.page-1)*_pager.limit+1 }} - {% if (_pager.page*_pager.limit>_pager.adapter.getTotalResults) %}{{ _pager.adapter.getTotalResults }}{% else %}{{ _pager.page*_pager.limit }}{% endif %}</em>{{ #pagingnavi_next# }}</p>
+      <dl class="archiveController__list">
+        <div class="archiveController__item">
+          <dt class="archiveController__label">{{ #pagingnavi_number# }}</dt>
+          <dd class="archiveController__form">
+            <div class="lc-selectBox">
+              <select name="searchNum" class="lc-selectBox__select js-lc--searchNumSelect">
+                {%- for i in 1..3 -%}
+                  <option value="{{ productDispNum * i }}"{% if dispNumber == productDispNum * i %} selected{% endif %}>{{ productDispNum * i }}</option>
+                {%- endfor -%}
+              </select>
+            </div>
+          </dd>
+        </div>
+        <div class="archiveController__item">
+          <dt class="archiveController__label">{{ #order_by_label# }}</dt>
+          <dd class="archiveController__form">
+            <div class="lc-selectBox">
+              <select name="orderby" class="lc-selectBox__select js-lc--orderbySelect">
+                <option value="sort_new"{% if orderby == 'sort_new' %} selected{% endif %}>{{ #order_by_new# }}</option>
+                <option value="sort_price_low"{% if orderby == 'sort_price_low' %} selected{% endif %}>{{ #price_low_to_high# }}</option>
+                <option value="sort_price_high"{% if orderby == 'sort_price_high' %} selected{% endif %}>{{ #price_high_to_low# }}</option>
+              </select>
+            </div>
+          </dd>
+        </div>
+      </dl>
+      <script>
+        window.addEventListener('DOMContentLoaded', () => {
+
+          const searchFormElement = document.getElementById('search_form');
+          if (!searchFormElement.querySelector('input[name="disp_number"]')) {
+            searchFormElement.insertAdjacentHTML('beforeend', '<input type="hidden" name="disp_number">');
+          }
+          const searchDispNumberInputElement = searchFormElement.querySelector('input[name="disp_number"]');
+          if (!searchFormElement.querySelector('input[name="orderby"]')) {
+            searchFormElement.insertAdjacentHTML('beforeend', '<input type="hidden" name="orderby">');
+          }
+          const searchOrderByInputElement = searchFormElement.querySelector('input[name="orderby"]');
+          const searchDispNumberSelectElements = document.querySelectorAll('.js-lc--searchNumSelect');
+          const searchOrderbySelectElements = document.querySelectorAll('.js-lc--orderbySelect');
+
+          searchDispNumberSelectElements.forEach(searchDispNumberSelectElement => {
+            searchDispNumberSelectElement.addEventListener('change', changeDispNumber);
+            function changeDispNumber() {
+              searchDispNumberInputElement.value = searchDispNumberSelectElement.children[searchDispNumberSelectElement.selectedIndex].value;
+              searchFormElement.submit();
+            }
+          });
+
+          searchOrderbySelectElements.forEach(searchOrderbySelectElement => {
+            searchOrderbySelectElement.addEventListener('change', changeOrderby);
+            function changeOrderby() {
+              searchOrderByInputElement.value = searchOrderbySelectElement.children[searchOrderbySelectElement.selectedIndex].value;
+              searchFormElement.submit();
+            }
+          });
+
+        });
+      </script>
+    </div>
+    <ul class="categoryProduct js-moreProducts__container">
+    {%- for product in _pager.getResults -%}
+      {%- set productskus = get_entity_manager().getRepository('EcCoreBundle:ProductSku').createQueryBuilder('ps').innerJoin('ps.product', 'p').where('p.id = :id').setParameter('id', product.id).getQuery().getResult() -%}
+      {%- set productAvailable = false -%}
+      {%- set isMultiplePrices = false -%}
+
+      {# confirm the stock and the min price in sku #}
+      {%- set minPrice = 0 -%}
+      {%- set minNormalPrice = 0 -%}
+      {%- for productsku in productskus -%}
+        {%- if (productsku.getStockUnlimited or (productsku.getStock > 0)) -%}
+          {%- set productAvailable = true -%}
+          {%- if minPrice == 0 -%}
+            {%- set minPrice = productsku.price -%}
+          {%- else -%}
+            {%- if (productsku.price != minPrice) -%}
+              {%- set isMultiplePrices = true -%}
+              {%- if (productsku.price < minPrice) -%}
+                {%- set minPrice = productsku.price -%}
+              {%- endif -%}
+            {%- endif -%}
+          {%- endif -%}
+          {% set normalPrice = productsku.attribute('二重価格表記：通常価格') %}
+          {%- if minNormalPrice == 0 -%}
+            {%- set minNormalPrice = normalPrice ? normalPrice : 0 -%}
+          {%- else -%}
+            {%- if (normalPrice != minNormalPrice) -%}
+              {%- if (normalPrice < minNormalPrice) -%}
+                {%- set minNormalPrice = normalPrice -%}
+              {%- endif -%}
+            {%- endif -%}
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {%- set productName = product.attribute('product name') ? product.attribute('product name') : product.name -%}
+      <li class="categoryProduct__item">
+        <a href="{{ path('ec_product_detail', {'id': product.id}) }}" target="_blank">
+          <figure class="categoryProduct__figure"><img src="{% if product.attribute('商品画像') %}{% if product.attribute('商品画像') matches '/(\.jpg|\.jpeg|\.png|\.svg|\.gif)/i' %}{{ '/product_images/' ~ (product.brand ? product.brand.code ~ '/' : '') ~ product.attribute('商品画像') }}{% else %}{{ ('/uploads/media/' ~ get_entity_manager().find('MediaCoreBundle:Media', product.attribute('商品画像')).path) }}{% endif %}{% else %}{{ asset('assets/img/no-image.png') }}{% endif %}" alt="{{ productName|striptags }}">{% if (product.getReleasedAt|date('U') >= '7 days ago'|date('U')) %}<span class="categoryProduct__iconNew">NEW</span>{% endif %}{% if not productAvailable %}<span class="categoryProduct__nostock">{{ #no_stock# }}</span>{% endif %}{% if minNormalPrice %}<span class="categoryProduct__iconBargain">减价</span>{% endif %}</figure>
+          <div class="categoryProduct__status">
+            <p class="name">{{ productName|striptags }}</p>
+            {%- if minNormalPrice -%}
+              <p class="title"><small>原价: <s>{{ (minNormalPrice * curRatio)|price_format(decimalPoint) }}日元</s></small></p>
+            {%- endif -%}
+            <p class="text">{% if productAvailable %}{{ (minPrice * curRatio)|price_format(decimalPoint) }}日元<small>(人民币参考金额: 约{{ (minPrice * cnyCurRatio)|price_format(decimalPoint) }}元)</small>{% else %}{{ #no_stock# }}{% endif %}</p>
+          </div>
+        </a>
+      </li>
+      {%- endfor -%}
+    </ul>
+
+    <p class="lc-contentsInner__buttons">
+      <button type="button" class="lc-button--submit js-moreProducts"><i class="lc-button__icon lc-icon--arrow2Down"></i><span class="lc-button__label">More Products</span></button>
+    </p>
+  </section>
+
+  {% TemplateInclude "footer" %}
+
+  <style>
+  @-webkit-keyframes sk-stretchdelay{0%,40%,100%{-webkit-transform:scaleY(0.4);transform:scaleY(0.4)}20%{-webkit-transform:scaleY(1);transform:scaleY(1)}}@keyframes sk-stretchdelay{0%,40%,100%{-webkit-transform:scaleY(0.4);transform:scaleY(0.4)}20%{-webkit-transform:scaleY(1);transform:scaleY(1)}}
+  .spinner{width:50px;height:40px;text-align:center;font-size:10px;position:absolute;left:50%;left:calc(50%);top:50%;opacity:1;-webkit-transform:translate(-50%, -50%);-ms-transform:translate(-50%, -50%);transform:translate(-50%, -50%);-webkit-transition:0.5;transition:0.5}.spinner__rect{display:inline-block;height:100%;width:6px;background-color:#666;-webkit-animation:sk-stretchdelay 1.2s infinite ease-in-out;animation:sk-stretchdelay 1.2s infinite ease-in-out}.spinner__rect--2{-webkit-animation-delay:-1.1s;animation-delay:-1.1s}.spinner__rect--3{-webkit-animation-delay:-1.0s;animation-delay:-1.0s}.spinner__rect--4{-webkit-animation-delay:-0.9s;animation-delay:-0.9s}.spinner__rect--5{-webkit-animation-delay:-0.8s;animation-delay:-0.8s}.is-animated>.spinner{opacity:0}@media (max-width: 1023px){.spinner{left:50%}}
+  .loading{visibility:hidden;width:100%;height:100%;background:rgba(255,255,255,0.8);position:fixed;left:0;top:0;z-index:1;opacity:0}
+  .loading.is-active{visibility:visible;opacity:1}
+  </style>
+  <div class="loading"><div class="spinner"><div class="spinner__rect spinner__rect--1"></div> <div class="spinner__rect spinner__rect--2"></div> <div class="spinner__rect spinner__rect--3"></div> <div class="spinner__rect spinner__rect--4"></div> <div class="spinner__rect spinner__rect--5"></div></div></div>
+
+  {% set scriptCode %}
+  window.addEventListener('DOMContentLoaded', () => {
+
+    const moreProductsTriggers = document.querySelectorAll('.js-moreProducts');
+    const moreProductsContainer = document.querySelector('.js-moreProducts__container');
+    const loadingElement = document.querySelector('.loading');
+    let pagerInfo = sessionStorage.getItem('pagerInfo') ? JSON.parse(sessionStorage.getItem('pagerInfo')) : {};
+    const no_stock_label = '{{ #no_stock# }}';
+    let currentPage = {{ _pager.page }};
+    const pagerTotalResults = {{ _pager.adapter.getTotalResults }};
+    const pagerLimt = {{ _pager.limit }};
+    const currentParamsString = location.search;
+
+    if (currentPage >= Math.ceil(pagerTotalResults / pagerLimt)) {
+      removeMorePorductsTriggers();
+    }
+
+    if (location.href in pagerInfo) {
+      loadingElement.classList.add('is-active');
+      getMoreProducts(pagerInfo[location.href])
+        .then(products => {
+          appendMoreProducts(products);
+        })
+        .catch(error => {
+          console.error(error);
+          moreProductsTriggers.forEach(moreProductsTrigger => {
+            moreProductsTrigger.remove();
+          });
+        })
+        .finally(() => {
+          loadingElement.classList.remove('is-active');
+        });
+    }
+
+    moreProductsTriggers.forEach(moreProductsTrigger => {
+      moreProductsTrigger.addEventListener('click', () => {
+        loadingElement.classList.add('is-active');
+        getMoreProducts()
+          .then(products => {
+            appendMoreProducts(products);
+          })
+          .catch(error => {
+            console.error(error);
+            moreProductsTrigger.remove();
+          })
+          .finally(() => {
+            loadingElement.classList.remove('is-active');
+          });;
+      });
+    });
+
+    function appendMoreProducts (products) {
+      let productsHTML = '';
+      products.forEach(product => {
+        const noStockTag = product.price == no_stock_label ? '<span class="categoryProduct__nostock">{{ #no_stock# }}</span>' : '';
+        const newTag = product.released_at > ((Date.now() / 1000) - 7 * 24 * 60 * 60) ? '<span class="categoryProduct__iconNew">NEW</span>' : '';
+        const bargainTag = product.normal_price ? '<span class="categoryProduct__iconBargain">减价</span>' : '';
+        const normalPrice = product.normal_price ? `<p class="title"><small>原价: <s>${ product.normal_price }</s></small></p>` : '';
+        productsHTML += `
+<li class="categoryProduct__item">
+  <a href="${ product.url }" target="_blank">
+    <figure class="categoryProduct__figure">
+      <img data-src="${ product.image }" alt="${ product.name }">${ noStockTag }${ newTag }${ bargainTag }
+    </figure>
+    <div class="categoryProduct__status">
+      <p class="title"><small>${ product.brand }</small></p>
+      <p class="category"><small>${ product.category }</small></p>
+      ${ normalPrice }
+      <p class="text">${ product.price }</p>
+    </div>
+  </a>
+</li>`;
+      });
+      moreProductsContainer.insertAdjacentHTML('beforeend', productsHTML); 
+      lazyload();
+    }
+
+    function getMoreProducts (endPage) {
+      return new Promise(function(resolve, reject) {
+        endPage = endPage ? endPage : currentPage + 1;
+        let products = [];
+        fetchMoreProducts();
+        function fetchMoreProducts () {
+          currentPage++;
+          fetch(`{{ path("ec_product_search") }}${ currentPage > 1 ? '/' + currentPage : '' }${ currentParamsString }`, {
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+          })
+            .then(responce => responce.json())
+            .then(data => {
+              products = products.concat(data.products);
+              if (currentPage == endPage) {
+                pagerInfo[location.href] = currentPage;
+                sessionStorage.setItem('pagerInfo', JSON.stringify(pagerInfo));
+                resolve(products);
+              } else {
+                fetchMoreProducts();
+              };
+              if (currentPage >= Math.ceil(data.pager.total_results / data.pager.limit)) {
+                removeMorePorductsTriggers();
+              }
+            })
+            .catch(error => console.error(error));
+        }
+      });
+    }
+
+    function removeMorePorductsTriggers () {
+      moreProductsTriggers.forEach(moreProductsTrigger => {
+        moreProductsTrigger.remove();
+      });
+    }
+  });
+  {% endset %}
+  <script defer src="data:text/javascript, {{ scriptCode|url_encode }}"></script>
+
+{%- endif -%}

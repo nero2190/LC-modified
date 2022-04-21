@@ -1,0 +1,68 @@
+{# Reference: https://launchcart.jp/reference/9%e3%83%9e%e3%82%a4%e3%83%9a%e3%83%bc%e3%82%b8-%e9%80%80%e4%bc%9a%e3%83%9a%e3%83%bc%e3%82%b8/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = #withdraw_label# -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- set breadcrumbListItems = [
+    {
+      name: #mypage_label# ,
+      href: path('ec_client_consumer')
+    },
+    {
+      name: #withdraw_label# ,
+      href: app.request.uri
+    }
+  ]
+-%}
+{%- set breadcrumbList = breadcrumbList|merge(breadcrumbListItems) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #withdraw_label# }}</h1>
+  
+  <div class="lc-contentsInner lc-contentsInner--form">
+    <p class="lc-contentSection__note">
+      {{ #message_withdraw# | raw }}
+    </p>
+    <form action="" method="POST" name="form1" id="form1">
+      <p class="lc-modal__buttons">
+        {# submit #}
+        <button class="lc-button--submit js-lc--openModal" type="submit" aria-controls="modalWithdraw" aria-haspopup="true"><span class="lc-button__label">{{ #withdraw_label# }}</span><i class="lc-button__icon lc-icon--close"></i></button>
+        {# back #}
+        <a class="lc-button--cancel" href="{{ path('ec_client_consumer') }}"><i class="lc-button__icon lc-icon--arrowLeft"></i><span class="lc-button__label">{{ #back_label# }}</span></a>
+      </p>
+    </form>
+  </div>
+
+  {# mypage navi #}
+  {% TemplateInclude "mypage navi" %}
+
+</section>
+
+{# Modal: confirm delete account #}
+<div class="lc-modal" id="modalWithdraw">
+  <div class="lc-modal__bg js-lc--closeModal"></div>
+  <div class="lc-modal__body">
+    <form action="" method="POST" name="form2" id="form2">
+      <h3 class="lc-modal__title">{{ #really_withdraw# }}</h3>
+      <p class="lc-modal__buttons">
+        <button class="lc-button--submit js-lc--changeLangCurrency" type="submit"><span class="lc-button__label">{{ #withdraw_label# }}</span><i class="lc-button__icon lc-icon--close"></i></button>
+        <button class="lc-button--cancel js-lc--closeModal" type="button"><i class="lc-button__icon lc-icon--arrowLeft"></i><span class="lc-button__label">cancel</span></button>
+      </p>
+    </form>
+  </div>
+</div>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

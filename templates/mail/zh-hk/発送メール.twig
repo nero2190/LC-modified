@@ -1,0 +1,47 @@
+{% set curRatio = cur_unit_ratio() %}
+{% set unitBack = unit_back() %}
+{{ order.lastName }} {{ order.firstName }} 先生/女士
+
+感謝您一直愛用本網站。
+我們在此通知您，您的訂單已出貨。
+
+出貨日： {{ "now"|date("Y年n月j日") }}
+送貨方式： {{ order.delivery.getServiceName}}
+{% if order.getInquiryNumber %}
+運單號碼： {{ order.getInquiryNumber }}
+{% endif %}
+
+----------
+　配送資訊
+----------
+◎收貨地址
+收件人姓名： {{ order.getLastName}} {{ order.getFirstName}}　先生/女士
+郵遞區號： 〒{{order.getZipcode}}
+收貨地址： {{order.getAddress}}
+電話號碼： {{order.getTel}}
+送達日： {% if order.deliveryDay %}{{ order.deliveryDay }}{% else %}不指定{% endif %}
+送貨時間帶： {% if order.deliveryTime %}{{ order.deliveryTime }}{% else %}不指定{% endif %}
+
+----------
+　出货商品詳情
+----------
+{% for detail in order.details %}
+商品編號： {{ detail.getProductCode }}
+商品名稱： {{ detail.getProductName }}{{ detail.getSkuDetailTitle1 }}{{ detail.getSkuDetailTitle2 }}
+價格： ￥ {{ detail.getPrice|number_format }}
+數量： {{ detail.getQuantity|number_format }}
+{% if (detail.additions|length > 0) %}
+{% for addition in detail.additions %}
+{{ addition.additionTitle }}x{{ addition.quantity }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+
+忠心期待您再次光臨本網站。
+
+------------------------------------
+{{ system_config("application_name") }}
+〒{{ system_config("company_zipcode") }}
+{{ system_config("company_address") }}
+TEL： {{ system_config("company_tel") }}
+{{ url('homepage') }}

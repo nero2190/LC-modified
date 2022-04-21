@@ -1,0 +1,100 @@
+extends /_include/_layout.pug
+
+block title
+  title ベストコスメ2018上半期！注目を浴びたコスメ | 最新消息 | LC E-SHOP
+block content
+
+  -
+    var breadcrumbList = [
+      {
+        name: '首页',
+        href: '/'
+      },
+      {
+        name: '最新消息',
+        href: '/page/category/1/'
+      },
+      {
+        name: 'ベストコスメ2018上半期！注目を浴びたコスメ',
+        href: '/page/1/'
+      }
+    ]
+  include /_include/_breadcrumblist.pug
+
+  p.lc-contentSection__title.lc-contentSection__title--center 最新消息
+  .lc-contentsInner
+    article.pageArticle
+      header.pageArticle__header
+        h1.pageArticle__title ベストコスメ2018上半期！注目を浴びたコスメ
+        .pageArticle__info
+          .pageArticle__status
+            p.pageCategory お知らせ
+            p.pageDate
+              time(datetime="2019-08-30T18:16:34+09:00") 2018.06.11
+          dl.snsLinks
+            dt.snsLinks__title シェア
+            dd.snsLinks__item
+              a(href="" target="_blank")
+                i.snsLinks__icon.lc-icon--snsTwitter
+                span.snsLinks__label twitter
+            dd.snsLinks__item
+              a(href="" target="_blank")
+                i.snsLinks__icon.lc-icon--snsFacebook
+                span.snsLinks__label facebook
+      .pageArticle__content
+        figure.pageArticle__eyecatch
+         img(src="/assets/img/img_page_01.jpg", alt="eyecatch")
+        p
+          | 本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト。
+        p
+          | 本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト<a href="">リンクテキスト</a>本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト本文テキスト。
+        h2 大見出し大見出し大見出し
+        h3 中見出し中見出し中見出し
+        ol
+          li リストテキストリストテキストリストテキストリストテキストリストテキストリストテキストリストテキストリストテキスト
+          li リストテキストリストテキストリストテキスト
+          li リストテキストリストテキストリストテキストリストテキスト
+        h4 小見出し小見出し小見出し
+        ul
+          li リストテキストリストテキストリストテキストリストテキストリストテキストリストテキストリストテキストリストテキスト
+          li リストテキストリストテキストリストテキスト
+          li リストテキストリストテキストリストテキストリストテキスト
+        blockquote
+          p 引用の文章が入ります引用の文章が入ります引用の文章が入ります引用の文章が入ります引用の文章が入ります引用の文章が入ります引用の文章が入ります引用の文章が入ります引用の文章が入ります引用の文章が入ります。
+          p(style="text-align: right;")
+            a(href="") (引用元の情報が入ります)
+        table
+          tbody
+            tr
+              th テーブルタイトル
+              td テーブル本文テーブル本文テーブル本文テーブル本文テーブル本文テーブル本文テーブル本文テーブル本文テーブル本文テーブル本文テーブル本文テーブル本文
+            tr
+              th テーブルタイトル
+              td テーブル本文テーブル本文テーブル本文テーブル本文テーブル本文テーブル本文テーブル本文テーブル本文テーブル本文テーブル本文テーブル本文テーブル本文
+            tr
+              th テーブルタイトル
+              td テーブル本文テーブル本文テーブル本文テーブル本文テーブル本文テーブル本文テーブル本文テーブル本文テーブル本文テーブル本文テーブル本文テーブル本文
+      footer.pageArticle__footer
+        dl.snsLinks
+          dt.snsLinks__title シェア
+          dd.snsLinks__item
+            a(href="" target="_blank")
+              i.snsLinks__icon.lc-icon--snsTwitter
+              span.snsLinks__label twitter
+          dd.snsLinks__item
+            a(href="" target="_blank")
+              i.snsLinks__icon.lc-icon--snsFacebook
+              span.snsLinks__label facebook
+  
+  aside.lc-contentSection
+    h2.lc-contentSection__title 相关产品
+    ul.productArchive
+      - for (var i = 1; i <= 4; i++)
+        li.productArchive__item
+          a(href="/product/1/")
+            figure.productArchive__figure
+              img(src=`/assets/img/img_product_0${i}.jpg`, alt="product title")
+            h3.productArchive__name 小熊夏季新款女装可爱卡通短袖t恤宽松韩版半袖
+            p.productArchive__price
+              span.productArchive__price__main 159.00CNY
+              small.productArchive__price__sub (2,393JPY)

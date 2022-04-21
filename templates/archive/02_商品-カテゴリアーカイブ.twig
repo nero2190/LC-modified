@@ -1,0 +1,157 @@
+{# Reference: https://launchcart.jp/reference/2-%e3%82%a4%e3%83%b3%e3%83%87%e3%83%83%e3%82%af%e3%82%b9%e3%83%86%e3%83%b3%e3%83%97%e3%83%ac%e3%83%bc%e3%83%88/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set category_name = category.node.getTransAttribute(lang_id) ? category.node.getTransAttribute(lang_id) : category.node.name -%}
+{%- set title = category_name -%}
+{%- set wraped_category = product_api.wrapProductCategory(category.node) -%}
+{%- for ancestor in wraped_category.getAncestors|reverse -%}
+  {%- set ancestor_category_name = ancestor.node.getTransAttribute(lang_id) -%}
+  {%- set title = title ~ ' | ' ~ ancestor_category_name -%}
+{%- endfor -%}
+
+{# get base currency unit #}
+{%- set baseCurrency = get_entity_manager().find('EcCoreBundle:Currency', system_config('base_currency')) -%}
+{%- set baseUnitFront = baseCurrency.getBeforeUnit() -%}
+{%- set baseUnitBack = baseCurrency.getAfterUnit() -%}
+
+{# end Variables Setting #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- if (category.getAncestors|length > 0) -%}
+{%- for ancestorCategory in category.getAncestors -%}
+  {%- set breadcrumbListItem = {
+      name: ancestorCategory.node.getTransAttribute(lang_id) ? ancestorCategory.node.getTransAttribute(lang_id) : ancestorCategory.node.name,
+      href: path('ec_product_category', {'id': ancestorCategory.node.id})
+  } -%}
+  {%- set breadcrumbList = breadcrumbList|merge([breadcrumbListItem]) -%}
+{%- endfor -%}
+{%- endif -%}
+{%- set breadcrumbListItem = {
+    name: category_name,
+    href: path('ec_product_category', {'id': category.node.id})
+  }
+-%}
+{%- set breadcrumbList = breadcrumbList|merge([breadcrumbListItem]) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+
+ <section class="lc-contentSection">
+
+  {# category name #}
+  <h1 class="lc-contentSection__title">{{ category_name }}</h1>
+
+  {# paging controller UI #}
+  <div class="archiveController">
+
+    {# page information #}
+    <p class="lc-pagingNavi">{{ #pagingnavi_prev# }}<em>{{ _pager.adapter.getTotalResults }}</em>{{ #pagingnavi_middle# }}<em>{{ (_pager.page - 1) * _pager.limit + 1 }} - {% if (_pager.page * _pager.limit > _pager.adapter.getTotalResults) %}{{ _pager.adapter.getTotalResults }}{% else %}{{ _pager.page * _pager.limit }}{% endif %}</em>{{ #pagingnavi_next# }}</p>
+    
+    <form name="form_product_list" id="form_product_list" method="GET" action="">
+      <dl class="archiveController__list">
+
+        {# number of items #}
+        <div class="archiveController__item">
+          <dt class="archiveController__label">{{ #pagingnavi_number# }}</dt>
+          <dd class="archiveController__form">
+            <div class="lc-selectBox">
+              <select class="lc-selectBox__select js-lc--dispNum" name="disp_number">
+                {%- for i in 1..4 -%}
+                  <option value="{{ dispNum * i }}"{% if (dispNum * i) == currentDispNum %} selected="selected"{% endif %}>{{ dispNum * i }}</option>
+                {%- endfor -%}
+              </select>
+            </div>
+          </dd>
+        </div>
+
+        {# sort order #}
+        <div class="archiveController__item">
+          <dt class="archiveController__label">{{ #order_by_label# }}</dt>
+          <dd class="archiveController__form">
+            <div class="lc-selectBox">
+              <select class="lc-selectBox__select js-lc--orderBy" name="orderby">
+                <option value="sort_new"{% if orderby == 'sort_new' %} selected="selected"{% endif %}>{{ #order_by_new# }}</option>
+                <option value="sort_price_low"{% if orderby == 'sort_price_low' %} selected="selected"{% endif %}>{{ #price_low_to_high# }}</option>
+                <option value="sort_price_high"{% if orderby == 'sort_price_high' %} selected="selected"{% endif %}>{{ #price_high_to_low# }}</option>
+              </select>
+            </div>
+          </dd>
+        </div>
+
+        <script>
+          $(function () {
+            $('.js-lc--dispNum, .js-lc--orderBy').on('change', function () {
+              $('#form_product_list').submit();
+            });
+          });
+        </script>
+      </dl>
+      <input type="hidden" name="pageno" value="1">
+    </form>
+  </div>
+
+  {# Products #}
+  <ul class="productArchive">
+    {%- for product in _pager.getResults -%}
+      {%- set productskus = get_entity_manager().getRepository('EcCoreBundle:ProductSku').createQueryBuilder('ps').innerJoin('ps.product', 'p').where('p.id = :id').setParameter('id', product.id).getQuery().getResult() -%}
+      {%- set productAvailable = false -%}
+      {%- set isMultiplePrices = false -%}
+
+      {# confirm the stock and the min price in sku #}
+      {%- set minPrice = 0 -%}
+      {%- for productsku in productskus -%}
+        {%- if (productsku.getStockUnlimited or (productsku.getStock > 0)) -%}
+          {%- set productAvailable = true -%}
+          {%- if minPrice == 0 -%}
+            {%- set minPrice = productsku.price -%}
+          {%- else -%}
+            {%- if (productsku.price != minPrice) -%}
+              {%- set isMultiplePrices = true -%}
+              {%- if (productsku.price < minPrice) -%}
+                {%- set minPrice = productsku.price -%}
+              {%- endif -%}
+            {%- endif -%}
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {%- set productName = product.attribute('product name', language) ? product.attribute('product name', language) : product.name -%}
+      <li class="productArchive__item">
+        <a href="{{ path('ec_product_detail', {'id': product.id}) }}">
+          <figure class="productArchive__figure"><img src="{% if product.attribute('image1') %}{{ ('/uploads/media/'~get_entity_manager().find('MediaCoreBundle:Media', product.attribute('image1')).path) }}{% else %}{{ asset('assets/img/no-image.png') }}{% endif %}" alt="{{ productName|striptags }}"></figure>
+          <h3 class="productArchive__name">{{ productName }}</h3>
+          <p class="productArchive__price">
+          {% if productAvailable %}
+            <span class="productArchive__price__main">{{ #unitFront# }}{{ (minPrice * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}{% if isMultiplePrices %}-{% endif %}</span>
+            {%- if curRatio != 1 -%}
+              <small class="productArchive__price__sub">({{ baseUnitFront }}{{ minPrice|price_format(decimalPoint) }}{{ baseUnitBack }})</small>
+            {%- endif -%}
+          {% else %}
+            {{ #no_stock# }}
+          {% endif %}
+          </p>
+        </a>
+      </li>
+    {%- endfor -%}
+  </ul>
+
+  <div class="lc-archiveGuide">
+
+    {# page information #}
+    <p class="lc-pagingNavi">{{ #pagingnavi_prev# }}<em>{{ _pager.adapter.getTotalResults }}</em>{{ #pagingnavi_middle# }}<em>{{ (_pager.page - 1) * _pager.limit + 1 }} - {% if (_pager.page * _pager.limit > _pager.adapter.getTotalResults) %}{{ _pager.adapter.getTotalResults }}{% else %}{{ _pager.page * _pager.limit }}{% endif %}</em>{{ #pagingnavi_next# }}</p>
+
+    {# pager #}
+    {% RenderPager %}
+
+  </div>
+</section>
+{# end Products #}
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

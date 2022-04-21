@@ -1,0 +1,69 @@
+extends /_include/_layout.pug
+
+block title
+  title 特约商户交易法 | LC E-SHOP
+block content
+
+  -
+    var breadcrumbList = [
+      {
+        name: '首页',
+        href: '/'
+      },
+      {
+        name: '特约商户交易法',
+        href: '/law/'
+      }
+    ]
+  include /_include/_breadcrumblist.pug
+
+  article.pageArticle
+    h1.lc-contentSection__title.lc-contentSection__title--center 特约商户交易法
+    .lc-contentsInner
+      .pageArticle__content
+        table
+          tbody
+            tr
+              th 贩卖业者名
+              td 星域株式会社
+            tr
+              th 贩卖业者住址
+              td 東京都豐島區高田3丁目9番7號
+            tr
+              th 营运负责人
+              td 星野翔太
+            tr
+              th 营运负责人<br>（英文）
+              td Shota Hoshino
+            tr
+              th 网址
+              td 
+                a(href="http://launchcart.jp/") http://launchcart.jp/
+            tr
+              th Email
+              td info@sterfield.co.jp
+            tr
+              th 电话号码
+              td 03-5956-9292
+            tr
+              th 贩卖价格区间
+              td 150日圆〜25000日圆
+            tr
+              th 商品等的交货期<wbr>（日数）、<wbr>发货方式
+              td 星野翔太
+            tr
+              th 商品金额以外的所需费用等
+              td 邮费，消费税
+            tr
+              th 退换货处理规定
+              td
+                |  - 如果您（客户）拒收商品而被退回本网站时，无论理由如何往返的邮费都将由您（客户）来承担。 往返邮费用日元换算，从结算金额中扣除后的差额退还给您（客户）。 但付款金额少于往返邮费时，将通过其他付款方式向您（客户）请款。 同时，本条说明也适用于您（客户）将送货地址填错的情况，请您在仔细确认送货地址是否正确后在填写登录。 <br>
+                | - 由于购买商品的组合与包装，以及其他因素，实际所需邮费可能会多于或者少于您（客户）购买时的预付邮费。 如果实际邮费少于购买时的预付邮费，本网站将不另行通知而修改结算金额。 如果实际邮费多于购买时的预付邮费，本网站将与您（客户）联系，在得到您（客户）的同意后在修改结算金额。
+            tr
+              th 瑕疵品及错误商品<wbr>的<wbr>处理规定
+              td 送到的商品如果是瑕疵品以及錯誤商品，請在商品到達後7日以內聯繫我們。請用郵件聯繫哦。
+
+      p.lc-contentsInner__buttons
+        a(href="/").lc-button--cancel
+          i.lc-button__icon.lc-icon--arrowLeft
+          span.lc-button__label 继续购物

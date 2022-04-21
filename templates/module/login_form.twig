@@ -1,0 +1,89 @@
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = #login_label# -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- set breadcrumbListItem = {
+    name: #login_label# ,
+    href: app.request.uri
+  }
+-%}
+{%- set breadcrumbList = breadcrumbList|merge([breadcrumbListItem]) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #login_label# }}</h1>
+
+  <div class="lc-tab lc-tab--form">
+
+    <div class="lc-tab__list">
+      <div class="lc-tab__tab is-active">{{ #login_label# }}</div>
+      {# link to create account #}
+      <a href="{{ path('application_frontend_auth_regist') }}" class="lc-tab__tab">{{ #create_account# }}</a>
+    </div>
+    <div class="lc-tab__panel is-active">
+
+      {# errors #}
+      {%- if error is defined -%}
+        <p class="lc-contentSection__note error">
+          {%- if error == "Bad credentials." -%}
+            {{ 'assert.consumer.login_error' | trans({}, 'clients') }}
+          {%- elseif error != "" -%}
+            {{ ('consumer.'~error) | trans({}, 'validators') }}
+          {%- endif -%}
+        </p>
+      {%- endif -%}
+
+      {# login form #}
+      <form name="form1" id="form1" method="POST" action="{{ path("application_frontend_auth_login_check") }}">
+        <ul class="lc-form">
+          <li class="lc-form__item">
+            <label class="lc-form__label">
+              <h4 class="lc-form__title is-required">{{ 'label.consumer.username'|trans({}, 'clients') }}</h4>
+              <p class="lc-form__detail">
+                <input type="text" id="username" name="_username" value="{{ last_username }}">
+              </p>
+            </label>
+          </li>
+          <li class="lc-form__item">
+            <label class="lc-form__label">
+              <h4 class="lc-form__title is-required">{{ 'label.consumer.password'|trans({}, 'clients') }}</h4>
+              <p class="lc-form__detail">
+                <input type="password" id="password" name="_password">
+              </p>
+            </label>
+          </li>
+        </ul>
+        <p class="lc-contentsInner__buttons">
+          {# submit #}
+          <button class="lc-button--submit" type="submit"><span class="lc-button__label">{{ #login_label# }}</span><i class="lc-button__icon lc-icon--arrowRight"></i></button>
+
+          {# forgot password #}
+          <a class="lc-button--cancel js-lc--closeModal" href="{{ path('application_frontend_auth_password_request') }}"><span class="lc-button__label">{{ #forgot_password# }}</span><i class="lc-button__icon lc-icon--arrowRight"></i></a>
+
+          {# social login #}
+          <button class="lc-button--sns lc-button--snsWeChat js-lc--WeChatLogin"><i class="lc-button__icon lc-icon--arrowRight"></i><span class="lc-button__label">WeChat Login</span></a>
+        </p>
+      </form>
+    </div>
+  </div>
+
+  {# link to no create account #}
+  <p class="lc-contentSection__note lc-contentSection__note--center">{{ #no_create_account# }}</p>
+  <p class="lc-contentsInner__buttons"><a class="lc-button--submit" href="{{ path("ec_client_ship_new") }}"><span class="lc-button__label">{{ #procced_to_check_out# }}</span><i class="lc-button__icon lc-icon--arrowRight"></i></a></p>
+
+</section>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}
+
+<script src="{{ asset('system/js/social_media_login.js') }}"></script>

@@ -1,0 +1,213 @@
+{# Reference: https://launchcart.jp/reference/16%e3%83%9e%e3%82%a4%e3%83%9a%e3%83%bc%e3%82%b8-%e3%83%ac%e3%83%93%e3%83%a5%e3%83%bc%e7%b7%a8%e9%9b%86/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = #edit_review_label# -%}
+
+{# get base currency unit #}
+{%- set baseCurrency = get_entity_manager().find('EcCoreBundle:Currency', system_config('base_currency')) -%}
+{%- set baseUnitFront = baseCurrency.getBeforeUnit() -%}
+{%- set baseUnitBack = baseCurrency.getAfterUnit() -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- set breadcrumbListItems = [
+    {
+      name: #mypage_label# ,
+      href: path('ec_client_consumer')
+    },
+    {
+      name: #reviews_label# ,
+      href: path('ec_client_consumer_review_list')
+    },
+    {
+      name: #edit_review_label# ,
+      href: app.request.uri
+    }
+  ]
+-%}
+{%- set breadcrumbList = breadcrumbList|merge(breadcrumbListItems) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #edit_review_label# }}</h1>
+
+  <div class="lc-contentsInner">
+    {%- set product = review.product -%}
+    {%- set productskus = product.getProductSku -%}
+
+    {# calculate min price in sku #}
+    {%- set isMultiplePrices = false -%}
+    {%- set minPrice = 0 -%}
+    {%- set displayed_price = 0 -%}
+    {%- for productsku in productskus -%}
+      {%- if (productsku.getStockUnlimited or (productsku.getStock > 0)) -%}
+        {%- set productAvailable = true -%}
+        {%- if minPrice == 0 -%}
+          {%- set minPrice = productsku.price -%}
+        {%- else -%}
+          {%- if (productsku.price != minPrice) -%}
+            {%- if (productsku.price < minPrice) -%}
+              {%- set minPrice = productsku.price -%}
+            {%- endif -%}
+          {%- endif -%}
+        {%- endif -%}
+      {%- endif -%}
+    {%- endfor -%}
+
+    {%- set productName = product.attribute('product name', language) ? product.attribute('product name', language) : product.name -%}
+    <header class="lc-productInfo">
+
+      {# product image #}
+      <figure class="lc-productInfo__figure">
+        <a class="lc-productInfo__figure__inner" href="{{ path('ec_product_detail', {'id': product.id}) }}">
+          <img src="{% if product.attribute('image1') %}{{ ('/uploads/media/'~get_entity_manager().find('MediaCoreBundle:Media', product.attribute('image1')).path) }}{% else %}{{ asset('assets/img/no-image.png') }}{% endif %}" alt="{{ productName|striptags }}">
+        </a>
+      </figure>
+
+      <div class="lc-productInfo__text">
+
+        {# product name #}
+        <h2 class="lc-productInfo__name">
+          <a href="{{ path('ec_product_detail', {'id': product.id}) }}">{{ productName }}</a>
+        </h2>
+
+        <div class="lc-productInfo__detail">
+          <dl class="lc-productInfo__detail__list">
+
+            {# price #}
+            <div class="lc-productInfo__detail__item">
+              <dt class="lc-productInfo__detail__label">{{ #unit_price_label# }}</dt>
+              <dd class="lc-productInfo__detail__detail">
+                {{ #unitFront# }}{{ (minPrice * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}
+                {%- if curRatio != 1 -%}
+                  <small class="productArchive__price__sub">({{ baseUnitFront }}{{ minPrice|price_format(decimalPoint) }}{{ baseUnitBack }})</small>
+                {%- endif -%}
+              </dd>
+            </div>
+
+          </dl>
+        </div>
+    </header>
+
+    <form action="" method="POST" name="form1" id="form1">
+      {{ form_widget(form._token) }}
+
+      {# errors #}
+      {%- if not form.vars.valid -%}
+        <p class="lc-contentSection__note error">{{ form_errors(form) }}</p>
+      {%- endif -%}
+
+      {# input forms #}
+      <ul class="lc-form">
+        <li class="lc-form__item">
+          <label class="lc-form__label lc-form__label--half">
+            <h4 class="lc-form__title is-required">{{ #nickname_label# }}</h4>
+            <p class="lc-form__detail">
+              {{ form_widget(form.nickname) }}
+            </p>
+          </label>
+          {% if not form.nickname.vars.valid %}<p class="lc-form__note error is-error">{{ form_errors(form.country) }}</p>{% endif %}
+        </li>
+        <li class="lc-form__item">
+          <label class="lc-form__label lc-form__label--plain">
+            <h4 class="lc-form__title is-required">{{ #grade_label# }}</h4>
+            <div class="lc-form__detail lc-form__detail--stars">
+              <input name="{{ form.grade.vars.full_name }}" class="js-lc--reviewStarsInput" type="hidden"/>
+              <p class="lc-reviewStars lc-reviewStars--large js-lc--changeReviewStars" data-grade="{{ form.grade.vars.value }}"><span></span><span></span><span></span><span></span><span></span>
+              </p>
+              <p class="lc-reviewStars__number js-lc--reviewStarsNumber">{{ form.grade.vars.value / 2 }}</p>
+            </div>
+          </label>
+          {% if not form.grade.vars.valid %}<p class="lc-form__note error is-error">{{ form_errors(form.country) }}</p>{% endif %}
+        </li>
+        <li class="lc-form__item">
+          <label class="lc-form__label">
+            <h4 class="lc-form__title is-required">{{ #title_label# }}</h4>
+            <p class="lc-form__detail">
+              {{ form_widget(form.title) }}
+            </p>
+          </label>
+          {% if not form.title.vars.valid %}<p class="lc-form__note error is-error">{{ form_errors(form.country) }}</p>{% endif %}
+        </li>
+        <li class="lc-form__item">
+          <label class="lc-form__label">
+            <h4 class="lc-form__title is-required">{{ #description_label# }}</h4>
+            <p class="lc-form__detail">
+              {{ form_widget(form.description) }}
+            </p>
+          </label>
+          {% if not form.description.vars.valid %}<p class="lc-form__note error is-error">{{ form_errors(form.country) }}</p>{% endif %}
+        </li>
+      </ul>
+
+      <p class="lc-contentsInner__buttons">
+        {# register #}
+        <button class="lc-button--submit" type="submit"><span class="lc-button__label">{{ #register_label# }}</span><i class="lc-button__icon lc-icon--check"></i></button>
+        {# back #}
+        <button class="lc-button--cancel" type="button" onclick="history.back();"><i class="lc-button__icon lc-icon--arrowLeft"></i><span class="lc-button__label">{{ #back_label# }}</span></button>
+      </p>
+
+    </form>
+
+  </div>
+
+  {# mypage navi #}
+  {% TemplateInclude "mypage navi" %}
+
+</section>
+
+<script>
+  /**
+    * -------------------------------
+    * change review stars
+    */
+  $(function () {
+    var $reviewStars = $('.js-lc--changeReviewStars');
+    $reviewStars.each(function () {
+      var $reviewStar = $(this);
+      var $reviewStarsNumber = $reviewStar.next('.js-lc--reviewStarsNumber');
+      var $reviewStarsInput = $reviewStar.prev('.js-lc--reviewStarsInput');
+      var currentReviewGrade = $reviewStar.data('grade');
+      $reviewStar
+        .on('mouseenter', function (e) {
+          $reviewStar.addClass('is-changing');
+        })
+        .on('mouseleave', function (e) {
+          $reviewStar.removeClass('is-changing');
+          $reviewStar.attr('data-grade', currentReviewGrade);
+          $reviewStarsNumber.text(currentReviewGrade / 2);
+        })
+      $reviewStar.children('span')
+        .on('mousemove', function (e) {
+          var index = $reviewStar.children('span').index(this) + 1;
+          var x = e.pageX - this.getBoundingClientRect().left + window.pageXOffset;
+          var isFull = (x / $(this).width() > 0.5) ? true : false;
+          var reviewGrade = isFull ? index * 2 : index * 2 - 1;
+          $reviewStar.attr('data-grade', reviewGrade);
+          $reviewStarsNumber.text(reviewGrade / 2);
+        })
+        .on('click', function (e) {
+          var index = $reviewStar.children('span').index(this) + 1;
+          var x = e.pageX - this.getBoundingClientRect().left + window.pageXOffset;
+          var isFull = (x / $(this).width() > 0.5) ? true : false;
+          var reviewGrade = isFull ? index * 2 : index * 2 - 1;
+          $reviewStar.attr('data-grade', reviewGrade);
+          currentReviewGrade = reviewGrade;
+          $reviewStarsNumber.text(currentReviewGrade / 2);
+          $reviewStarsInput.val(currentReviewGrade);
+        });
+    });
+  });
+</script>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

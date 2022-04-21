@@ -1,0 +1,68 @@
+extends /_include/_layout.pug
+
+block title
+  title 买记录 | LC E-SHOP
+block header
+  - var isAuthorized = true;
+  include /_include/_header.pug
+block content
+
+  -
+    var breadcrumbList = [
+      {
+        name: '首页',
+        href: '/'
+      },
+      {
+        name: '我的帳戶',
+        href: '/ec/consumer/history/'
+      },
+      {
+        name: '买记录',
+        href: '/ec/consumer/history/'
+      }
+    ]
+  include /_include/_breadcrumblist.pug
+
+
+  section.lc-contentSection
+    h1.lc-contentSection__title.lc-contentSection__title--center 买记录
+
+    .lc-tab
+      .lc-tab__list(role="tablist")
+        .lc-tab__tab.is-active 全部
+        a(href="/ec/consumer/regular_list/").lc-tab__tab 定期订购
+      .lc-tab__panel.is-active
+        p.lc-pagingNavi.lc-align--left 目前購買記錄共為 <em>2</em> 件<br><br>
+        ul.lc-list
+          - for (var i = 1; i <= 10; i++)
+            li.lc-productInfo
+              figure.lc-productInfo__figure
+                a.lc-productInfo__figure__inner(href="/ec/consumer/history_detail/1/")
+                  img(src=`/assets/img/img_product_0${ i % 8 + 1 }.jpg`, alt="product name")
+              .lc-productInfo__text
+                h2.lc-productInfo__name
+                  a(href="/ec/consumer/history_detail/1/") 小熊夏季新款女装可爱卡通短袖t恤宽松韩版半袖
+                .lc-productInfo__detail
+                  dl.lc-productInfo__detail__list
+                    .lc-productInfo__detail__item
+                      dt.lc-productInfo__detail__label 下次预定到达的日期
+                      dd.lc-productInfo__detail__detail 2019/5/20
+                    .lc-productInfo__detail__item
+                      dt.lc-productInfo__detail__label 订购日期
+                      dd.lc-productInfo__detail__detail 2019/04/20
+        .lc-archiveGuide
+          .pagination_nav
+            a(href="/ec/consumer/history/")
+              span.lc-icon-laquo.ir &laquo;
+            strong.current 1
+            a(href="/ec/consumer/history/") 2
+            a(href="/ec/consumer/history/") 3
+            a(href="/ec/consumer/history/") 4
+            a(href="/ec/consumer/history/") 5
+            a(href="/ec/consumer/history/")
+              span.lc-icon-gt.ir &gt;
+            a(href="/ec/consumer/history/")
+              span.lc-icon-raquo.ir &raquo;
+
+    include /_include/_mypage-navi.pug

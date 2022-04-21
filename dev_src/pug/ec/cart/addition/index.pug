@@ -1,0 +1,68 @@
+extends /_include/_layout.pug
+
+block title
+  title 送货时间 | LC E-SHOP
+block content
+
+  -
+    var breadcrumbList = [
+      {
+        name: '首页',
+        href: '/'
+      },
+      {
+        name: '送货时间',
+        href: '/ec/cart/addition/'
+      }
+    ]
+  include /_include/_breadcrumblist.pug
+
+
+  section.lc-contentSection
+    h1.lc-contentSection__title.lc-contentSection__title--center 送货时间
+
+    - var step = 3;
+    include /_include/_steplist.pug
+
+    div.lc-contentsInner
+      form(action="/ec/cart/payment/", method="POST")
+        
+        section.lc-shipList
+          h2.lc-shipList__title 收货地址一览
+          ul.lc-shipList__list
+            li.lc-shipList__item
+              .lc-shipList__box
+                .lc-shipList__main
+                  header.lc-shipList__header
+                    h3.lc-shipList__name 星野 翔太
+                    p.lc-shipList__tel 09012345678
+                  p.lc-shipList__address
+                    | 171-0033
+                    | 東京都豊島区高田3ー9−7 ダイワビル
+                  dl.lc-shipList__options
+                    .lc-shipList__options__item.lc-shipList__options__item--single
+                      dt.lc-shipList__options__label 送货方式
+                      dd.lc-shipList__options__detail
+                        span.lc-selectBox
+                          select.lc-selectBox__select
+                            option(value="1") EMS
+                    .lc-shipList__options__item
+                      dt.lc-shipList__options__label 送货日
+                      dd.lc-shipList__options__detail
+                        span.lc-selectBox
+                          select.lc-selectBox__select
+                            option(value="1") 不需选择送货日
+                    .lc-shipList__options__item
+                      dt.lc-shipList__options__label 送货时间段
+                      dd.lc-shipList__options__detail
+                        span.lc-selectBox
+                          select.lc-selectBox__select
+                            option(value="1") 不需选择送货时间段
+            
+        p.lc-contentsInner__buttons
+          button.lc-button--submit
+            span.lc-button__label 下一步
+            i.lc-button__icon.lc-icon--arrow2Right
+          button(type="button", onclick="history.back();").lc-button--cancel
+            i.lc-button__icon.lc-icon--arrowLeft
+            span.lc-button__label 返回

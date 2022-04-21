@@ -1,0 +1,88 @@
+extends _include/_layout.pug
+
+block header
+  - var isHome = true
+  include _include/_header.pug
+block content
+  ul.mainvisual
+    li.mainvisual__item
+      a(href="")
+        figure.mainvisual__figure
+          img(src="/assets/img/hero_top_01.jpg", alt="***")
+        .mainvisual__text
+          p.mainvisual__catch
+            | <em>欢迎来到</em><br>
+            | LC E-SHOP
+          p.mainvisual__copy
+            | 发现来自独立艺术家，<br class="only-sp">内容创作者，广播<br class="only-pc">公司和<br class="only-sp">您最喜爱的品牌的艺术
+    li.mainvisual__item
+      a(href="")
+        figure.mainvisual__figure
+          img(src="/assets/img/hero_top_02.jpg", alt="***")
+        .mainvisual__text
+          p.mainvisual__catch
+            | <em>欢迎来到</em><br>
+            | LC E-SHOP
+          p.mainvisual__copy
+            | 发现来自独立艺术家，<br class="only-sp">内容创作者，广播<br class="only-pc">公司和<br class="only-sp">您最喜爱的品牌的艺术
+  section.lc-contentSection
+    h2.lc-contentSection__title 推荐商品
+    ul.productArchive
+      - for (var i = 1; i <= 4; i++)
+        li.productArchive__item
+          a(href="/product/1/")
+            figure.productArchive__figure
+              img(src=`/assets/img/img_product_0${i}.jpg`, alt="product title")
+            h3.productArchive__name 小熊夏季新款女装可爱卡通短袖t恤宽松韩版半袖
+            p.productArchive__price
+              span.productArchive__price__main 159.00CNY
+              small.productArchive__price__sub (2,393JPY)
+    p.lc-contentSection__more
+      a(href="/ec/product/category/1/").lc-button--submit
+        span.lc-button__label More
+        i.lc-button__icon.lc-icon--arrowRight
+  section.lc-contentSection.lc-contentSection--strong
+    h2.lc-contentSection__title 人气排行
+    ul.productArchive.productArchive--ranking
+      - for (var i = 1; i <= 5; i++)
+        li.productArchive__item
+          a(href="/product/1/")
+            figure.productArchive__figure
+              span.productArchive__rank #{i}
+              img(src=`/assets/img/img_product_${('0' + (i + 5)).slice(-2)}.jpg`, alt="product title")
+            h3.productArchive__name 小熊夏季新款女装可爱卡通短袖t恤宽松韩版半袖
+            p.productArchive__price
+              span.productArchive__price__main 159.00CNY
+              small.productArchive__price__sub (2,393JPY)
+  section.lc-contentSection
+    h2.lc-contentSection__title 最新消息
+    ul.newsArchive.newsArchive--top
+      - for (var i = 1; i <= 5; i++)
+        li.newsArchive__item
+          a(href="/page/1/")
+            .newsArchive__status
+              p.pageCategory お知らせ
+              p.pageDate
+                time(datetime="2019-08-30T18:16:34+09:00") 2018.06.11
+            .newsArchive__title 仅限6天通知199分仅限6天通知199分仅限6天通知199分仅很棒的购物车！
+    p.lc-contentSection__more
+      a(href="/page/category/1/").lc-button--submit
+        span.lc-button__label More
+        i.lc-button__icon.lc-icon--arrowRight
+  section.lc-contentSection.lc-contentSection--gray
+    h2.lc-contentSection__title 商店博客
+    ul.blogArchive
+      - for (var i = 1; i <= 4; i++)
+        li.blogArchive__item
+          a(href="/page/1/")
+            figure.blogArchive__figure
+              img(src=`/assets/img/img_product_${('0' + (i + 4)).slice(-2)}.jpg`, alt="blog title")
+            .blogArchive__status
+              p.pageCategory お知らせ
+              p.pageDate
+                time(datetime="2019-08-30T18:16:34+09:00") 2018.06.11
+            .blogArchive__title ベストコスメ2018上半期！注目を浴びたコスメ
+    p.lc-contentSection__more
+      a(href="/page/category/2/").lc-button--submit
+        span.lc-button__label More
+        i.lc-button__icon.lc-icon--arrowRight

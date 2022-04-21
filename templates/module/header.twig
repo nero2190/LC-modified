@@ -1,0 +1,213 @@
+{# {{ basic_auth_with('demo', 'kakunin') }} #}
+{% TemplateInclude "html head" %}
+
+{# set current language #}
+{%- set selectedLangLabel = '' -%}
+{%- for key, lang in languages -%}
+  {%- if key == language -%}
+    {%- set selectedLangLabel = lang -%}
+  {%- endif -%}
+{%- endfor -%}
+
+{# set current currency #}
+{%- set currentCurrency = app.session.has('currency_unit') ? app.session.get('currency_unit') : is_authorized() ? app.security.token.user.settingCurrency : get_entity_manager().find("EcCoreBundle:Currency", system_config("base_currency")) -%}
+{%- set selectedCurrencyLabel = '' -%}
+{%- for key , item in supported_currencies -%}
+  {%- set currency = get_entity_manager().find("EcCoreBundle:Currency", item) -%}
+  {%- set name = currency.code -%}
+  {%- if name == currentCurrency -%}
+    {%- set selectedCurrencyLabel = name -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- if not selectedCurrencyLabel -%}
+  {%- set currency = get_entity_manager().find("EcCoreBundle:Currency", supported_currencies|first) -%}
+  {%- set selectedCurrencyLabel = currency.code -%}
+{%- endif -%}
+
+<body class="lc-root">
+  
+  <a id="top"></a>
+  
+  <header class="l-header">
+    <h1 class="l-header__logo"><a href="{{ path("homepage") }}"><img src="{{ asset('/assets/img/logo.svg') }}"/></a></h1>
+
+    {# Search form #}
+    <div class="searchForm">
+      <form action="{{ path("ec_product_search") }}" method="GET" id="search_form">
+        <input class="searchForm__input" name="ec_client_product_search_type[keyword]" value="{% if searchParams is defined %}{% if not (searchParams['keyword'] == '' or searchParams['keyword'] == 'undefined') %}{{ searchParams['keyword'] }}{% endif %}{% endif %}" type="search"/>
+        <button class="searchForm__button lc-icon--search" type="submit">Go</button>
+        {%- if orderby is defined -%}
+          <input type="hidden" name="orderby" value="{{ orderby }}">
+        {%- endif -%}
+        {%- if dispNumber is defined -%}
+          <input type="hidden" name="disp_number" value="{{ dispNumber }}">
+        {%- endif -%}
+      </form>
+    </div>
+    
+    {# Header controler (SP right) #}
+    <nav class="l-navi only-sp">
+      <ul class="l-navi__list">
+        <li class="l-navi__item">
+          <button class="l-navi__button js-toggleMenu"><i class="l-navi__icon l-navi__icon--menu"><span></span><span></span><span></span></i><span class="l-navi__label">MENU</span></button>
+        </li>
+        <li class="l-navi__item">
+          <button class="l-navi__button js-lc--openModal" aria-controls="modalLangCurrency" aria-haspopup="true"><i class="l-navi__icon lc-icon--globe"></i><span class="l-navi__label">{{ selectedLangLabel }} / {{ selectedCurrencyLabel }}</span></button>
+        </li>
+      </ul>
+    </nav>
+    
+    {# Header controler (PC & SP left) #}
+    <nav class="l-navi">
+      <ul class="l-navi__list">
+        <li class="l-navi__item only-pc">
+          <button class="l-navi__button js-lc--openModal" type="button" aria-controls="modalLangCurrency" aria-haspopup="true"><i class="l-navi__icon lc-icon--globe"></i><span class="l-navi__label">{{ selectedLangLabel }} / {{ selectedCurrencyLabel }}</span></button>
+        </li>
+        {%- if is_authorized() -%}
+          <li class="l-navi__item"><a class="l-navi__button" href="{{ path('ec_client_consumer') }}"><i class="l-navi__icon lc-icon--user"></i><span class="l-navi__label">{{ #mypage# }}</span></a></li>
+        {%- else -%}
+          <li class="l-navi__item"><a class="l-navi__button" href="{{ path('application_frontend_auth_login') }}"><i class="l-navi__icon lc-icon--user"></i><span class="l-navi__label">{{ #login# }}</span></a></li>
+        {%- endif -%}
+        <li class="l-navi__item"><a class="l-navi__button" href="{{ path('ec_client_cart_list') }}"><i class="l-navi__icon lc-icon--cart"></i><span class="l-navi__label">{{ #cart# }}</span>{% if cart_api.count %}<span class="l-navi__badge">{{ cart_api.count }}</span>{% endif %}</a></li>
+      </ul>
+    </nav>
+
+    <div class="l-header__menu">
+      <div class="l-header__menu__bg js-closeMenu"></div>
+
+      {# category navi #}
+      <dl class="l-header__menu__list">
+        <dt class="l-header__menu__label">{{ #category# }}<span class="only-pc">:</span></dt>
+        {%- set navCategories = #navCategories# | split(',') -%}
+        {%- set allCategories = get_entity_manager().getRepository('EcCoreBundle:ProductCategory').createQueryBuilder('p').getQuery().getResult() -%}
+        {%- set  categoryTree = [] -%}
+        {%- for cat in allCategories -%}
+          {%- if cat.id in navCategories -%}
+            {%- set children = [] -%}
+            {%- for cat2 in allCategories -%}
+              {%- set ancestors = product_api.wrapProductCategory(cat2).ancestors -%}
+              {%- if (ancestors|length > 0) -%}
+                {%- if ancestors[ancestors|length - 1].node.id == cat.id -%}
+                  {%- set children2 = [] -%}
+                  {%- for cat3 in allCategories -%}
+                    {%- set ancestors2 = product_api.wrapProductCategory(cat3).ancestors -%}
+                    {%- if (ancestors2|length > 0) -%}
+                      {%- if ancestors2[ancestors2|length - 1].node.id == cat2.id -%}
+                        {%- set children2 = children2|merge([{ 'node': cat3, 'children': [] }]) -%}
+                      {%- endif -%}
+                    {%- endif -%}
+                  {%- endfor -%}
+                  {%- set children = children|merge([{ 'node': cat2, 'children': children2 }]) -%}
+                {%- endif -%}
+              {%- endif -%}
+            {%- endfor -%}
+            {%- set categoryTree = categoryTree|merge([{ 'node': cat, 'children': children }]) -%}
+          {%- endif -%}
+        {%- endfor -%}
+        {%- for cat in categoryTree -%}
+          <dd class="l-header__menu__item"><a href="{{ path('ec_product_category', {'id': cat.node.id}) }}">{% if cat.node.getTransAttribute(lang_id) %}{{ cat.node.getTransAttribute(lang_id) }}{% else %}{{ cat.node.name }}{% endif %}</a>
+            {%- if (cat.children|length > 0) -%}
+              <ul class="l-header__subMenu">
+                {%- for cat2 in cat.children -%}
+                  <li class="l-header__subMenu__item"><a href="{{ path('ec_product_category', {'id': cat2.node.id}) }}">{% if cat2.node.getTransAttribute(lang_id) %}{{ cat2.node.getTransAttribute(lang_id) }}{% else %}{{ cat2.node.name }}{% endif %}</a></li>
+                {%- endfor -%}
+              </ul>
+            {%- endif -%}
+          </dd>
+        {%- endfor -%}
+      </dl>
+
+      {# mypage navi #}
+      {%- if is_authorized() -%}
+        <div class="only-sp">
+          {% TemplateInclude "mypage navi" %}
+        </div>
+      {%- endif -%}
+    </div>
+  </header>
+    
+  {# Modal: change currency and language #}
+  <div class="lc-modal" id="modalLangCurrency">
+    <div class="lc-modal__bg js-lc--closeModal"></div>
+    <div class="lc-modal__body">
+      <h3 class="lc-modal__title">{{ #lang_currency_setting# }}</h3>
+      <dl class="lc-selectModalSettings">
+        <div class="lc-selectModalSettings__item">
+          <dt class="lc-selectModalSettings__label">{{ #lang_setting# }}</dt>
+          <dd class="lc-selectModalSettings__detail">
+            <div class="lc-selectBox">
+              <select class="lc-selectBox__select js-lc--selectLanguage">
+{%- for key, lang in languages -%}
+                <option value="{{ key }}"{% if key == language %} selected="selected"{% endif %}>{{ lang }}</option>
+{%- endfor -%}
+              </select>
+            </div>
+          </dd>
+        </div>
+        <div class="lc-selectModalSettings__item">
+          <dt class="lc-selectModalSettings__label">{{ #currency_setting# }}</dt>
+          <dd class="lc-selectModalSettings__detail">
+            <div class="lc-selectBox">
+              <select class="lc-selectBox__select js-lc--selectCurrency">
+                {%- for key , item in supported_currencies -%}
+                  {%- set currency = get_entity_manager().find("EcCoreBundle:Currency", item) -%}
+                  {%- set name = currency.code -%}
+                  <option value="{{ name }}"{% if name == currentCurrency %} selected{% endif %}>{{ name }}</option>
+                {%- endfor -%}
+              </select>
+            </div>
+          </dd>
+        </div>
+      </dl>
+      <p class="lc-modal__buttons">
+        <button class="lc-button--submit js-lc--changeLangCurrency" type="button"><span class="lc-button__label">{{ #save_changes# }}</span><i class="lc-button__icon lc-icon--check"></i></button>
+        <button class="lc-button--cancel js-lc--closeModal" type="button"><i class="lc-button__icon lc-icon--close"></i><span class="lc-button__label">{{ #cancel# }}</span></button>
+      </p>
+    </div>
+    <script>
+      $(function () {
+        // change language and currency
+        $('.js-lc--changeLangCurrency').on('click', function () {
+          var finishAnotherChange = false;
+
+          // change currency
+          $.ajax({
+            method: 'POST',
+            url: '/currency/change',
+            data: {
+              currency_unit: $('.js-lc--selectCurrency').val()
+            }
+          }).done(function(result){
+            if (finishAnotherChange) {
+              location.reload();
+            } else {
+              finishAnotherChange = true;
+            }
+          }).fail(function (jqXHR, textStatus, errorThrown) {
+            console.error(textStatus + ': ' + errorThrown);
+            $('.lc-modal').removeClass('is-active');
+          });
+
+          // change language
+          $.ajax({
+            method: 'POST',
+            url: '/language/select',
+            data: {
+              select_language: $('.js-lc--selectLanguage').val()
+            }
+          }).done(function(result){
+            if (finishAnotherChange) {
+              location.reload();
+            } else {
+              finishAnotherChange = true;
+            }
+          }).fail(function (jqXHR, textStatus, errorThrown) {
+            console.error(textStatus + ': ' + errorThrown);
+            $('.lc-modal').removeClass('is-active');
+          });
+        });
+      });
+    </script>
+  </div>
+
+  <main class="l-main">

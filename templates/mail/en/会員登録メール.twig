@@ -1,0 +1,21 @@
+Dear {{ consumer.getLastName }} {{ consumer.getFirstName }}
+
+Thank you for using our online shop.
+We are sending you this e-mail to inform you that your registration process is complete.
+
+You can login in through the link below:
+
+◆Login Page
+{{ url('homepage') }}/auth/login
+
+◆Login ID
+{{ consumer.getUsername }}
+
+Thank you for continuing to use our services.
+
+------------------------------------
+{{ system_config("application_name") }}
+〒{{ system_config("company_zipcode") }}
+{{ system_config("company_address") }}
+TEL: {{ system_config("company_tel") }}
+{{ url('homepage') }}

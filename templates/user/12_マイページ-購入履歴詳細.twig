@@ -1,0 +1,306 @@
+{# Reference: https://launchcart.jp/reference/12%e3%83%9e%e3%82%a4%e3%83%9a%e3%83%bc%e3%82%b8-%e8%b3%bc%e5%85%a5%e5%b1%a5%e6%ad%b4%e8%a9%b3%e7%b4%b0/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = #purchase_history_label# -%}
+
+{# get base currency unit #}
+{%- set baseCurrency = get_entity_manager().find('EcCoreBundle:Currency', system_config('base_currency')) -%}
+{%- set baseUnitFront = baseCurrency.getBeforeUnit() -%}
+{%- set baseUnitBack = baseCurrency.getAfterUnit() -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- set breadcrumbListItems = [
+    {
+      name: #mypage_label# ,
+      href: path('ec_client_consumer')
+    },
+    {
+      name: #purchase_history_label# ,
+      href: path('ec_client_consumer_history')
+    },
+    {
+      name: #detail_label# ,
+      href: app.request.uri
+    }
+  ]
+-%}
+{%- set breadcrumbList = breadcrumbList|merge(breadcrumbListItems) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #purchase_history_label# }}</h1>
+
+  <div class="lc-contentsInner">
+
+    {# date and number of the order #}
+    <table class="lc-table lc-table--wide">
+      <tbody>
+        <tr>
+          <th>{{ #date_of_order_label# }}</th>
+          <td>{{ order_group.getCreatedAt|date('Y.m.d H:i')}}</td>
+        </tr>
+        <tr>
+          <th>{{ #order_number_label# }}</th>
+          <td>{{ order_group.id }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    {# breakdown of the order #}
+    <table class="lc-table lc-table--numbers">
+      <tbody> 
+        <tr>
+          <th>{{ #total_products_price_label# }}</th>
+          <td><em>{{ #unitFront# }}{{ (order_group.getProductTotal * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}</em></td>
+          {%- if curRatio != 1 -%}
+            <td>({{ baseUnitFront }}{{ order_group.getProductTotal|price_format(decimalPoint) }}{{ baseUnitBack }})</td>
+          {%- endif -%}
+        </tr>
+        <tr>
+          <th>{{ #total_optional_products_price_label# }}</th>
+          <td><em>{{ #unitFront# }}{{ (order_group.getAdditionTotal * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}</em></td>
+          {%- if curRatio != 1 -%}
+            <td>({{ baseUnitFront }}{{ order_group.getAdditionTotal|price_format(decimalPoint) }}{{ baseUnitBack }})</td>
+          {%- endif -%}
+        </tr>
+        <tr>
+          <th>{{ #shipping_fee_label# }}</th>
+          <td><em>{{ #unitFront# }}{{ (order_group.getDeliveryFee * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}</em></td>
+          {%- if curRatio != 1 -%}
+            <td>({{ baseUnitFront }}{{ order_group.getDeliveryFee|price_format(decimalPoint) }}{{ baseUnitBack }})</td>
+          {%- endif -%}
+        </tr>
+        <tr>
+          <th>{{ #handling_fee_label# }}</th>
+          <td><em>{{ #unitFront# }}{{ (order_group.getCharge * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}</em></td>
+          {%- if curRatio != 1 -%}
+            <td>({{ baseUnitFront }}{{ order_group.getCharge|price_format(decimalPoint) }}{{ baseUnitBack }})</td>
+          {%- endif -%}
+        </tr>
+        <tr>
+          <th>{{ #adjustment_fee_label# }}</th>
+          <td><em>{{ #unitFront# }}{{ (order_group.getAdjustmentFee* curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}</em></td>
+          {%- if curRatio != 1 -%}
+            <td>({{ baseUnitFront }}{{ order_group.getAdjustmentFee|price_format(decimalPoint) }}{{ baseUnitBack }})</td>
+          {%- endif -%}
+        </tr>
+        <tr>
+          <th>{{ #points_used_label# }}</th>
+          <td><em>-{{ #unitFront# }}{{ (order_group.getUsePoint * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}</em></td>
+          {%- if curRatio != 1 -%}
+            <td>(-{{ baseUnitFront }}{{ order_group.getUsePoint|price_format(decimalPoint) }}{{ baseUnitBack }})</td>
+          {%- endif -%}
+        </tr>
+        <tr>
+          <th>{{ #coupon_used_label# }}</th>
+          <td><em>-{{ #unitFront# }}{{ (order_group.getUseCoupon * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}</em></td>
+          {%- if curRatio != 1 -%}
+            <td>(-{{ baseUnitFront }}{{ order_group.getUseCoupon|price_format(decimalPoint) }}{{ baseUnitBack }})</td>
+          {%- endif -%}
+        </tr>
+      </tbody>
+    </table>
+
+    {# total price #}
+    <p class="lc-contentSection__note lc-contentSection__note--large lc-align--right">
+      {{ #total_label# }}:
+      <strong>
+        {{ #unitFront# }}{{ (order_group.getPaymentTotal * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}
+        {%- if curRatio != 1 -%}
+          <small>({{ baseUnitFront }}{{ order_group.getPaymentTotal|price_format(decimalPoint) }}{{ baseUnitBack }})</small>
+        {%- endif -%}
+      </strong>
+    </p>
+
+    {# points information #}
+    <h2 class="lc-heading--3">{{ #points_label# }}</h2>
+    <table class="lc-table lc-table--numbers">
+      <tbody>
+        <tr>
+          <th>{{ #points_used_this_order_label# }}</th>
+          <td><em>-{{ order_group.getUsePoint|number_format }}{{ #point_unit# }}</em></td>
+        </tr>
+        <tr>
+          <th>{{ #points_get_this_order# }}</th>
+          <td><em>+{{ order_group.getAddPoint|number_format }}{{ #point_unit# }}</em></td>
+        </tr>
+      </tbody>
+    </table>
+
+    {# products and delivery information #}
+    <section class="lc-shipList">
+      <h2 class="lc-shipList__title">{{ #address_list_label# }}</h2>
+      <ul class="lc-shipList__list">
+        {% for key, order in order_group.orders %}
+          <li class="lc-shipList__item">
+            <div class="lc-shipList__box">
+              <div class="lc-shipList__main">
+
+                {# delivery information #}
+                <header class="lc-shipList__header">
+                  <h3 class="lc-shipList__name"><i class="c-inputUI c-inputUI--checkbox"></i>{{ order.lastName }} {{ order.firstName }}</h3>
+                  <p class="lc-shipList__tel">{{ order.tel }}</p>
+                </header>
+                <p class="lc-shipList__address">
+                  {% if order.country == 'Japan' %}〒 {% endif %}{% if order.country != 'Hong Kong' %}{{ order.zipcode }}<br>{% endif %}
+                  {% if order.country == 'Japan' %}{{ order.district }} {% endif %}{{ order.locality }} {{ order.street }}
+                </p>
+
+                {# products information #}
+                <ul class="lc-list">
+                  {% for detail in order.details %}
+                    {%- set productsku = detail.productSku -%}
+                    {%- set product = detail.product -%}
+                    {%- set productName = product.attribute('product name', language) ? product.attribute('product name', language) : product.name -%}
+                    <li class="lc-productInfo">
+
+                      {# product image #}
+                      <figure class="lc-productInfo__figure">
+                        <a class="lc-productInfo__figure__inner" href="{{ path('ec_product_detail', {'id': product.id}) }}">
+                          <img src="{% if product.attribute('image1') %}{{ ('/uploads/media/'~get_entity_manager().find('MediaCoreBundle:Media', product.attribute('image1')).path) }}{% else %}{{ asset('assets/img/no-image.png') }}{% endif %}" alt="{{ productName|striptags }}"/>
+                        </a>
+                      </figure>
+
+                      <div class="lc-productInfo__text">
+
+                        {# product name and skus titles #}
+                        <h2 class="lc-productInfo__name">
+                          <a href="{{ path('ec_product_detail', {'id': product.id}) }}">
+                            {{ productName }}
+                            {% if productsku.skuDetail1 %}&emsp;{% if productsku.skuDetail1.getTransAttribute(lang_id) %}{{ productsku.skuDetail1.getTransAttribute(lang_id) }}{% else %}{{ productsku.skuDetail1.title }}{% endif %}{% endif %}
+                            {% if productsku.skuDetail2 %}&emsp;{% if productsku.skuDetail2.getTransAttribute(lang_id) %}{{ productsku.skuDetail2.getTransAttribute(lang_id) }}{% else %}{{ productsku.skuDetail2.title }}{% endif %}{% endif %}
+                          </a>
+                        </h2>
+
+                        <div class="lc-productInfo__detail">
+                          <dl class="lc-productInfo__detail__list">
+
+                            {# price #}
+                            <div class="lc-productInfo__detail__item">
+                              <dt class="lc-productInfo__detail__label">{{ #unit_price_label# }}</dt>
+                              <dd class="lc-productInfo__detail__detail">
+                                {{ #unitFront# }}{{ (detail.price * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}
+                                {%- if curRatio != 1 -%}
+                                  <small class="productArchive__price__sub">({{ baseUnitFront }}{{ (detail.price)|price_format(decimalPoint) }}{{ baseUnitBack }})</small>
+                                {%- endif -%}
+                              </dd>
+                            </div>
+
+                            {# weight #}
+                            <div class="lc-productInfo__detail__item">
+                              <dt class="lc-productInfo__detail__label">{{ #weight_label# }}</dt>
+                              <dd class="lc-productInfo__detail__detail">{{ productsku.getWeight|number_format }}</span>g</dd>
+                            </div>
+
+                            {# quantity #}
+                            <div class="lc-productInfo__detail__item">
+                              <dt class="lc-productInfo__detail__label">{{ #quantity_label# }}</dt>
+                              <dd class="lc-productInfo__detail__detail">{{ detail.getQuantity|number_format }}</dd>
+                            </div>
+
+                          </dl>
+                        </div>
+                      </div>
+
+                      {# additions (optional service) #}
+                      {%- if (detail.additions|length > 0) -%}
+                        <dl class="lc-productInfo__additions">
+                          {%- for addition in detail.additions -%}
+                            <div class="lc-productInfo__additions__item">
+                              <dt class="lc-productInfo__additions__name">{% if addition.addition.getTitleTransAttribute(lang_id) %}{{ addition.addition.getTitleTransAttribute(lang_id) }}{% else %}{{ addition.addition.title }}{% endif %}</dt>
+                              <dd class="lc-productInfo__additions__detail">
+                                <dl class="lc-productInfo__detail__list">
+                                  <div class="lc-productInfo__detail__item">
+                                    <dt class="lc-productInfo__detail__label">{{ #unit_price_label# }}</dt>
+                                    <dd class="lc-productInfo__detail__detail">
+                                      {{ #unitFront# }}{{ (addition.price * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}
+                                      {%- if curRatio != 1 -%}
+                                        <small class="productArchive__price__sub">({{ baseUnitFront }}{{ addition.price|price_format(decimalPoint) }}{{ baseUnitBack }})</small>
+                                      {%- endif -%}
+                                    </dd>
+                                  </div>
+                                </dl>
+                              </dd>
+                            </div>
+                          {%- endfor -%}
+                        </dl>
+                      {%- endif -%}
+
+                    </li>
+                  {%- endfor -%}
+                </ul>
+                <dl class="lc-shipList__info">
+
+                  {# delivery method #}
+                  <div class="lc-shipList__info__item">
+                    <dt class="lc-shipList__info__label">{{ #delivery_method_label# }}</dt>
+                    <dd class="lc-shipList__info__detail">{{ order.delivery.name }}</dd>
+                  </div>
+
+                  {# delivery date time #}
+                  <div class="lc-shipList__info__item">
+                    <dt class="lc-shipList__info__label">{{ #delivery_datetime_label# }}</dt>
+                    <dd class="lc-shipList__info__detail">
+                      {%- if ( order.getDeliveryDay == #not_input_label# ) and ( order.getDeliveryTime == #not_input_label# ) -%}
+                        {{ #not_input_label# }}
+                      {%- else -%}
+                        {%- if order.getDeliveryDay != #not_input_label# -%}
+                          {{ order.getDeliveryDay }}&nbsp;
+                        {%- endif -%}
+                        {%- if order.getDeliveryTime != #not_input_label# -%}
+                          {{ order.getDeliveryTime }}
+                        {%- endif -%}
+                      {%- endif -%}
+                    </dd>
+                  </div>
+
+                </dl>
+              </div>
+            </div>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </section>
+
+    {# payment method #}
+    <h2 class="lc-heading--3">{{ #payment_method_label# }}</h2>
+    <p>{% if order_group.payment.getTransAttribute(lang_id) %}{{ order_group.payment.getTransAttribute(lang_id) }}{% else %}{{ order_group.payment.name }}{% endif %}</p>
+
+    {# message #}
+    <h2 class="lc-heading--3">{{ #inquiry_label# }}</h2>
+    <p>
+      {%- if order_group.request -%}
+        {{ order_group.request }}
+      {%- else -%}
+        {{ #not_input_label# }}
+      {%- endif -%}
+    </p>
+
+    {# When you set option1 - option10 in the order, you can output data of option1 - option10.
+     # example) {{ order_group.option1 }}
+     #}
+
+    {# back #}
+    <p class="lc-contentsInner__buttons">
+      <button class="lc-button--cancel" type="button" onclick="history.back();"><i class="lc-button__icon lc-icon--arrowLeft"></i><span class="lc-button__label">{{ #back_label# }}</span></button>
+    </p>
+
+  </div>
+
+  {# mypage navi #}
+  {% TemplateInclude "mypage navi" %}
+
+</section>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

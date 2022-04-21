@@ -1,0 +1,83 @@
+{# Reference: https://launchcart.jp/reference/3%e4%bc%9a%e5%93%a1%e7%99%bb%e9%8c%b2%e7%a2%ba%e8%aa%8d/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = #check_member_registration# -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- set breadcrumbListItem = {
+    name: #check_member_registration# ,
+    href: app.request.uri
+  }
+-%}
+{%- set breadcrumbList = breadcrumbList|merge([breadcrumbListItem]) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #check_member_registration# }}</h1>
+  <div class="lc-contentsInner lc-contentsInner--form">
+    <form action="{{ path("application_frontend_auth_complete") }}" method="POST" id="customerinfo">
+      <table class="lc-table lc-table--wide">
+        <tr>
+          <th>{{ 'label.consumer.last_name' | trans({}, 'clients') }} {{ 'label.consumer.first_name' | trans({}, 'clients') }}</th>
+          <td>{{ data.lastName }} {{ data.firstName }}</td>
+        </tr>
+        <tr>
+          <th>{{ 'label.consumer.birthday' | trans({}, 'clients') }}</th>
+          <td>{{ data.birthday }}</td>
+        </tr>
+        <tr>
+          <th>{{ 'label.consumer.phone' | trans({}, 'clients') }}</th>
+          <td>
+            {{ data.tel }}
+          </td>
+        </tr>
+        <tr>
+          <th>{{ 'label.consumer.email' | trans({}, 'clients') }}</th>
+          <td>{{ data.email }}</td>
+        </tr>
+        {# <tr>
+          <th>{{ 'consumer.auth.title' | trans({}, 'clients') }}</th>
+          <td>{{ data.sendOption }}</td>
+        </tr> #}
+        <tr>
+          <th>{{ #address_label# }}</th>
+          <td>
+            {%- if data.country.id == '1' -%}
+              〒{{ data.zipcode }} {{ data.country.name }} {{ data.district }}{{ data.locality }}{{ data.street }}
+            {%- else -%}
+              {% if data.country.id != '20' %}{{ data.zipcode }} {% endif %}{{ data.country.engName }} {{ data.locality }} {{ data.street }}
+            {%- endif -%}
+          </td>
+        </tr>
+        <tr>
+          <th>{{ 'label.consumer.password' | trans({}, 'clients') }}</th>
+          <td>{% for i in 1..data.password|length %}*{% endfor %}</td>
+        </tr>
+        <tr>
+          <th>{{ #members_only_service# }}</th>
+          <td>{% if data.getAttribute('会員限定サービス') == '希望する' %}{{ #approved_label# }}{% else %}{{ #unapproved_label# }}{% endif %}</td>
+        </tr>
+      </table>
+      <p class="lc-contentsInner__buttons">
+        {# submit #}
+        <button class="lc-button--submit" type="submit"><span class="lc-button__label">{{ #register_label# }}</span><i class="lc-button__icon lc-icon--check"></i></button>
+        
+        {# modify #}
+        <a class="lc-button--cancel" href="{{ path("application_frontend_auth_regist")}}"><i class="lc-button__icon lc-icon--arrowLeft"></i><span class="lc-button__label">{{ #modify_label# }}</span></button>
+      </p>
+    </form>
+  </div>
+</section>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

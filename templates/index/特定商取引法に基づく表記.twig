@@ -1,0 +1,103 @@
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = #page_title# -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- set breadcrumbListItem = {
+    name: #page_title# ,
+    href: app.request.uri
+  }
+-%}
+{%- set breadcrumbList = breadcrumbList|merge([breadcrumbListItem]) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<article>
+
+  {# parent category name #}
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #page_title# }}</h1>
+
+  <div class="lc-contentsInner">
+    <div class="pageArticle">
+      <table class="lawTable">
+        <tr>
+          <th>{{ #title_company# | raw }}</th>
+          <td>{{ #detail_company# | raw }}</td>
+        </tr>
+        <tr>
+          <th>{{ #title_address# | raw }}</th>
+          <td>{{ #detail_address# | raw }}</td>
+        </tr>
+        <tr>
+          <th>{{ #title_person_in_charge# | raw }}</th>
+          <td>{{ #detail_person_in_charge# | raw }}</td>
+        </tr>
+        {% if #title_person_in_charge_en# %}
+        <tr>
+          <th>{{ #title_person_in_charge_en# | raw }}</th>
+          <td>{{ detail_person_in_charge_en | raw }}</td>
+        </tr>
+        {% endif %}
+        <tr>
+          <th>{{ #title_url# | raw }}</th>
+          <td>{{ home_page_url | raw }}</td>
+        </tr>
+        <tr>
+          <th>Email</th>
+          <td>{{ email_address }}</td>
+        </tr>
+        <tr>
+          <th>{{ #title_tel# | raw }}</th>
+          <td>{{ #detail_tel# | raw }}</td>
+        </tr>
+        <tr>
+          <th>{{ #title_sale_price_range# | raw }}</th>
+          <td>{{ #detail_sale_price_range# | raw }}</td>
+        </tr>
+        {%- if #title_delivery_method# -%}
+        <tr>
+          <th>{{ #title_delivery_method# | raw }}</th>
+          <td>{{ #detail_delivery_method# | raw }}</td>
+        </tr>
+        {%- endif -%}
+        {%- if #title_payment_method# -%}
+        <tr>
+          <th>{{ #title_payment_method# | raw }}</th>
+          <td>{{ #detail_payment_method# | raw }}</td>
+        </tr>
+        {%- endif -%}
+        {%- if #title_others_fee# -%}
+        <tr>
+          <th>{{ #title_others_fee# | raw }}</th>
+          <td>{{ #detail_others_fee# | raw }}</td>
+        </tr>
+        {%- endif -%}
+        <tr>
+          <th>{{ #title_returns_exchanges# | raw }}</th>
+          <td>{{ #detail_other_fee# | raw }}</td>
+        </tr>
+        {%- if #title_dective_products#  -%}
+        <tr>
+          <th>{{ #title_dective_products# | raw }}</th>
+          <td>{{ #detail_dective_products# | raw }}</td>
+        </tr>
+        {%- endif -%}
+      </table>
+    </div>
+
+    <p class="lc-contentsInner__buttons"><a class="lc-button--cancel" href="{{ path('homepage') }}"><i class="lc-button__icon lc-icon--arrowLeft"></i><span class="lc-button__label">{{ #back_to_top# }}</span></a></p>
+
+  </div>
+
+</article>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

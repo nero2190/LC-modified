@@ -1,0 +1,204 @@
+{# Reference: https://launchcart.jp/reference/2-%e3%82%a4%e3%83%b3%e3%83%87%e3%83%83%e3%82%af%e3%82%b9%e3%83%86%e3%83%b3%e3%83%97%e3%83%ac%e3%83%bc%e3%83%88/ #}
+
+{# Variables Settings #}
+
+{# initialize language from url paramater; example) example.com?lang=<language id> #}
+{% set set_lang = app.request.get('lang') %}
+{% if set_lang %}
+{{ init_language(set_lang) }}
+{% endif %}
+
+{# insert to html head title #}
+{% set title = "top" %}
+
+{# get base currency unit #}
+{%- set baseCurrency = get_entity_manager().find('EcCoreBundle:Currency', system_config('base_currency')) -%}
+{%- set baseUnitFront = baseCurrency.getBeforeUnit() -%}
+{%- set baseUnitBack = baseCurrency.getAfterUnit() -%}
+
+{# load current date #}
+{% set now = "now"|date("Y-m-d H:i:s") %}
+
+{# end Variables Setting #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Mainvisual #}
+<ul class="mainvisual">
+{% TemplateInclude "mainvisual" %}
+</ul>
+{# end Mainvisual #}
+
+{# Featured Products #}
+{%- set qb = get_entity_manager().getRepository('EcCoreBundle:Product').createQueryBuilder('p').leftJoin('p.categories', 'c') -%}
+{%- set featuredProducts = qb.where('c.id = :id').andWhere('p.deleted_at is NULL').andWhere(qb.expr().orx(qb.expr().eq('p.release_status', '0'),qb.
+expr().andx(qb.expr().eq('p.release_status', '2'), qb.expr().lte('p.released_at', '?1'), qb.expr().gte('p.available_before', '?1')))).orderBy('p.released_at', 'desc').setMaxResults(10).setParameter('id', 12).setParameter('1', now).getQuery().getResult() -%}{# .setMaxResults(< max number >).setParameter('id', < category id >) #}
+{%- if (featuredProducts | length > 0) -%}
+  <section class="lc-contentSection">
+    <h2 class="lc-contentSection__title">{{ #featured_products_title# }}</h2>
+    <ul class="productArchive">
+      {%- for product in featuredProducts -%}
+        {%- set productskus = get_entity_manager().getRepository('EcCoreBundle:ProductSku').createQueryBuilder('ps').innerJoin('ps.product', 'p').where(' p.id = :id').setParameter('id', product.id).getQuery().getResult() -%}
+        {%- set productAvailable = false -%}
+        {%- set isMultiplePrices = false -%}
+
+        {# confirm the stock and the min price in sku #}
+        {%- set minPrice = 0 -%}
+        {%- for productsku in productskus -%}
+          {%- if (productsku.getStockUnlimited or (productsku.getStock > 0)) -%}
+            {%- set productAvailable = true -%}
+            {%- if minPrice == 0 -%}
+              {%- set minPrice = productsku.price -%}
+            {%- else -%}
+              {%- if (productsku.price != minPrice) -%}
+                {%- set isMultiplePrices = true -%}
+                {%- if (productsku.price < minPrice) -%}
+                  {%- set minPrice = productsku.price -%}
+                {%- endif -%}
+              {%- endif -%}
+            {%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
+
+          {%- set productName = product.attribute('product name', language) ? product.attribute('product name', language) : product.name -%}
+          <li class="productArchive__item">
+            <a href="{{ path('ec_product_detail', {'id': product.id}) }}">
+              <figure class="productArchive__figure"><img src="{% if product.attribute('image1') %}{{ ('/uploads/media/'~get_entity_manager().find('MediaCoreBundle:Media', product.attribute('image1')).path) }}{% else %}{{ asset('assets/img/no-image.png') }}{% endif %}" alt="{{ productName|striptags }}"></figure>
+              <h3 class="productArchive__name">{{ productName }}</h3>
+              <p class="productArchive__price">
+              {%- if productAvailable -%}
+                <span class="productArchive__price__main">{{ #unitFront# }}{{ (minPrice * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}{% if isMultiplePrices %}-{% endif %}</span>
+                {%- if curRatio != 1 -%}
+                  <small class="productArchive__price__sub">({{ baseUnitFront }}{{ minPrice|price_format(decimalPoint) }}{{ baseUnitBack }})</small>
+                {%- endif -%}
+              {% else %}
+                {# if no stock then show [Sold Out] #}
+                {{ #no_stock# }}
+              {% endif %}
+              </p>
+            </a>
+          </li>
+      {%- endfor -%}
+    </ul>
+    <p class="lc-contentSection__more"><a class="lc-button--submit" href="{{ path('ec_product_category', {'id': 12}) }}"><span class="lc-button__label">More</span><i class="lc-button__icon lc-icon--arrowRight"></i></a></p>
+  </section>
+{%- endif -%}
+{# end Featured Products #}
+
+{# Ranking #}
+{%- set rankingCategories = #rankingCategories# | split(',') -%}
+<section class="lc-contentSection lc-contentSection--strong">
+  <h2 class="lc-contentSection__title">{{ #ranking_title# }}</h2>
+  <ul class="productArchive productArchive--ranking">
+    {%- set countProducts = 0 -%}
+    {%- for rankingCategory in rankingCategories -%}
+      {%- set qb = get_entity_manager().getRepository('EcCoreBundle:Product').createQueryBuilder('p').leftJoin('p.categories', 'c') -%}
+      {%- set rankingProducts = qb.where('c.id = :id').andWhere('p.deleted_at is NULL').andWhere(qb.expr().orx(qb.expr().eq('p.release_status', '0'),qb.
+      expr().andx(qb.expr().eq('p.release_status', '2'), qb.expr().lte('p.released_at', '?1'), qb.expr().gte('p.available_before', '?1')))).orderBy('p.released_at', 'desc').setMaxResults(1).setParameter('id', rankingCategory). setParameter('1', now).getQuery().getResult() -%}
+      {%- for product in rankingProducts -%}
+        {%- set productskus = get_entity_manager().getRepository('EcCoreBundle:ProductSku').createQueryBuilder('ps').innerJoin('ps.product', 'p').where(' p.id = :id').setParameter('id', product.id).getQuery().getResult() -%}
+        {%- set productAvailable = false -%}
+        {%- set isMultiplePrices = false -%}
+
+        {# confirm the stock and the min price in sku #}
+        {%- set minPrice = 0 -%}
+        {%- set displayed_price = 0 -%}
+        {%- for productsku in productskus -%}
+          {%- if (productsku.getStockUnlimited or (productsku.getStock > 0)) -%}
+            {%- set productAvailable = true -%}
+            {%- if minPrice == 0 -%}
+              {%- set minPrice = productsku.price -%}
+            {%- else -%}
+              {%- if (productsku.price != minPrice) -%}
+                {%- set isMultiplePrices = true -%}
+                {%- if (productsku.price < minPrice) -%}
+                  {%- set minPrice = productsku.price -%}
+                {%- endif -%}
+              {%- endif -%}
+            {%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
+
+          {%- set countProducts = countProducts + 1 -%}
+          {%- set productName = product.attribute('product name', language) ? product.attribute('product name', language) : product.name -%}
+          <li class="productArchive__item">
+            <a href="{{ path('ec_product_detail', {'id': product.id}) }}">
+              <figure class="productArchive__figure"><span class="productArchive__rank">{{ countProducts }}</span><img src="{% if product.attribute('image1') %}{{ ('/uploads/media/'~get_entity_manager().find('MediaCoreBundle:Media', product.attribute('image1')).path) }}{% else %}{{ asset('assets/img/no-image.png') }}{% endif %}" alt="{{ productName|striptags }}"></figure>
+              <h3 class="productArchive__name">{{ productName }}</h3>
+              <p class="productArchive__price">
+              {%- if productAvailable -%}
+                <span class="productArchive__price__main">{{ #unitFront# }}{{ (minPrice * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}{% if isMultiplePrices %}-{% endif %}</span>
+                {%- if curRatio != 1 -%}
+                  <small class="productArchive__price__sub">({{ baseUnitFront }}{{ minPrice|price_format(decimalPoint) }}{{ baseUnitBack }})</small>
+                {%- endif -%}
+              {% else %}
+                {# if no stock then show [Sold Out] #}
+                {{ #no_stock# }}
+              {% endif %}
+              </p>
+            </a>
+          </li>
+      {%- endfor -%}
+    {%- endfor -%}
+  </ul>
+</section>
+{# end Ranking #}
+
+{# News #}
+{%- set qb = get_entity_manager().getRepository('PageCoreBundle:Page').createQueryBuilder('p').leftJoin('p.categories', 'c') -%}
+{%- set newsPages = qb.where('c.id = :id').andWhere('p.deleted_at is NULL').andWhere(qb.expr().orx(qb.expr().eq('p.release_status', '0'),qb.expr().andx(qb.expr().eq('p.release_status', '2'),qb.expr().lte('p.released_at', '?1')))).orderBy('p.released_at', 'desc').setMaxResults(5).setParameter('id', 1).setParameter('1', now).getQuery().getResult() -%}{# .setMaxResults(< max number >).setParameter('id', < category id >) #}
+{%- if (newsPages|length > 0) -%}
+  <section class="lc-contentSection">
+    <h2 class="lc-contentSection__title">{%- if newsPages[0].categories.first.getTransAttribute(lang_id) -%}{{ newsPages[0].categories.first.getTransAttribute(lang_id) }}{%- else -%}{{ newsPages[0].categories.first.name }}{%- endif -%}</h2>
+    <ul class="newsArchive newsArchive--top">
+      {%- for newsPage in newsPages -%}
+        <li class="newsArchive__item">
+          <a href="{{ path('page_view', {'id': newsPage.id}) }}">
+            <div class="newsArchive__status">
+              <p class="pageCategory">{%- if newsPage.categories[1].getTransAttribute(lang_id) -%}{{ newsPage.categories[1].getTransAttribute(lang_id) }}{%- else -%}{{ newsPage.categories[1].name }}{%- endif -%}</p>
+              <p class="pageDate">
+                <time datetime="{{ newsPage.getReleasedAt|date('Y-m-d') }}">{{ newsPage.getReleasedAt|date('Y.m.d') }}</time>
+              </p>
+            </div>
+            <div class="newsArchive__title">{{ newsPage.title|striptags }}</div>
+          </a>
+        </li>
+      {%- endfor -%}
+    </ul>
+    <p class="lc-contentSection__more"><a class="lc-button--submit" href="{{ path('page_category_archive', {'id': 1}) }}"><span class="lc-button__label">More</span><i class="lc-button__icon lc-icon--arrowRight"></i></a></p>
+  </section>
+{%- endif -%}
+{# end News #}
+
+{# Blog #}
+{%- set qb = get_entity_manager().getRepository('PageCoreBundle:Page').createQueryBuilder('p').leftJoin('p.categories', 'c') -%}
+{%- set blogPages = qb.where('c.id = :id').andWhere('p.deleted_at is NULL').andWhere(qb.expr().orx(qb.expr().eq('p.release_status', '0'),qb.expr().andx(qb.expr().eq('p.release_status', '2'),qb.expr().lte('p.released_at', '?1')))).orderBy('p.released_at', 'desc').setMaxResults(4).setParameter('id', 2).setParameter('1', now).getQuery().getResult() -%}{# .setMaxResults(< max number >).setParameter('id', < category id >) #}
+{%- if (blogPages|length > 0) -%}
+<section class="lc-contentSection lc-contentSection--gray">
+  <h2 class="lc-contentSection__title">{%- if blogPages[0].categories.first.getTransAttribute(lang_id) -%}{{ blogPages[0].categories.first.getTransAttribute(lang_id) }}{%- else -%}{{ blogPages[0].categories.first.name }}{%- endif -%}</h2>
+  <ul class="blogArchive">
+    {%- for blogPage in blogPages -%}
+      <li class="blogArchive__item">
+        <a href="{{ path('page_view', {'id': blogPage.id}) }}">
+          <figure class="blogArchive__figure"><img src="{% if blogPage.attribute('featured image') %}{{ ('/uploads/media/'~get_entity_manager().find('MediaCoreBundle:Media', blogPage.attribute('featured image')).path) }}{% else %}{{ asset("assets/img/no-image.png") }}{% endif %}" alt="{{ blogPage.title|striptags }}"></figure>
+          <div class="blogArchive__status">
+            <p class="pageCategory">{%- if blogPage.categories[1].getTransAttribute(lang_id) -%}{{ blogPage.categories[1].getTransAttribute(lang_id) }}{%- else -%}{{ blogPage.categories[1].name }}{%- endif -%}</p>
+            <p class="pageDate">
+              <time datetime="{{ blogPage.getReleasedAt|date('Y-m-d') }}">{{ blogPage.getReleasedAt|date('Y.m.d') }}</time>
+            </p>
+          </div>
+          <div class="blogArchive__title">{{ blogPage.title|striptags }}</div>
+        </a>
+      </li>
+    {%- endfor -%}
+  </ul>
+  <p class="lc-contentSection__more"><a class="lc-button--submit" href="{{ path('page_category_archive', {'id': 2}) }}"><span class="lc-button__label">More</span><i class="lc-button__icon lc-icon--arrowRight"></i></a></p>
+</section>
+{%- endif -%}
+{# end Blog #}
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

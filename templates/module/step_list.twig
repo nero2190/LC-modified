@@ -1,0 +1,10 @@
+{% set step = step ? step : 0 %}
+<ol class="lc-stepList">
+  <li class="lc-stepList__item{% if step == 1 %} is-current{% endif %}"><i class="lc-stepList__icon"></i><span class="lc-stepList__label">{{ #step1_cart# | raw }}</span></li>
+  <li class="lc-stepList__item{% if step == 2 %} is-current{% endif %}"><i class="lc-stepList__icon"></i><span class="lc-stepList__label">{{ #step2_ship# | raw }}</span></li>
+  <li class="lc-stepList__item{% if step == 3 %} is-current{% endif %}"><i class="lc-stepList__icon"></i><span class="lc-stepList__label">{{ #step3_ship_datetime# | raw }}</span></li>
+  <li class="lc-stepList__item{% if step == 4 %} is-current{% endif %}"><i class="lc-stepList__icon"></i><span class="lc-stepList__label">{{ #step4_payment# | raw }}</span></li>
+  <li class="lc-stepList__item{% if step == 5 %} is-current{% endif %}"><i class="lc-stepList__icon"></i><span class="lc-stepList__label">{{ #step5_confirm# | raw }}</span></li>
+  <li class="lc-stepList__item{% if step == 6 %} is-current{% endif %}"><i class="lc-stepList__icon"></i><span class="lc-stepList__label">{{ #step6_pay# | raw }}</span></li>
+  <li class="lc-stepList__item{% if step == 7 %} is-current{% endif %}"><i class="lc-stepList__icon"></i><span class="lc-stepList__label">{{ #step7_complete# | raw }}</span></li>
+</ol>

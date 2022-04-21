@@ -1,0 +1,265 @@
+<section class="lc-contentsInner lc-reviewsArchive">
+  {%- set totalReviews = 0 -%}
+
+  {# in archive  #}
+  {%- if isReviewArchive is defined -%}
+    {%- for review in product.reviews -%}
+      {%- set totalReviews = totalReviews + review.grade -%}
+    {%- endfor -%}
+    {%- set productskus = get_entity_manager().getRepository('EcCoreBundle:ProductSku').createQueryBuilder('ps').innerJoin('ps.product', 'p').where(' p.id = :id').setParameter('id', product.id).getQuery().getResult() -%}
+    {%- set productAvailable = false -%}
+    {%- set isMultiplePrices = false -%}
+    {%- set minPrice = 0 -%}
+    {%- set displayed_price = 0 -%}
+    {%- for productsku in productskus -%}
+      {%- if (productsku.getStockUnlimited or (productsku.getStock > 0)) -%}
+        {%- set productAvailable = true -%}
+        {%- if minPrice == 0 -%}
+          {%- set minPrice = productsku.price -%}
+        {%- else -%}
+          {%- if (productsku.price != minPrice) -%}
+            {%- set isMultiplePrices = true -%}
+            {%- if (productsku.price < minPrice) -%}
+              {%- set minPrice = productsku.price -%}
+            {%- endif -%}
+          {%- endif -%}
+        {%- endif -%}
+      {%- endif -%}
+    {%- endfor -%}
+    {%- set productName = product.attribute('product name', language) ? product.attribute('product name', language) : product.name -%}
+    <header class="lc-productInfo">
+      <figure class="lc-productInfo__figure"><a class="lc-productInfo__figure__inner" href="{{ path('ec_product_detail', {'id': product.id}) }}"><img src="{% if product.attribute('image1') %}{{ ('/uploads/media/'~get_entity_manager().find('MediaCoreBundle:Media', product.attribute('image1')).path) }}{% else %}{{ asset('assets/img/no-image.png') }}{% endif %}" alt="{{ productName|striptags }}"></a></figure>
+      <div class="lc-productInfo__text">
+        <h2 class="lc-productInfo__name"><a href="{{ path('ec_product_detail', {'id': product.id}) }}">{{ productName }}</a></h2>
+        <div class="lc-productInfo__detail">
+          <div class="lc-productInfo__review">
+            <p class="lc-reviewStars lc-reviewStars--large" data-grade="{{ (totalReviews / product.reviews|length)|abs }}"><span></span><span></span><span></span><span></span><span></span>
+            </p>
+            <p class="lc-reviewsArchive__number">{{ (totalReviews / product.reviews|length / 2)|price_format(1) }}</p>
+            <p class="lc-reviewsArchive__total">{{ product.reviews|length }}件</p>
+          </div>
+          <dl class="lc-productInfo__detail__list">
+            <div class="lc-productInfo__detail__item">
+              <dt class="lc-productInfo__detail__label">{{ #price_label# }}</dt>
+              <dd class="lc-productInfo__detail__detail">
+                {{ #unitFront# }}{{ (minPrice * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}{% if isMultiplePrices %}-{% endif %}
+                {%- if curRatio != 1 -%}
+                  <small class="productArchive__price__sub">({{ baseUnitFront }}{{ minPrice|price_format(decimalPoint) }}{{ baseUnitBack }})</small>
+                {%- endif -%}
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+    </header>
+
+  {# in product detail  #}
+  {%- else -%}
+    {%- for review in reviews -%}
+      {%- set totalReviews = totalReviews + review.grade -%}
+    {%- endfor -%}
+    <header class="lc-reviewsArchive__header">
+      <h2 class="lc-reviewsArchive__title">{{ #product_reviews# }}</h2>
+      <p class="lc-reviewsArchive__total">{{ reviews|length }}件</p>
+      {%- if (reviews|length > 0) -%}
+        <p class="lc-reviewStars lc-reviewStars--large" data-grade="{{ (totalReviews / reviews|length)|abs }}"><span></span><span></span><span></span><span></span><span></span>
+        </p>
+        <p class="lc-reviewsArchive__number">{{ (totalReviews / reviews|length / 2)|price_format(1) }}</p>
+      {%- endif -%}
+    </header>
+  {%- endif -%}
+  {%- if (reviews|length > 0) -%}
+    <ul class="lc-reviewsArchive__list">
+      {%- for review in reviews -%}
+        {%- if (loop.index <= 10) -%}
+          <li class="lc-reviewsArchive__item">
+            <div class="lc-reviewsArchive__reviewHeader">
+              <p class="lc-reviewStars" data-grade="{{ review.grade }}"><span></span><span></span><span></span><span></span><span></span>
+              </p>
+              <h3 class="lc-reviewsArchive__reviewTitle">{{ review.title }}</h3>
+            </div>
+            <p class="lc-reviewsArchive__detail">{{ review.description|nl2br }}</p>
+            <p class="lc-reviewsArchive__nickname">{{ review.nickname }}</p>
+          </li>
+        {%- endif -%}
+      {%- endfor -%}
+    </ul>
+  {%- else -%}
+    <div class="productDetail">
+      <p>{{ #no_reviews# }}</p>
+    </div>
+  {%- endif -%}
+  <p class="lc-contentsInner__buttons lc-contentsInner__buttons--horizontal">
+    {%- if (reviews|length > 10) -%}
+      <a class="lc-button--submit" href="/ec/product/1/"><span class="lc-button__label">More</span><i class="lc-button__icon lc-icon--arrowRight"></i></a>
+    {%- endif -%}
+    {%- if is_authorized() -%}
+      <button class="lc-button--submit js-lc--openModal" type="button" aria-controls="modalLangAddReview" aria-haspopup="true"><span class="lc-button__label">{{ #write_review# }}</span><i class="lc-button__icon lc-icon--star"></i></button>
+    {%- else -%}
+      <a class="lc-button--submit" href="{{ path('application_frontend_auth_login') }}" target="_blank"><span class="lc-button__label">{{ #login_for_write_review# }}</span><i class="lc-button__icon lc-icon--user"></i></a>
+    {%- endif -%}
+  </p>
+
+  {# Modal: write review #}
+  {%- if is_authorized() -%}
+    <div class="lc-modal" id="modalLangAddReview">
+      <div class="lc-modal__bg js-lc--closeModal"></div>
+      <div class="lc-modal__body lc-modal__body--wide">
+        <h3 class="lc-modal__title">{{ #write_review_label# }}</h3>
+        <form action="{{ path('ec_client_product_review_add') }}" method="POST" name="form1" id="review_submit" novalidate="novalidate">
+          <ul class="lc-form">
+            <li class="lc-form__item">
+              <label class="lc-form__label lc-form__label--half">
+                <h4 class="lc-form__title is-required">{{ #nickname_label# }}</h4>
+                <p class="lc-form__detail js-lc--reviewNickname">
+                  <input type="text" name="ec_client_product_review_type[nickname]">
+                </p>
+              </label>
+            </li>
+            <li class="lc-form__item">
+              <label class="lc-form__label lc-form__label--plain">
+                <h4 class="lc-form__title is-required">{{ #grade_label# }}</h4>
+                <div class="lc-form__detail lc-form__detail--stars">
+                  <input class="js-lc--reviewStarsInput" name="ec_client_product_review_type[grade]" type="hidden" value="10">
+                  <p class="lc-reviewStars lc-reviewStars--large js-lc--changeReviewStars" data-grade="10"><span></span><span></span><span></span><span></span><span></span>
+                  </p>
+                  <p class="lc-reviewStars__number js-lc--reviewStarsNumber">5</p>
+                </div>
+              </label>
+            </li>
+            <li class="lc-form__item">
+              <label class="lc-form__label">
+                <h4 class="lc-form__title is-required">{{ #title_label# }}</h4>
+                <p class="lc-form__detail js-lc--reviewTitle">
+                  <input type="text" name="ec_client_product_review_type[title]">
+                </p>
+              </label>
+            </li>
+            <li class="lc-form__item">
+              <label class="lc-form__label">
+                <h4 class="lc-form__title is-required">{{ #description_label# }}</h4>
+                <p class="lc-form__detail js-lc--reviewDescription">
+                  <textarea name="ec_client_product_review_type[description]" rows="5"></textarea>
+                </p>
+              </label>
+            </li>
+          </ul>
+          <p class="lc-modal__buttons">
+            <button class="lc-button--submit js-lc--reviewSubmit" type="submit"><span class="lc-button__label">{{ #send_review# }}</span><i class="lc-button__icon lc-icon--check"></i></button>
+            <button class="lc-button--cancel js-lc--closeModal" type="button"><i class="lc-button__icon lc-icon--close"></i><span class="lc-button__label">{{ #cancel# }}</span></button>
+          </p>
+        </form>
+      </div>
+    </div>
+    <script>
+      $(function () {
+        /**
+          * -------------------------------
+          * Change Review Stars
+          */
+        var $reviewStars = $('.js-lc--changeReviewStars');
+        $reviewStars.each(function () {
+          var $reviewStar = $(this);
+          var $reviewStarsNumber = $reviewStar.next('.js-lc--reviewStarsNumber');
+          var $reviewStarsInput = $reviewStar.prev('.js-lc--reviewStarsInput');
+          var currentReviewGrade = $reviewStar.data('grade');
+          $reviewStar
+            .on('mouseenter', function (e) {
+              $reviewStar.addClass('is-changing');
+            })
+            .on('mouseleave', function (e) {
+              $reviewStar.removeClass('is-changing');
+              $reviewStar.attr('data-grade', currentReviewGrade);
+              $reviewStarsNumber.text(currentReviewGrade / 2);
+            })
+          $reviewStar.children('span')
+            .on('mousemove', function (e) {
+              var index = $reviewStar.children('span').index(this) + 1;
+              var x = e.pageX - this.getBoundingClientRect().left + window.pageXOffset;
+              var isFull = (x / $(this).width() > 0.5) ? true : false;
+              var reviewGrade = isFull ? index * 2 : index * 2 - 1;
+              $reviewStar.attr('data-grade', reviewGrade);
+              $reviewStarsNumber.text(reviewGrade / 2);
+            })
+            .on('click', function (e) {
+              var index = $reviewStar.children('span').index(this) + 1;
+              var x = e.pageX - this.getBoundingClientRect().left + window.pageXOffset;
+              var isFull = (x / $(this).width() > 0.5) ? true : false;
+              var reviewGrade = isFull ? index * 2 : index * 2 - 1;
+              $reviewStar.attr('data-grade', reviewGrade);
+              currentReviewGrade = reviewGrade;
+              $reviewStarsNumber.text(currentReviewGrade / 2);
+              $reviewStarsInput.val(currentReviewGrade);
+            });
+        });
+
+        /**
+          * -------------------------------
+          * Post Review
+          */
+        var $form = {
+          form: $("#review_submit"),
+          nickname: $('[name="ec_client_product_review_type[nickname]"]'),
+          title: $('[name="ec_client_product_review_type[title]"]'),
+          description: $('[name="ec_client_product_review_type[description]"]'),
+          grade: $('[name="ec_client_product_review_type[grade]"]'),
+          submit: $('.js-lc--reviewSubmit')
+        }
+
+        // review form submit
+        $form.form.on('submit', function(event) {
+          // cancel submit
+          event.preventDefault();
+          var product_id = {{ product.id }};
+          var nickname = $form.nickname.val();
+          var title = $form.title.val();
+          var description = $form.description.val();
+          var grade = $form.grade.val();
+          $form.submit.attr('disabled', true);
+          $.ajax({
+            type: "POST",
+            url: "{{ path('ec_client_product_review_add') }}",
+            data: {
+              "product_id": product_id,
+              "title": title,
+              "description": description,
+              "nickname": nickname,
+              "grade": grade,
+            },
+          }).done(function(data) {
+            $form.form.find(".error").remove();
+            if (data.responseCode == '400') {
+              // output error messages
+              for (var i = 0; i < data.error_msg.length; i++) {
+                if(String(data.error_msg[i]) == '{{ 'assert.product_review.nickname.blank'|trans({}, 'clients') }}' || String(data.error_msg[i]) == 'assert.product_review.nickname.blank') {
+                  $('.js-lc--reviewNickname').append("<span class='error' style='color:red'>{{ 'assert.product_review.nickname.blank'|trans({}, 'clients') }}</span>");
+                }
+                if(String(data.error_msg[i]) == '{{ 'assert.product_review.title.blank'|trans({}, 'clients') }}' || String(data.error_msg[i]) == 'assert.product_review.title.blank') {
+                  $('.js-lc--reviewTitle').append("<span class='error' style='color:red'>{{ 'assert.product_review.title.blank'|trans({}, 'clients') }}</span>");
+                }
+                if(String(data.error_msg[i]) == '{{ 'assert.product_review.description.blank'|trans({}, 'clients') }}' || String(data.error_msg[i]) == 'assert.product_review.description.blank') {
+                  $('.js-lc--reviewDescription').append("<span class='error' style='color:red'>{{ 'assert.product_review.description.blank'|trans({}, 'clients') }}</span>");
+                }
+              }
+            } else {
+              // reset values
+              $form.nickname.val('');
+              $form.title.val('');
+              $form.description.val('');
+              $form.grade.val('');
+              $form.form.find(".error").remove();
+
+              // open modal notice
+              openModalNotice('It was success posting your review.', 1500);
+            }
+          }).fail(function(xhr, status) {
+            // open modal notice
+            openModalNotice('It was fail posting your review.');
+          }).always(function () {
+            $form.submit.attr('disabled', false);
+          });
+        });
+      });
+    </script>
+  {%- endif -%}{# is_authorized() #}
+</section>

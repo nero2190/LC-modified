@@ -1,0 +1,45 @@
+{# Reference: https://launchcart.jp/reference/8-%e6%b1%ba%e6%b8%88-%e3%82%ab%e3%83%bc%e3%83%89%e6%83%85%e5%a0%b1%e5%85%a5%e5%8a%9b/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = #credit_card_info_label# -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- set breadcrumbListItems = [
+    {
+      name: #mypage_label# ,
+      href: path('ec_client_consumer')
+    },
+    {
+      name: #credit_card_info_label# ,
+      href: app.request.uri
+    }
+  ]
+-%}
+{%- set breadcrumbList = breadcrumbList|merge(breadcrumbListItems) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #credit_card_info_label# }}</h1>
+
+  <div class="lc-contentsInner lc-contentsInner--form">
+    <p class="lc-contentSection__note lc-contentSection__note--center">{{ #message_complete_update_card_info# }}</p>
+    <p class="lc-contentsInner__buttons"><a class="lc-button--cancel" href="/"><i class="lc-button__icon lc-icon--arrowLeft"></i><span class="lc-button__label">{{ #back_to_top# }}</span></a></p>
+  </div>
+
+  {# mypage navi #}
+  {% TemplateInclude "mypage navi" %}
+
+</section>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

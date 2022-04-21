@@ -1,0 +1,40 @@
+<!DOCTYPE HTML>
+<html class="is-archiveFigureCovered" lang="{{ language }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- page information -->
+{% if title == 'top' %}
+  <title>{{ #siteName# }} - {{ #siteDescription# }}</title>
+{% else %}
+  <title>{{ title | striptags }} | {{ #siteName# }}</title>
+{% endif %}
+<meta name="description" content="{{ #siteDescription# }}">
+<link rel="apple-touch-icon" href="http://example.com/apple-touch-icon.png">
+<link rel="shortcut icon" href="http://example.com/favicon.ico" type="image/vnd.microsoft.icon">
+<link rel="icon" href="http://example.com/favicon.ico" type="image/vnd.microsoft.icon">
+<link rel="canonical" href="{{ app.request.uri }}">
+
+
+<!-- OGP -->
+<meta property="og:type" content="website">
+{% if title == 'top' %}
+  <meta property="og:title" content="{{ #siteName# }} - {{ #siteDescription# }}">
+{% else %}
+  <meta property="og:title" content="{{ title | striptags }} | {{ #siteName# }}">
+{% endif %}
+<meta property="og:url" content="http://example.com/">
+<meta property="og:description" content="{{ #siteDescription# }}">
+<meta property="og:image" content="http://example.com/images/og-image.png">
+<meta property="og:site_name" content="{{ #siteName# }}">
+<meta property="fb:app_id" content="***">
+
+<!-- CSS -->
+<link rel="stylesheet" href="{{ asset("assets/css/style.css") }}">
+
+<!-- JavaScript -->
+<script src="{{ asset("assets/js/lib.js") }}"></script>
+<script src="{{ asset("assets/js/common.js") }}"></script>
+
+</head>

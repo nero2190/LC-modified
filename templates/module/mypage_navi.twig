@@ -1,0 +1,17 @@
+<nav class="lc-mypageNavi">
+  <h2 class="lc-mypageNavi__title">{{ #mypage_navi_label# }}</h2>
+  <ul class="lc-mypageNavi__list">
+    <li class="lc-mypageNavi__item"><a href="{{ path('ec_client_consumer_history') }}"><span class="lc-button__label">{{ #purchase_history_label# }}</span><i class="lc-button__icon lc-icon--arrowRight"></i></a></li>
+    <li class="lc-mypageNavi__item"><a href="{{ path('ec_client_consumer_point_history') }}"><span class="lc-button__label">{{ #points_history_label# }}</span><i class="lc-button__icon lc-icon--arrowRight"></i></a></li>
+    <li class="lc-mypageNavi__item"><a href="{{ path('ec_client_consumer_favorite_list') }}"><span class="lc-button__label">{{ #favorite_label# }}</span><i class="lc-button__icon lc-icon--arrowRight"></i></a></li>
+    <li class="lc-mypageNavi__item"><a href="{{ path('ec_client_consumer_review_list') }}"><span class="lc-button__label">{{ #reviews_label# }}</span><i class="lc-button__icon lc-icon--arrowRight"></i></a></li>
+  </ul>
+  <h3 class="lc-mypageNavi__subTitle">{{ #account_info_label# }}</h3>
+  <ul class="lc-mypageNavi__list">
+    <li class="lc-mypageNavi__item"><a href="{{ path('ec_client_consumer_edit') }}"><span class="lc-button__label">{{ #account_edit_label# }}</span><i class="lc-button__icon lc-icon--arrowRight"></i></a></li>
+    <li class="lc-mypageNavi__item"><a href="{{ path('ec_client_consumer_address_list') }}"><span class="lc-button__label">{{ #shipping_information_label# }}</span><i class="lc-button__icon lc-icon--arrowRight"></i></a></li>
+    <li class="lc-mypageNavi__item"><a href="{{ path('ec_client_consumer_card_add') }}"><span class="lc-button__label">{{ #credit_card_info_label# }}</span><i class="lc-button__icon lc-icon--arrowRight"></i></a></li>
+    <li class="lc-mypageNavi__item"><a href="{{ path('application_frontend_auth_logout') }}"><span class="lc-button__label">{{ #logout_label# }}</span><i class="lc-button__icon lc-icon--arrowRight"></i></a></li>
+    <li class="lc-mypageNavi__item"><a href="{{ path('ec_client_consumer_withdraw') }}"><span class="lc-button__label">{{ #delete_account_label# }}</span><i class="lc-button__icon lc-icon--arrowRight"></i></a></li>
+  </ul>
+</nav>

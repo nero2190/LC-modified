@@ -1,0 +1,65 @@
+{# Reference: https://launchcart.jp/reference/22%e3%83%91%e3%82%b9%e3%83%af%e3%83%bc%e3%83%89%e8%a6%81%e6%b1%82/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = #forget_password_label# -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- set breadcrumbListItems = [
+    {
+      name: #forget_password_label# ,
+      href: app.request.uri
+    }
+  ]
+-%}
+{%- set breadcrumbList = breadcrumbList|merge(breadcrumbListItems) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #forget_password_label# }}</h1>
+
+  <div class="lc-contentsInner lc-contentsInner--form">
+    <p class="lc-contentSection__note lc-contentSection__note--center">{{ #message_request_password# | raw }}</p>
+      <form name="form1" id="form1" method="post" action="">
+      {{ form_widget(_form._token) }}
+
+      {# errors #}
+      {%- if not _form.vars.valid -%}
+        <p class="lc-contentSection__note error">{{ form_errors(_form) }}</p>
+      {%- endif -%}
+
+      {# input form #}
+      <ul class="lc-form">
+        <li class="lc-form__item">
+          <label class="lc-form__label">
+            <h4 class="lc-form__title is-required">{{ 'label.consumer.email' | trans({}, 'clients') }}</h4>
+            <p class="lc-form__detail">
+              {{ form_widget(_form.username) }}
+            </p>
+          </label>
+          {% if not _form.username.vars.valid %}<p class="lc-form__note error is-error">{{ form_errors(_form.username) }}</p>{% endif %}
+        </li>
+      </ul>
+
+      {# submit #}
+      <p class="lc-contentsInner__buttons">
+        <button class="lc-button--submit" type="submit"><span class="lc-button__label">{{ #next_label# }}</span><i class="lc-button__icon lc-icon--arrowRight"></i></button>
+      </p>
+      
+    </form>
+  </div>
+
+</section>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

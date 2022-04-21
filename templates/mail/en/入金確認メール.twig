@@ -1,0 +1,62 @@
+{% set curRatio = cur_unit_ratio() %}
+{% set unitBack = unit_back() %}
+Dear {{ order_group.consumer.lastName }} {{ order_group.consumer.firstName }}
+
+Thank you for using our Online Store.
+We are contacting you to confirm your order.
+
+----------
+　Total Payment
+----------
+Order ID： {{ order_group.id }}
+Total Payment： ￥ {{ order_group.getPaymentTotal|number_format }}
+Payment Method： {{ order_group.payment.getName }}
+Message： {{ order_group.getRequest }}
+
+----------
+　Order Contents
+----------
+{% for order in order_group.orders %}
+◎Shipping Address{{ loop.index }}
+Delivery To： {{ order.getLastName}} {{ order.getFirstName}}
+Postal Code： 〒{{order.getZipcode}}
+Shipping Address： {{order.getAddress}}
+Phone Number： {{order.getTel}}
+Delivery Date： {% if order.deliveryDay %}{{ order.deliveryDay }}{% else %}No Preference{% endif %}
+Delivery Time： {% if order.deliveryTime %}{{ order.deliveryTime }}{% else %}No Preference{% endif %}
+{% for detail in order.details %}
+Product Code： {{ detail.getProductCode }}
+Product Name： {{ detail.getProductName }}{{ detail.getSkuDetailTitle1 }}
+Price per Product： ￥ {{ detail.getPrice|number_format }}
+Quantity： {{ detail.getQuantity|number_format }}
+{% if (detail.additions|length > 0) %}
+{% for addition in detail.additions %}
+{{ addition.additionTitle }}x{{ addition.quantity }}={{ addition.price }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+Shipping Fee： ￥ {{ order.getDeliveryFee }}
+{% endfor %}
+
+----------
+Subtotal ￥ {{ (order_group.getProductTotal+order_group.getAdditionTotal)|number_format }}
+Discount ￥ -{{ order_group.getUsePoint|number_format }}
+Shipping Fee ￥ {{ order_group.getDeliveryFee|number_format }}
+Handling Fee ￥ {{ order_group.getCharge|number_format }}
+Points Used ￥ -{{ order_group.getUsePoint|number_format }}
+Coupons Used ￥ -{{ order_group.getUseCoupon|number_format }}
+----------
+Payment Total ￥ {{ order_group.getPaymentTotal|number_format }}
+
+Points Used {{ order_group.getUsePoint|number_format }} pt
+Points Earned {{ order_group.getAddPoint|number_format }} pt
+Points Left {{ order_group.consumer.getPoint }} pt
+
+Thank you for using our service, and we hope you continue to use our service in the future.
+
+------------------------------------
+{{ system_config("application_name") }}
+〒{{ system_config("company_zipcode") }}
+{{ system_config("company_address") }}
+TEL: {{ system_config("company_tel") }}
+{{ url('homepage') }}

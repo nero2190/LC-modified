@@ -1,0 +1,88 @@
+{% set navCategories = #navCategories# | split(',') %}
+
+  </main>
+  <footer class="l-footer">
+    <p class="l-footer__pagetop"><a class="js-scroll" href="#top"><span class="l-footer__pagetop__icon"></span>Page Top</a></p>
+    {% if title == 'top' %}
+      <ul class="floatingNavi">
+        <li class="floatingNavi__item"><a class="floatingNavi__button floatingNavi__button--contact" href="/ec/product/category/14"><i class="floatingNavi__icon icon--mail"></i><span class="floatingNavi__label">T-Shirt</span></a></li>
+        <li class="floatingNavi__item"><a class="floatingNavi__button floatingNavi__button--price" href="{{ path('homepage') }}strength"><i class="floatingNavi__icon">¥</i><span class="floatingNavi__label">詳しく見る</span><span class="floatingNavi__balloon">このサイトの強み</span></a></li>
+      </ul>
+      <div class="l-footer__bannerBg only-pc"></div>
+      <div class="l-footer__banner only-pc">
+        <div class="l-footer__bannerWrapper"><a class="l-footer__bannerLink" href="{{ path('application_frontend_auth_regist') }}" target="_blank"><img src="https://launchcart.jp/admin/wp-content/themes/launchcart/ver2019/img/bn_download.jpg"/></a>
+          <p class="l-footer__cuponCode">XXXYZ012345</p>
+          <button class="l-footer__bannerButton" type="button"><span>{{ #popbanner_close# }}</span></button>
+        </div>
+      </div>
+    {% endif %}
+    <dl class="footerPaymentMethods">
+      <div class="footerPaymentMethods__item">
+        <dt class="footerPaymentMethods__label">{{ #avalable_chinese_payment# }}</dt>
+        <dd class="footerPaymentMethods__detail">
+          <p class="footerPaymentMethods__method"><img src="{{ asset('/assets/img/icon/pay_alipay.svg') }}" alt="Alipay"/></p>
+          <p class="footerPaymentMethods__method"><img src="{{ asset('/assets/img/icon/pay_unionpay.svg') }}" alt="UnionPay"/></p>
+          <p class="footerPaymentMethods__method"><img src="{{ asset('/assets/img/icon/pay_wechat.svg') }}" alt="WeChatPay"/></p>
+        </dd>
+      </div>
+      <div class="footerPaymentMethods__item">
+        <dt class="footerPaymentMethods__label">{{ #avalable_credit_cards# }}</dt>
+        <dd class="footerPaymentMethods__detail">
+          <p class="footerPaymentMethods__method"><img src="{{ asset('/assets/img/icon/pay_visa.svg') }}" alt="VISA"/></p>
+          <p class="footerPaymentMethods__method"><img src="{{ asset('/assets/img/icon/pay_master.svg') }}" alt="MasterCard"/></p>
+          <p class="footerPaymentMethods__method"><img src="{{ asset('/assets/img/icon/pay_jcb.svg') }}" alt="JCB"/></p>
+          <p class="footerPaymentMethods__method"><img src="{{ asset('/assets/img/icon/pay_amex.png') }}" alt="American Express"/></p>
+          <p class="footerPaymentMethods__method"><img src="{{ asset('/assets/img/icon/pay_diners.svg') }}" alt="Diners Club"/></p>
+        </dd>
+      </div>
+    </dl>
+    <div class="l-footer__inner">
+      <div class="l-footer__navi">
+        <ul class="footerNavi">
+          <li class="footerNavi__item"><a href="{{ path('homepage') }}">{{ #top_page# }}</a></li>
+          <li class="footerNavi__item"><a href="{{ path('homepage') }}law">{{ #merchants_exchange_act# }}</a></li>
+          <li class="footerNavi__item"><a href="{{ path('homepage') }}privacy">{{ #privacy_policy# }}</a></li>
+        </ul>
+        <dl class="footerNavi">
+          <div class="footerNavi__section">
+            <dt class="footerNavi__label">Account</dt>
+{%- if is_authorized() -%}
+            <dd class="footerNavi__item"><a href="{{ path('ec_client_consumer') }}">{{ #mypage# }}</a></dd>
+            <dd class="footerNavi__item"><a href="{{ path('application_frontend_auth_logout') }}">{{ #logout# }}</a></dd>
+{%- else -%}
+            <dd class="footerNavi__item"><a href="{{ path('application_frontend_auth_login') }}">{{ #login# }}</a></dd>
+            <dd class="footerNavi__item"><a href="{{ path('application_frontend_auth_regist') }}">{{ #create_account# }}</a></dd>
+{%- endif -%}
+          </div>
+{%- if navCategories -%}
+          <div class="footerNavi__section">
+            <dt class="footerNavi__label">Categories</dt>
+{%- for navCategory in navCategories -%}
+{%- set categoryNode = get_entity_manager().find("EcCoreBundle:ProductCategory", navCategory) -%}
+            <dd class="footerNavi__item"><a href="{{ path('ec_product_category', {'id': categoryNode.id}) }}">{% if categoryNode.getTransAttribute(lang_id) %}{{ categoryNode.getTransAttribute(lang_id) }}{% else %}{{ categoryNode.name }}{% endif %}</a></dd>
+{%- endfor -%}
+          </div>
+{%- endif -%}
+        </dl>
+      </div>
+      <div class="l-footer__contact">
+        <div class="l-footer__inquiry">
+          <p class="l-footer__address">
+            3-9-7 Takada, Toshima-ku, Tokyo 171-0033<br>
+            TEL: +81 3 5956 9292
+          </p>
+          <ul class="snsLinks">
+            <li class="snsLinks__item"><a href="" target="_blank"><i class="snsLinks__icon lc-icon--snsTwitter"></i><span class="snsLinks__label">twitter</span></a></li>
+            <li class="snsLinks__item"><a href="" target="_blank"><i class="snsLinks__icon lc-icon--snsFacebook"></i><span class="snsLinks__label">facebook</span></a></li>
+          </ul>
+        </div>
+        <p class="l-footer__logo"><a href="{{ path('homepage') }}"><img src="{{ asset('/assets/img/logo.svg') }}" alt="LC E-SHOP" width="90"/></a></p>
+      </div>
+    </div>
+    <p class="l-footer__copyright"><small>&copy; 2019 Sterfield Co., Ltd.</small></p>
+  </footer>
+
+  {% TemplateInclude "common scripts" %}
+
+</body>
+</html>

@@ -1,0 +1,190 @@
+{# Reference: https://launchcart.jp/reference/8%e3%83%9e%e3%82%a4%e3%83%9a%e3%83%bc%e3%82%b8-%e3%81%8a%e5%b1%8a%e3%81%91%e5%85%88%e7%99%bb%e9%8c%b2/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = #add_address_label# -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- set breadcrumbListItems = [
+    {
+      name: #mypage_label# ,
+      href: path('ec_client_consumer')
+    },
+    {
+      name: #add_address_label# ,
+      href: app.request.uri
+    }
+  ]
+-%}
+{%- set breadcrumbList = breadcrumbList|merge(breadcrumbListItems) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #add_address_label# }}</h1>
+  <div class="lc-contentsInner lc-contentsInner--form">
+    <p class="lc-contentSection__note lc-contentSection__note--center"><i class="is-required"></i>{{ #required_label# }}</p>
+    {%- if not form.vars.valid -%}
+      <p class="lc-contentSection__note error">{{ form_errors(form) }}</p>
+    {%- endif -%}
+    <form action="" method="POST" name="form1" id="form1" novalidate="novalidate">
+      {{ form_widget(form._token) }}
+      <ul class="lc-form">
+        <li class="lc-form__item">
+          <div class="lc-form__columns">
+            <div class="lc-form__column">
+              <label class="lc-form__label">
+                <h4 class="lc-form__title is-required">{{ 'label.consumer.last_name' | trans({}, 'clients') }}</h4>
+                <p class="lc-form__detail">
+                  {{ form_widget(form.last_name) }}
+                  {% if not form.last_name.vars.valid %}<span class="is-error error">{{ form_errors(form.last_name) }}</span>{% endif %}
+                </p>
+              </label>
+            </div>
+            <div class="lc-form__column">
+              <label class="lc-form__label">
+                <h4 class="lc-form__title is-required">{{ 'label.consumer.first_name' | trans({}, 'clients') }}</h4>
+                <p class="lc-form__detail">
+                  {{ form_widget(form.first_name) }}
+                  {% if not form.first_name.vars.valid %}<span class="is-error error">{{ form_errors(form.first_name) }}</span>{% endif %}
+                </p>
+              </label>
+            </div>
+          </div>
+        </li>
+        <li class="lc-form__item">
+          <label class="lc-form__label lc-form__label--select">
+            <h4 class="lc-form__title is-required">{{ 'label.consumer.country' | trans({}, 'clients') }}</h4>
+            <p class="lc-form__detail">
+              {{ form_widget(form.country) }}
+            </p>
+          </label>
+          {% if not form.country.vars.valid %}<p class="lc-form__note error is-error">{{ form_errors(form.country) }}</p>{% endif %}
+        </li>
+        <li class="lc-form__item">
+          <div class="lc-form__columns js-lc--telJp">
+            <div class="lc-form__column lc-form__column--natural">
+              <label class="lc-form__label">
+                <h4 class="lc-form__title is-required">{{ 'label.consumer.phone' | trans({}, 'clients') }}</h4>
+                <p class="lc-form__detail">
+                  {{ form_widget(form.tel1) }}
+                </p>
+              </label>
+            </div>
+            <div class="lc-form__column lc-form__column--natural">-</div>
+            <div class="lc-form__column lc-form__column--natural">
+              <label class="lc-form__label">
+                <p class="lc-form__detail">
+                  {{ form_widget(form.tel2) }}
+                </p>
+              </label>
+            </div>
+            <div class="lc-form__column lc-form__column--natural">-</div>
+            <div class="lc-form__column lc-form__column--natural">
+              <label class="lc-form__label">
+                <p class="lc-form__detail">
+                  {{ form_widget(form.tel3) }}
+                </p>
+              </label>
+            </div>
+          </div>
+          <label class="lc-form__label js-lc--tel">
+            <h4 class="lc-form__title is-required">{{ 'label.consumer.phone' | trans({}, 'clients') }}</h4>
+            <p class="lc-form__detail">
+              {{ form_widget(form.tel) }}
+            </p>
+          </label>
+          {%- if not (form.tel1.vars.valid and form.tel2.vars.valid and form.tel3.vars.valid and form.tel.vars.valid) -%}<p class="lc-form__note error is-error">{{ form_errors(form.tel1) }}{{ form_errors(form.tel2) }}{{ form_errors(form.tel3) }}{{ form_errors(form.tel) }}</p>
+          {%- endif -%}
+        </li>
+        <li class="lc-form__item">
+          <div class="lc-form__columns js-lc--zipcodeJp">
+            <div class="lc-form__column lc-form__column--natural">
+              <label class="lc-form__label">
+                <h4 class="lc-form__title is-required">{{ 'label.consumer.zipcode' | trans({}, 'clients') }}</h4>
+                <p class="lc-form__detail">
+                  {{ form_widget(form.zipcode1) }}
+                </p>
+              </label>
+            </div>
+            <div class="lc-form__column lc-form__column--natural">-</div>
+            <div class="lc-form__column lc-form__column--natural">
+              <label class="lc-form__label">
+                <p class="lc-form__detail">
+                  {{ form_widget(form.zipcode2) }}
+                </p>
+              </label>
+            </div>
+          </div>
+          <label class="lc-form__label lc-form__label--half js-lc--zipcode">
+            <h4 class="lc-form__title is-required">{{ 'label.consumer.zipcode' | trans({}, 'clients') }}</h4>
+            <p class="lc-form__detail">
+              {{ form_widget(form.zipcode) }}
+            </p>
+          </label>
+          {%- if not (form.zipcode1.vars.valid and form.zipcode2.vars.valid and form.zipcode.vars.valid) -%}<p class="lc-form__note error is-error">{{ form_errors(form.zipcode1) }}{{ form_errors(form.zipcode2) }}{{ form_errors(form.zipcode) }}</p>
+          {%- endif -%}
+        </li>
+        <li class="lc-form__item js-lc--district">
+          <label class="lc-form__label">
+            <h4 class="lc-form__title is-required">{{ 'label.consumer.district' | trans({}, 'clients') }}</h4>
+            <p class="lc-form__detail">
+              {{ form_widget(form.district) }}
+              {% if not form.district.vars.valid %}<span class="is-error error">{{ form_errors(form.district) }}</span>{% endif %}
+            </p>
+          </label>
+        </li>
+        <li class="lc-form__item">
+          <label class="lc-form__label js-lc--locality">
+            <h4 class="lc-form__title is-required">{{ 'label.consumer.locality' | trans({}, 'clients') }}</h4>
+            <p class="lc-form__detail">
+              {{ form_widget(form.locality, { attr: { class: 'js-lc-selectAddress__input' } }) }}
+              <input type="text" class="js-lc-selectAddressChina" name="locality_china" value="{{ app.request.get('locality_china') }}" readonly>
+            </p>
+          </label>
+          <label class="lc-form__label lc-form__label--select js-lc--cityTw">
+            <h4 class="lc-form__title is-required">{{ 'label.consumer.locality' | trans({}, 'clients') }}</h4>
+            <p class="lc-form__detail">
+              <select class="js-lc-selectAddressTaiwanCity" name="city_tw" data-value="{{ app.request.get('city_tw') }}"></select>
+            </p>
+          </label>
+          <label class="lc-form__label lc-form__label--select js-lc--areaTw">
+            <p class="lc-form__detail">
+              <select class="js-lc-selectAddressTaiwanArea" name="area_tw" data-value="{{ app.request.get('area_tw') }}"></select>
+            </p>
+          </label>
+          {% if not form.locality.vars.valid %}<p class="lc-form__note error is-error">{{ form_errors(form.locality) }}</p>{% endif %}
+        </li>
+        <li class="lc-form__item">
+          <label class="lc-form__label">
+            <h4 class="lc-form__title is-required">{{ 'label.consumer.street' | trans({}, 'clients') }}</h4>
+            <p class="lc-form__detail">
+              {{ form_widget(form.street) }}
+              {% if not form.street.vars.valid %}<span class="is-error error">{{ form_errors(form.street) }}</span>{% endif %}
+            </p>
+          </label>
+        </li>
+      </ul>
+      <p class="lc-contentsInner__buttons">
+        <button class="lc-button--submit" type="submit"><span class="lc-button__label">{{ #register_label# }}</span><i class="lc-button__icon lc-icon--arrowRight"></i></button>
+        <button class="lc-button--cancel" type="button" onclick="history.back();"><i class="lc-button__icon lc-icon--arrowLeft"></i><span class="lc-button__label">{{ #back_label# }}</span></button>
+      </p>
+      {% TemplateInclude "address scripts" %}
+    </form>
+  </div>
+
+  {# mypage navi #}
+  {% TemplateInclude "mypage navi" %}
+
+</section>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

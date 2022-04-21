@@ -1,0 +1,96 @@
+extends /_include/_layout.pug
+
+block title
+  title 定期订购记录 | LC E-SHOP
+block header
+  - var isAuthorized = true;
+  include /_include/_header.pug
+block content
+
+  -
+    var breadcrumbList = [
+      {
+        name: '首页',
+        href: '/'
+      },
+      {
+        name: '我的帳戶',
+        href: '/ec/consumer/history/'
+      },
+      {
+        name: '定期订购记录',
+        href: '/ec/consumer/regular_list/'
+      },
+      {
+        name: '详细信息',
+        href: '/ec/consumer/regular_detail/1/'
+      },
+      {
+        name: '编辑',
+        href: '/ec/consumer/regualr_address_edit/1/'
+      }
+    ]
+  include /_include/_breadcrumblist.pug
+
+
+  section.lc-contentSection
+    h1.lc-contentSection__title.lc-contentSection__title--center 定期订购记录 - 编辑
+
+    div.lc-contentsInner
+
+      form(action="/ec/consumer/regular_detail/1/", method="POST")
+        ul.lc-form
+          li.lc-form__item
+            label.lc-form__label.lc-form__label--select
+              h4.lc-form__title 商品个数
+              p.lc-form__detail
+                select
+                  option 选择数量
+                  option(selected) 1个
+                  - for (var i = 2; i <= 10; i++)
+                    option #{i}个
+          li.lc-form__item
+            label.lc-form__label.lc-form__label--select
+              h4.lc-form__title.is-required 送货时间间隔
+              p.lc-form__detail
+                select(data-size="130")
+                  option(selected) 1个月
+                  option 2个月
+                  option 4个月
+                  option 1週
+                  option 1天
+                  option 1年
+                  option 2週
+                  option 2天
+                  option 2年
+          li.lc-form__item
+            label.lc-form__label.lc-form__label--select
+              h4.lc-form__title.is-required 送货时间间隔
+              p.lc-form__detail
+                select
+                  option 选择下次发货月份
+                  option 2019-09
+                  option(selected) 2019-10
+                  option 2019-11
+                  option 2019-12
+                  option 2020-01
+                  option 2020-02
+                  option 2020-03
+          li.lc-form__item
+            label.lc-form__label.lc-form__label--select
+              h4.lc-form__title.is-required 下次预定到达的日期
+              p.lc-form__detail
+                select
+                  option 选择预计到货日
+                  option(selected) 1
+                  - for (var i = 2; i <= 31; i++)
+                    option #{i}
+
+        p.lc-contentsInner__buttons
+          button(type="submit").lc-button--submit
+            span.lc-button__label 登入
+          a(href="/ec/consumer/regular_detail/1/").lc-button--cancel
+            i.lc-button__icon.lc-icon--arrowLeft
+            span.lc-button__label 返回
+
+    include /_include/_mypage-navi.pug

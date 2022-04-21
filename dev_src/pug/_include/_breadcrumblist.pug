@@ -1,0 +1,21 @@
+.l-breadcrumbList
+  ol.l-breadcrumbList__list(
+    itemscope=""
+    itemtype="https://schema.org/BreadcrumbList"
+  )
+    each item, index in breadcrumbList
+      li.l-breadcrumbList__item(
+        itemprop="itemListElement"
+        itemscope=""
+        itemtype="https://schema.org/ListItem"
+      )
+        a(
+          itemtype="https://schema.org/Thing"
+          itemprop="item"
+          href=item.href
+        )
+          span(itemprop="name") #{ item.name }
+          meta(
+            itemprop="position"
+            content=index+1
+          )

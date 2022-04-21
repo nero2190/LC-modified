@@ -1,0 +1,121 @@
+{# Reference: https://launchcart.jp/reference/15%e3%83%9e%e3%82%a4%e3%83%9a%e3%83%bc%e3%82%b8-%e3%83%ac%e3%83%93%e3%83%a5%e3%83%bc%e4%b8%80%e8%a6%a7/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = #reviews_label# -%}
+
+{# get base currency unit #}
+{%- set baseCurrency = get_entity_manager().find('EcCoreBundle:Currency', system_config('base_currency')) -%}
+{%- set baseUnitFront = baseCurrency.getBeforeUnit() -%}
+{%- set baseUnitBack = baseCurrency.getAfterUnit() -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- set breadcrumbListItems = [
+    {
+      name: #mypage_label# ,
+      href: path('ec_client_consumer')
+    },
+    {
+      name: #reviews_label# ,
+      href: app.request.uri
+    }
+  ]
+-%}
+{%- set breadcrumbList = breadcrumbList|merge(breadcrumbListItems) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #reviews_label# }}</h1>
+
+  <div class="lc-contentsInner">
+
+    {# number of reviews #}
+    <p class="lc-pagingNavi lc-align--left">{{ #pagingnavi_prev# }} <em>{{ _pager.adapter.getTotalResults|number_format }}</em> {{ #pagingnavi_next# }}<br><br></p>
+
+    {# list #}
+    <ul class="lc-reviewsArchive__list">
+      {%- for result in _pager.getResults -%}
+        {%- set product = result.product -%}
+        {%- set productName = product.attribute('product name', language) ? product.attribute('product name', language) : product.name -%}
+        <li class="lc-productInfo">
+
+          {# product image #}
+          <figure class="lc-productInfo__figure">
+            <a class="lc-productInfo__figure__inner" href="{{ path('ec_product_detail', {'id': product.id}) }}">
+              <img src="{% if product.attribute('image1') %}{{ ('/uploads/media/'~get_entity_manager().find('MediaCoreBundle:Media', product.attribute('image1')).path) }}{% else %}{{ asset('assets/img/no-image.png') }}{% endif %}" alt="{{ productName|striptags }}"/>
+            </a>
+          </figure>
+
+          <div class="lc-productInfo__text">
+
+            {# product name #}
+            <h2 class="lc-productInfo__name">
+              <a href="{{ path('ec_product_detail', {'id': product.id}) }}">{{ productName }}</a>
+            </h2>
+
+            {# review #}
+            <div class="lc-productInfo__detail">
+              <div class="lc-productInfo__review">
+                <div class="lc-reviewsArchive__reviewHeader">
+                  <p class="lc-reviewStars" data-grade="{{ result.grade }}"><span></span><span></span><span></span><span></span><span></span>
+                  </p>
+                  <p class="lc-reviewsArchive__reviewTitle">{{ result.title }}</p>
+                </div>
+              </div>
+              <p class="lc-reviewsArchive__nickname">{{ result.nickname }}</p>
+            </div>
+
+            {# edit / delete #}
+            <p class="lc-productInfo__controls">
+              {# edit #}
+              <a class="lc-button--edit" href="{{ path('ec_client_consumer_review_edit', {'id': result.id}) }}"><span class="lc-button__label">{{ #edit_label# }}</span></a>
+              {# delete #}
+              <a class="lc-button--delete js-lc--delete" href="{{ path('ec_client_consumer_review_delete', {'id': result.id}) }}"><span class="lc-button__label">{{ #delete_label# }}</span></a>
+            </p>
+
+          </div>
+        </li>
+      {%- endfor -%}
+    </ul>
+
+    {# pager #}
+    <div class="lc-archiveGuide">
+      {% RenderPager %}
+    </div>
+    
+    {# back #}
+    <p class="lc-contentsInner__buttons">
+      <button class="lc-button--cancel" type="button" onclick="history.back();"><i class="lc-button__icon lc-icon--arrowLeft"></i><span class="lc-button__label">{{ #back_label# }}</span></button>
+    </p>
+
+  </div>
+
+  {# mypage navi #}
+  {% TemplateInclude "mypage navi" %}
+
+</section>
+
+<script>
+$(function () {
+  // confirm delete
+  $('.js-lc--delete').on('click', function () {
+    var href = $(this).attr('href');
+    openModalConfirm('', function () {
+      location.href = href;
+    });
+    return false;
+  });
+});
+</script>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

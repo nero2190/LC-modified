@@ -1,0 +1,89 @@
+{# Reference: https://launchcart.jp/reference/4%e5%95%86%e5%93%81%e3%83%ac%e3%83%93%e3%83%a5%e3%83%bc/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set productName = product.attribute('product name', language) ? product.attribute('product name', language) : product.name -%}
+{%- set title = #review_title# ~ ' | ' ~ productName -%}
+
+{# get base currency unit #}
+{%- set baseCurrency = get_entity_manager().find('EcCoreBundle:Currency', system_config('base_currency')) -%}
+{%- set baseUnitFront = baseCurrency.getBeforeUnit() -%}
+{%- set baseUnitBack = baseCurrency.getAfterUnit() -%}
+
+{# set primary category #}
+{%- set excludedCategories = #excluded_categories# |split(',') -%}
+{%- set primaryCategory = false -%}
+{%- for category in product.categories|reverse -%}
+  {%- if not primaryCategory -%}
+  {%- set isExcludeCategory = false -%}
+    {%- if category.name not in excludedCategories -%}
+      {%- set wrapedCategory = product_api.wrapProductCategory(category) -%}
+      {%- if (wrapedCategory.getAncestors|length > 0) -%}
+        {%- for categoryAncestor in wrapedCategory.getAncestors -%}
+          {%- if categoryAncestor.node.name in excludedCategories -%}
+              {%- set isExcludeCategory = true -%}
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+      {%- if not isExcludeCategory -%}
+        {% set primaryCategory = category %}
+      {%- endif -%}
+    {%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- set hierarchyPrimaryCategory = [primaryCategory] -%}
+{%- set wrapedPrimaryCategory = product_api.wrapProductCategory(primaryCategory) -%}
+{%- if (wrapedPrimaryCategory.getAncestors|length > 0) -%}
+  {%- for primaryCategoryAncestor in wrapedPrimaryCategory.getAncestors -%}
+    {%- set hierarchyPrimaryCategory = hierarchyPrimaryCategory|merge([primaryCategoryAncestor.node]) -%}
+  {%- endfor -%}
+{%- endif -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- for category in hierarchyPrimaryCategory|reverse -%}
+  {%- set breadcrumbListItem = {
+      name: category.getTransAttribute(lang_id) ? category.getTransAttribute(lang_id) : category.name,
+      href: path('ec_product_category', {'id': category.id})
+  } -%}
+  {%- set breadcrumbList = breadcrumbList|merge([breadcrumbListItem]) -%}
+{%- endfor -%}
+{%- set breadcrumbListItem = {
+    name: productName,
+    href: path('ec_product_detail', {'id': product.id})
+  }
+-%}
+{%- set breadcrumbList = breadcrumbList|merge([breadcrumbListItem]) -%}
+{%- set breadcrumbListItem = {
+    name: #review_title# ,
+    href: path('ec_client_product_review_list', {'id': product.id})
+  }
+-%}
+{%- set breadcrumbList = breadcrumbList|merge([breadcrumbListItem]) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #review_title# }}</h1>
+
+  {% set reviews = _pager.getResults %}
+  {% set isReviewArchive = true %}
+  {% TemplateInclude "product reviews" %}
+
+  <div class="lc-archiveGuide">
+    <p class="lc-pagingNavi">{{ #pagingnavi_prev# }}<em>{{ _pager.adapter.getTotalResults }}</em>{{ #pagingnavi_middle# }}<em>{{ (_pager.page - 1) * _pager.limit + 1 }} - {% if (_pager.page * _pager.limit > _pager.adapter.getTotalResults) %}{{ _pager.adapter.getTotalResults }}{% else %}{{ _pager.page * _pager.limit }}{% endif %}</em>{{ #pagingnavi_next# }}</p>
+    {% RenderPager %}
+  </div>
+
+</section>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

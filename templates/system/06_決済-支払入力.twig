@@ -1,0 +1,188 @@
+{# Reference: https://launchcart.jp/reference/6-%e6%b1%ba%e6%b8%88-%e6%94%af%e6%89%95%e5%85%a5%e5%8a%9b/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = #payment_method_label# -%}
+
+{# convenience store payment #}
+{% set convenienceSettlement = false %}
+{% set convenienceStores = ['lawson', 'family_mart', 'sunkus', 'circle_k', 'mini', 'daily', 'seven_ele', 'seico', 'three_f'] %}
+
+{# get base currency unit #}
+{%- set baseCurrency = get_entity_manager().find('EcCoreBundle:Currency', system_config('base_currency')) -%}
+{%- set baseUnitFront = baseCurrency.getBeforeUnit() -%}
+{%- set baseUnitBack = baseCurrency.getAfterUnit() -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- set breadcrumbListItem = {
+    name: #payment_method_label# ,
+    href: app.request.uri
+  }
+-%}
+{%- set breadcrumbList = breadcrumbList|merge([breadcrumbListItem]) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #payment_method_label# }}</h1>
+  
+  {# step list #}
+  {%- set step = 4 -%}
+  {% TemplateInclude "step list" %}
+
+  <div class="lc-contentsInner lc-contentsInner--form">
+    <form name="form1" id="form1" method="post" action="">
+
+      {# total price without delivery fee #}
+      <dl>
+        <dt class="lc-heading--3">{{ #product_total_price_label# }} <small>({{ #without_delivery_fee# }})</small></dt>
+        <dd class="lc-contentSection__note">
+          <strong>
+            {{ #unitFront# }}{{ (total_without_delivery_fee * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}
+            {%- if curRatio != 1 -%}
+              <small class="productArchive__price__sub">({{ baseUnitFront }}{{ total_without_delivery_fee|price_format(decimalPoint) }}{{ baseUnitBack }})</small>
+            {%- endif -%}
+          </strong>
+        </dd>
+      </dl>
+    
+      {# delivery fee #}
+      <dl>
+        <dt class="lc-heading--3">{{ #delivery_fee_label# }}</dt>
+        <dd class="lc-contentSection__note">
+          <strong>
+            {{ #unitFront# }}{{ (delivery_fee_total * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}
+            {%- if curRatio != 1 -%}
+              <small class="productArchive__price__sub">({{ baseUnitFront }}{{ delivery_fee_total|price_format(decimalPoint) }}{{ baseUnitBack }})</small>
+            {%- endif -%}
+          </strong>
+        </dd>
+      </dl>
+      <ul class="lc-form">
+    
+        {# payment method #}
+        <li class="lc-form__item">
+          <label class="lc-form__label lc-form__label--select">
+            <h4 class="lc-form__title is-required">{{ #payment_method_label# }}</h4>
+            <p class="lc-form__detail">
+              <select id="payment" name="payment">
+                <option value="">{{ 'selection.common.empty_value' | trans({}, 'clients') }}</option>
+                {%- for payment in payments -%}
+                  {%- if payment.name in convenienceStores -%}
+                    {%- set convenienceSettlement = true -%}
+                  {%- else -%}
+                    <option value="{{ payment.id }}" {% if (paymentId == payment.id ) %}selected{% endif %}>{% if payment.getTransAttribute(lang_id) %}{{ payment.getTransAttribute(lang_id) }}{% else %}{{ payment.name }}{% endif %}</option>
+                  {%- endif -%}
+                {%- endfor -%}
+                {%- if convenienceSettlement -%}
+                  <option value="convenience_settlement" {% if convenienceSettlementFlg %}selected{% endif %}>コンビニ決済</option>
+                {%- endif -%}
+              </select>
+            </p>
+          </label>
+          {%- set avalableConvenienceStores = [] -%}
+          {%- for payment in payments -%}
+            {%- if payment.name in convenienceStores -%}
+              {%- set avalableConvenienceStores = avalableConvenienceStores|merge([payment]) -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {%- if (avalableConvenienceStores|length > 0) -%}
+            &nbsp;<label class="lc-form__label lc-form__label--select js-lc--convenience">
+              <p class="lc-form__detail">
+                <select id="payment_convenience" name="payment_convenience" class="common-form__select">>
+                  {%- for payment in payments -%}
+                    {%- if payment.name in convenienceStores -%}
+                      <option value="{{ payment.id }}" {% if (paymentId == payment.id ) %}selected{% endif %}>{% if payment.getTransAttribute(lang_id) %}{{ payment.getTransAttribute(lang_id) }}{% else %}{{ payment.name }}{% endif %}</option>
+                    {%- endif -%}
+                  {%- endfor -%}
+                </select>
+              </p>
+            </label>
+          {%- endif -%}
+          {%- if errors['payment'] is defined -%}
+            <p class="lc-form__note error is-error">{{ errors['payment'] }}</p>
+          {%- endif -%}
+        </li>
+    
+        {# use points #}
+        <li class="lc-form__item">
+          <label class="lc-form__label lc-form__label--half">
+            <h4 class="lc-form__title">{{ #input_points_label# }}</h4>
+            <p class="lc-form__detail">
+              <input type="text" id="use_point" name="use_point" value="{{ usePoint }}" size="4">
+            </p>
+            <p class="lc-align--right"><small>/ {{ #remaining_points_label# }}: {{ app.security.token.user.point|number_format }} {{ #point_unit# }}</small></p>
+          </label>
+          {%- if errors['use_point'] is defined -%}
+            <p class="lc-form__note error is-error">{{ errors['use_point'] }}</p>
+          {%- endif -%}
+        </li>
+    
+        {# use coupon #}
+        <li class="lc-form__item">
+          <label class="lc-form__label lc-form__label--half">
+            <h4 class="lc-form__title">{{ #input_coupon_label# }}</h4>
+            <p class="lc-form__detail">
+              <input type="text" id="use_coupon" name="use_coupon" value="{{ useCouponCode }}">
+            </p>
+          </label>
+          {%- if errors['use_coupon'] is defined -%}
+            <p class="lc-form__note error is-error">{{ errors['use_coupon'] }}</p>
+          {%- endif -%}
+        </li>
+
+        {# message #}
+        <li class="lc-form__item">
+          <label class="lc-form__label">
+            <h4 class="lc-form__title">{{ #inquiry_label# }}</h4>
+            <p class="lc-form__detail">
+              <textarea class="message" name="message">{{ message }}</textarea>
+            </p>
+          </label>
+        </li>
+
+        {# If you want to set other options with the order, you can set forms here.
+         # Name attributes of the forms are option1 - option10.
+         # example) <input type="text" name="option1" value="{{ option1 }}">
+         #}
+      </ul>
+      <p class="lc-contentsInner__buttons">
+        {# to next step #}
+        <button type="submit" class="lc-button--submit"><span class="lc-button__label">{{ #proceed_label# }}</span><i class="lc-button__icon lc-icon--arrow2Right"></i></button>
+        {# back #}
+        <a href="{{ path('ec_client_cart_addition') }}" class="lc-button--cancel"><i class="lc-button__icon lc-icon--arrowLeft"></i><span class="lc-button__label">{{ #back_label# }}</span></button>
+      </p>
+    </form>
+  </div>
+</section>
+
+<script>
+$(function () {
+
+  // change display of select box for convenience store payment
+  setConvenienceSettlement();
+
+  $('#payment').on('change', function () {
+    setConvenienceSettlement();
+  });
+
+  function setConvenienceSettlement () {
+    if ($('#payment').val() == 'convenience_settlement') {
+      $('.js-lc--convenience').show();
+    } else {
+      $('.js-lc--convenience').hide();
+    }
+  }
+});
+</script>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

@@ -1,0 +1,89 @@
+{# Reference: https://launchcart.jp/reference/13%e3%83%9e%e3%82%a4%e3%83%9a%e3%83%bc%e3%82%b8-%e3%83%9d%e3%82%a4%e3%83%b3%e3%83%88%e5%b1%a5%e6%ad%b4/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = #points_history_label# -%}
+
+{# get base currency unit #}
+{%- set baseCurrency = get_entity_manager().find('EcCoreBundle:Currency', system_config('base_currency')) -%}
+{%- set baseUnitFront = baseCurrency.getBeforeUnit() -%}
+{%- set baseUnitBack = baseCurrency.getAfterUnit() -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- set breadcrumbListItems = [
+    {
+      name: #mypage_label# ,
+      href: path('ec_client_consumer')
+    },
+    {
+      name: #points_history_label# ,
+      href: app.request.uri
+    }
+  ]
+-%}
+{%- set breadcrumbList = breadcrumbList|merge(breadcrumbListItems) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #points_history_label# }}</h1>
+
+  <div class="lc-contentsInner">
+
+    {# points total #}
+    <p class="lc-contentSection__note lc-contentSection__note--large">{{ #points_available_label# }}: <strong>{{ app.security.token.user.point|number_format }}</strong></p>
+
+    {# number of the history items #}
+    <p class="lc-pagingNavi lc-align--left"><em>{{ _pager.adapter.getTotalResults|number_format }}</em> {{ #pager_unit_label# }}<br><br></p>
+
+    {# list #}
+    {%- if (_pager.getResults|length > 0) -%}
+      <table class="lc-table lc-table--points">
+        <thead>
+          <tr>
+            <th>{{ #points_issued_date_label# }}</th>
+            <th>{{ #points_label# }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {%- for result in _pager.getResults -%}
+            <tr>
+              <th>
+                {%- if result.order -%}
+                  {{ result.order.getCreatedAt|date('Y.m.d') }}
+                {%- else -%}
+                  {{ result.note }}
+                {%- endif -%}
+              </th>
+              <td><em>{% if result.getAddPoint %}+ {{ result.getAddPoint|number_format }}{% if result.getUsePoint %} / {% endif %}{% endif %}{% if result.getUsePoint %}- {{ result.getUsePoint|number_format }}{% endif %}{% if result.getIsTemporary %}({{ #provisional_label# }}){% endif %}</em></td>
+            </tr>
+          {%- endfor -%}
+        </tbody>
+      </table>
+    {%- endif -%}
+
+    {# pager #}
+    <div class="lc-archiveGuide">
+      {% RenderPager %}
+    </div>
+
+    {# back #}
+    <p class="lc-contentsInner__buttons"><a class="lc-button--cancel" href="{{ path('ec_client_consumer') }}"><i class="lc-button__icon lc-icon--arrowLeft"></i><span class="lc-button__label">{{ #back_label# }}</span></a></p>
+
+  </div>
+
+  {# mypage navi #}
+  {% TemplateInclude "mypage navi" %}
+
+</section>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

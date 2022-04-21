@@ -1,0 +1,14 @@
+Dear {{ order_group.consumer.lastName }} {{ order_group.consumer.firstName }}
+
+Thank you for your order.
+Your order has been cancelled.
+Order ID: {{ order_group.id }}
+
+Looking forward to your next visit.
+
+------------------------------------
+{{ system_config("application_name") }}
+〒{{ system_config("company_zipcode") }}
+{{ system_config("company_address") }}
+TEL: {{ system_config("company_tel") }}
+{{ url('homepage') }}

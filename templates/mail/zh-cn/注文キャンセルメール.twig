@@ -1,0 +1,14 @@
+{{ order_group.consumer.lastName }} {{ order_group.consumer.firstName }} 先生/女士
+
+感谢您的订单。
+您的订单已取消。
+订单ID：{{ order_group.id }}
+
+期待您的下次光顾。
+
+------------------------------------
+{{ system_config("application_name") }}
+〒{{ system_config("company_zipcode") }}
+{{ system_config("company_address") }}
+TEL: {{ system_config("company_tel") }}
+{{ url('homepage') }}

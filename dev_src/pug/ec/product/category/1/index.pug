@@ -1,0 +1,60 @@
+extends /_include/_layout.pug
+
+block title
+  title 推荐商品 | LC E-SHOP
+block content
+
+  -
+    var breadcrumbList = [
+      {
+        name: '首页',
+        href: '/'
+      },
+      {
+        name: '推荐商品',
+        href: '/ec/product/category/1/'
+      }
+    ]
+  include /_include/_breadcrumblist.pug
+
+  section.lc-contentSection
+    h1.lc-contentSection__title 推荐商品
+    .archiveController
+      p.lc-pagingNavi <em>64</em> 商品中 的 <em>1 - 20</em>件
+      dl.archiveController__list
+        .archiveController__item
+          dt.archiveController__label 顯示號碼
+          dd.archiveController__form
+            .lc-selectBox
+              select.lc-selectBox__select
+                option(value="1") 20
+        .archiveController__item
+          dt.archiveController__label 排序順序
+          dd.archiveController__form
+            .lc-selectBox
+              select.lc-selectBox__select
+                option(value="1") 價格從低到高
+    ul.productArchive
+      - for (var i = 1; i <= 20; i++)
+        li.productArchive__item
+          a(href="/product/1/")
+            figure.productArchive__figure
+              img(src=`/assets/img/img_product_0${ i % 8 + 1 }.jpg`, alt="product title")
+            h3.productArchive__name 小熊夏季新款女装可爱卡通短袖t恤宽松韩版半袖
+            p.productArchive__price
+              span.productArchive__price__main 159.00CNY
+              small.productArchive__price__sub (2,393JPY)
+    .lc-archiveGuide
+      p.lc-pagingNavi <em>64</em> 商品中 的 <em>1 - 20</em>件
+      .pagination_nav
+        a(href="/ec/product/category/1/")
+          span.lc-icon-laquo.ir &laquo;
+        strong.current 1
+        a(href="/ec/product/category/1/") 2
+        a(href="/ec/product/category/1/") 3
+        a(href="/ec/product/category/1/") 4
+        a(href="/ec/product/category/1/") 5
+        a(href="/ec/product/category/1/")
+          span.lc-icon-gt.ir &gt;
+        a(href="/ec/product/category/1/")
+          span.lc-icon-raquo.ir &raquo;

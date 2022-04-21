@@ -1,0 +1,372 @@
+{# Reference: https://launchcart.jp/reference/1%e5%95%86%e5%93%81/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set productName = product.attribute('product name', language) ? product.attribute('product name', language) : product.name -%}
+{%- set title = productName -%}
+
+{# get base currency unit #}
+{%- set baseCurrency = get_entity_manager().find('EcCoreBundle:Currency', system_config('base_currency')) -%}
+{%- set baseUnitFront = baseCurrency.getBeforeUnit() -%}
+{%- set baseUnitBack = baseCurrency.getAfterUnit() -%}
+
+{# flag of subscription #}
+{%- set isRegular = product.productType == 'regular' ? true : false -%}
+
+{# set primary category #}
+{%- set excludedCategories = #excluded_categories# |split(',') -%}
+{%- set primaryCategory = false -%}
+{%- for category in product.categories|reverse -%}
+  {%- if not primaryCategory -%}
+  {%- set isExcludeCategory = false -%}
+    {%- if category.name not in excludedCategories -%}
+      {%- set wrapedCategory = product_api.wrapProductCategory(category) -%}
+      {%- if (wrapedCategory.getAncestors|length > 0) -%}
+        {%- for categoryAncestor in wrapedCategory.getAncestors -%}
+          {%- if categoryAncestor.node.name in excludedCategories -%}
+              {%- set isExcludeCategory = true -%}
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+      {%- if not isExcludeCategory -%}
+        {% set primaryCategory = category %}
+      {%- endif -%}
+    {%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- set hierarchyPrimaryCategory = [primaryCategory] -%}
+{%- set wrapedPrimaryCategory = product_api.wrapProductCategory(primaryCategory) -%}
+{%- if (wrapedPrimaryCategory.getAncestors|length > 0) -%}
+  {%- for primaryCategoryAncestor in wrapedPrimaryCategory.getAncestors|reverse -%}
+    {%- set hierarchyPrimaryCategory = hierarchyPrimaryCategory|merge([primaryCategoryAncestor.node]) -%}
+  {%- endfor -%}
+{%- endif -%}
+
+{# organize product sku information #}
+{%- set isInStock = false -%}
+{%- set productskus = product.productSku -%}
+{%- set defaultSkuNum = 0 -%}
+{%- set isExistSku1 = productskus.first.getSkuDetail1 ? true : false -%}
+{%- set isExistSku2 = productskus.first.getSkuDetail2 ? true : false -%}
+{%- set sku1Details = [] -%}
+{%- set sku2Details = [] -%}
+{%- for productsku in productskus -%}
+  {%- if not (productsku.stockUnlimited or (productsku.stock > 0)) -%}
+    {%- if loop.index0 == defaultSkuNum -%}
+      {%- set defaultSkuNum = loop.index0 -%}
+    {%- endif -%}
+  {%- else -%}
+    {%- set isInStock = true -%}
+  {%- endif -%}
+  {%- if isExistSku1 or isExistSku2 -%}
+    {%- if not (productsku.getSkuDetail1 in sku1Details) -%}
+      {%- set sku1Details = sku1Details|merge([productsku.getSkuDetail1]) -%}
+    {%- endif -%}
+    {%- if not (productsku.getSkuDetail2 in sku2Details) -%}
+      {%- set sku2Details = sku2Details|merge([productsku.getSkuDetail2]) -%}
+    {%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- for category in hierarchyPrimaryCategory|reverse -%}
+  {%- set breadcrumbListItem = {
+      name: category.getTransAttribute(lang_id) ? category.getTransAttribute(lang_id) : category.name,
+      href: path('ec_product_category', {'id': category.id})
+  } -%}
+  {%- set breadcrumbList = breadcrumbList|merge([breadcrumbListItem]) -%}
+{%- endfor -%}
+{%- set breadcrumbListItem = {
+    name: productName,
+    href: path('ec_product_detail', {'id': product.id})
+  }
+-%}
+{%- set breadcrumbList = breadcrumbList|merge([breadcrumbListItem]) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<article class="l-article">
+
+  <div class="productMainSection">
+
+    <header class="productMainSection__header">
+      {# product name #}
+      <h1 class="productMainSection__title">{{ productName }}</h1>
+      {# product code #}
+      <p class="productMainSection__code">{{ product.code }}</p>
+    </header>
+
+    {# Product images #}
+    <figure class="productImages">
+      <ul class="productImages__main">
+        {%- for index in 1..8 -%}
+          {%- if product.attribute('image' ~ index) -%}
+            <li class="productImages__main__item">
+              <a class="productImages__main__inner" href="{{ ('/uploads/media/'~get_entity_manager().find('MediaCoreBundle:Media', product.attribute('image' ~ index)).path) }}" target="_blank">
+                <img src="{{ ('/uploads/media/'~get_entity_manager().find('MediaCoreBundle:Media', product.attribute('image' ~ index)).path) }}" alt="{{ productName|striptags }}">
+              </a>
+            </li>
+          {%- elseif index == 1 -%}
+            <li class="productImages__main__item">
+              <span class="productImages__main__inner">
+                <img src="{{ asset('assets/img/no-image.png') }}" alt="no image">
+              </span>
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+      {%- if product.attribute('image1') -%}
+        <div class="productImages__thumbnails">
+          <ul class="productImages__thumbnails__list">
+            {%- for index in 1..8 -%}
+              {%- if product.attribute('image' ~ index) -%}
+                <li class="productImages__thumbnails__item" data-index="{{ index - 1 }}">
+                  <img src="{{ ('/uploads/media/'~get_entity_manager().find('MediaCoreBundle:Media', product.attribute('image' ~ index)).path) }}" alt="product image thumbnail"/>
+                </li>
+              {%- endif -%}
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+    </figure>
+    {# end Product images #}
+
+    {%- if isInStock -%}
+
+      <p class="productMainSection__price">
+        <em>{{ unitFront }}<span class="js-lc--price">{{ (productskus[defaultSkuNum].price * curRatio)|price_format(decimalPoint) }}</span>{{ unitBack }}</em>
+        {%- if curRatio != 1 -%}
+          <small>(<span class="js-lc--basePrice">{{ baseUnitFront }}{{ productskus[defaultSkuNum].price|price_format(decimalPoint) }}</span>{{ baseUnitBack }})</small>
+        {%- endif -%}
+      </p>
+
+      <div class="cartInArea">
+
+        {# Select Product SKU #}
+        {% TemplateInclude "select productsku" %}
+
+        <form action="{{ path('ec_client_cart_add', {'product_id': product.id}) }}" method="post">
+          <input type="hidden" name="product_sku_id" value="{{ productskus[defaultSkuNum].id }}">
+
+          {# Quantity #}
+          <dl class="skuList">
+            <div class="skuList__item">
+              <dt class="skuList__label">{{ #quantity_label# }}</dt>
+              <dd class="skuList__detail">
+                <div class="lc-selectBox">
+                  <select class="lc-selectBox__select" name="quantity">
+                    {%- for i in 1..10 -%}
+                    <option value="{{ i }}">{{ i }}</option>
+                    {%- endfor -%}
+                  </select>
+                </div>
+              </dd>
+            </div>
+          </dl>
+
+          {%- if product.isRegular -%}
+            <dl class="skuList">
+              <div class="skuList__item">
+                <dt class="skuList__label">{{ #regular_interval_label# }}</dt>
+                <dd class="skuList__detail">
+                  <div class="lc-selectBox">
+                    <select class="lc-selectBox__select" name="regular_int">
+                      {%- for interval in product.getRegularIntervals -%}
+                        <option value="{{ interval.id }}">{{ interval.value }}{{ ('regular.units.regular_interval.each_' ~ interval.unit)|trans({}, 'clients') }}</option>
+                      {%- endfor -%}
+                    </select>
+                  </div>
+                </dd>
+              </div>
+            </dl>
+          {%- endif -%}
+
+          <p class="cartInArea__actions">
+            {# Cartin #}
+            <button class="lc-button--submit lc-button--action js-lc--cartin" type="submit"><span class="lc-button__label">{{ #cart_in# }}</span><i class="lc-button__icon lc-icon--cart"></i></button>
+            {# Add or Remove Favorite #}
+            {%- if is_authorized() -%}
+              <button class="lc-button--submit lc-button--onlyIcon js-lc--favorite" type="button" title="{{ #favorited_product# }}" data-add-href="{{ path('ec_client_consumer_favorite_add', {'product_id': product.id}) }}" data-delete-href="{{ path('ec_client_consumer_favorite_delete', {'productId': product.id}) }}" data-product-id="{{ product.id }}"><span class="lc-button__label">{{ #favorited_product# }}</span><i class="lc-button__icon lc-icon--heart"></i></button>
+            {%- endif -%}
+          </p>
+
+          {# Optional Products #}
+          {%- if (product.additions|length > 0) and (not isRegular) -%}
+            <dl class="additionsForm">
+              <dt class="additionsForm__title lc-icon--plus">OPTIONS</dt>
+              {%- for addition in product.additions -%}
+              <dd class="additionsForm__item">
+                <label class="additionsForm__label">
+                  <input class="additionsForm__input" type="checkbox" name="addition_quantity[{{ addition.id }}]" value="1"/>
+                  <div class="additionsForm__box">
+                    {# name of optional product #}
+                    <p class="additionsForm__name"><i class="additionsForm__checkbox"></i>{% if addition.getTitleTransAttribute(lang_id) %}{{ addition.getTitleTransAttribute(lang_id) }}{% else %}{{ addition.title }}{% endif %}</p>
+                    {# price of optional product #}
+                    <p class="additionsForm__price">
+                      <em>{{ unitFront }}{{ (addition.price * curRatio)|price_format(decimalPoint) }}{{ unitBack }}</em>
+                      {%- if curRatio != 1 -%}
+                        <small>({{ baseUnitFront }}{{ addition.price|price_format(decimalPoint) }}{{ baseUnitBack }})</small>
+                      {%- endif -%}
+                    </p>
+                    {# description of optional product #}
+                    {%- if addition.description or addition.getDescriptionTransAttribute(lang_id) -%}
+                      <p class="additionsForm__detail">{% autoescape false %}{% if addition.getDescriptionTransAttribute(lang_id) %}{{ addition.getDescriptionTransAttribute(lang_id) }}{% else %}{{ addition.description }}{% endif %}{% endautoescape %}</p>
+                    {%- endif -%}
+                  </div>
+                </label>
+              </dd>
+              {%- endfor -%}
+            </dl>
+          {%- endif -%}
+
+        </form>
+      </div><!-- /.cartInArea -->
+    {%- else -%}{# isInstock #}
+
+      <p class="productMainSection__price">{{ #no_stock# }}</p>
+
+      {# Add or Remove Favorite #}
+      {%- if is_authorized() -%}
+        <div class="cartInArea">
+          <p class="cartInArea__actions">
+            <button class="lc-button--submit js-lc--favorite" type="button" title="{{ #favorited_product# }}" data-add-href="{{ path('ec_client_consumer_favorite_add', {'product_id': product.id}) }}" data-delete-href="{{ path('ec_client_consumer_favorite_delete', {'productId': product.id}) }}" data-product-id="{{ product.id }}"><span class="lc-button__label">{{ #favorited_product# }}</span><i class="lc-button__icon lc-icon--heart"></i></button>
+          </p>
+        </div>
+      {%- endif -%}
+
+    {%- endif -%}{# isInstock #}
+  </div><!-- /.productMainSection -->
+
+  {# Product Descriptions #}
+  {%- if product.attribute('description', language) or product.attribute('detail', language) -%}
+    <section class="lc-contentsInner productDetail">
+      <h2>{{ #about_product# }}</h2>
+      {%- if product.attribute('description', language) -%}
+        <section>
+          <h3>{{ #description_label# }}</h3>
+          {{ product.attribute('description', language)|raw }}
+        </section>
+      {%- endif -%}
+      {%- if product.attribute('detail', language) -%}
+        <section>
+          <h3>{{ #detail_label# }}</h3>
+          {{ product.attribute('detail', language)|raw }}
+        </section>
+      {%- endif -%}
+    </section>
+  {%- endif -%}
+  {# end Product Descriptions #}
+
+  {# Product Reviews #}
+  {% TemplateInclude "product reviews" %}
+
+  {# Table of Product Shipping Fees #}
+  <section class="lc-contentsInner productDetail">
+    <h2>{{ #delivery_fee_label# }}</h2>
+    {%- set delivery_abroads = product.delivery.abroads -%}
+    {%- for delivery_abroad in delivery_abroads -%}
+      {%- if delivery_abroad.isValid and delivery_abroad.isEnabled -%}
+        <h3>{{ delivery_abroad.name }}</h3>
+        {%- set zones = delivery_abroad.zones -%}
+        {%- set weights = delivery_abroad.weights -%}
+        {%- set fees = delivery_abroad.feesArray -%}
+        {%- set weights_values = [] -%}
+        {%- set weights_sorted = [] -%}
+        {%- for weight in weights -%}
+          {%- set weights_values = weights_values|merge([weight.weight]) -%}
+        {%- endfor -%}
+        {%- for weights_value in weights_values|sort -%}
+          {%- for weight in weights -%}
+            {%- if weight.weight == weights_value -%}
+              {%- set weights_sorted = weights_sorted|merge([weight]) -%}
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endfor -%}
+        <div class="lc-tableWrapper"> 
+          <table class="is-align--center">
+            <thead>
+              <tr>
+                <th>{{ #weight_label# }}</th>
+                {%- for weight in weights_sorted -%}
+                  <th class="lc-align--right">{% if not loop.first %}{{ weights_sorted[loop.index0 - 1].weight }}g{% endif %} - {{ weight.weight }}g</th>
+                {%- endfor -%}
+              </tr>
+            </thead>
+            <tbody>
+              {%- for zone in zones -%}
+                <tr>
+                  <th>{{ zone.name }}</th>
+                  {%- for weight in weights_sorted -%}
+                    <td class="lc-align--right">{{ unitFront }}{{ (curRatio * fees[weight.id][zone.id])|price_format(decimalPoint) }}{{ unitBack }}</td>
+                  {%- endfor -%}
+                </tr>
+              {%- endfor -%}
+            </tbody>
+          </table>
+        </div>
+      {%- endif -%}
+    {%- endfor -%}
+  </section>
+  {# end Table of Product Shipping Fees #}
+
+  {# Related Products #}
+  {%- if product.attribute('related product ids') -%}
+    <aside class="lc-contentSection">
+      <h2 class="lc-contentSection__title">{{ #related_products_label# }}</h2>
+      <ul class="productArchive">
+        {%- set relations = product.attribute('related product ids') -%}
+        {%- set relationsIds = relations | php_explode(",") -%}
+        {%- set relationProducts = get_entity_manager().getRepository('EcCoreBundle:Product').createQueryBuilder('p').where('p.id in (:ids)').setParameter('ids', relationsIds).getQuery().getResult() -%}
+        {%- for relationProduct in relationProducts -%}
+          {%- set relationProductSkus = get_entity_manager().getRepository('EcCoreBundle:ProductSku').createQueryBuilder('ps').innerJoin('ps.product', 'p').where('p.id = :id').setParameter('id', relationProduct.id).getQuery().getResult() -%}
+          {%- set productAvailable = false -%}
+          {%- set isMultiplePrices = false -%}
+
+          {# confirm the stock and the min price in sku #}
+          {%- set minPrice = 0 -%}
+          {%- for productsku in relationProductSkus -%}
+            {%- if (productsku.getStockUnlimited or (productsku.getStock > 0)) -%}
+              {%- set productAvailable = true -%}
+              {%- if minPrice == 0 -%}
+                {%- set minPrice = productsku.price -%}
+              {%- else -%}
+                {%- if (productsku.price != minPrice) -%}
+                  {%- set isMultiplePrices = true -%}
+                  {%- if (productsku.price < minPrice) -%}
+                    {%- set minPrice = productsku.price -%}
+                  {%- endif -%}
+                {%- endif -%}
+              {%- endif -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {%- set relationProductName = relationProduct.attribute('product name', language) ? relationProduct.attribute('product name', language) : relationProduct.name -%}
+          <li class="productArchive__item">
+            <a href="{{ path('ec_product_detail', {'id': relationProduct.id}) }}">
+              <figure class="productArchive__figure"><img src="{% if relationProduct.attribute('image1') %}{{ ('/uploads/media/'~get_entity_manager().find('MediaCoreBundle:Media', relationProduct.attribute('image1')).path) }}{% else %}{{ asset('assets/img/no-image.png') }}{% endif %}" alt="{{ relationProductName|striptags }}"></figure>
+              <h3 class="productArchive__name">{{ relationProductName }}</h3>
+              <p class="productArchive__price">
+                <span class="productArchive__price__main">{{ #unitFront# }}{{ (minPrice * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}{% if isMultiplePrices %}-{% endif %}</span>
+                {%- if curRatio != 1 -%}
+                  <small class="productArchive__price__sub">({{ baseUnitFront }}{{ minPrice|price_format(decimalPoint) }}{{ baseUnitBack }})</small>
+                {%- endif -%}
+              </p>
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </aside>
+  {%- endif -%}
+  {# end Related Products #}
+
+</article>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

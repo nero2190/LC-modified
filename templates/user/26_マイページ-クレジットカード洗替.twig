@@ -1,0 +1,215 @@
+{# Reference: https://launchcart.jp/reference/8-%e6%b1%ba%e6%b8%88-%e3%82%ab%e3%83%bc%e3%83%89%e6%83%85%e5%a0%b1%e5%85%a5%e5%8a%9b/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = #credit_card_info_label# -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- set breadcrumbListItems = [
+    {
+      name: #mypage_label# ,
+      href: path('ec_client_consumer')
+    },
+    {
+      name: #credit_card_info_label# ,
+      href: app.request.uri
+    }
+  ]
+-%}
+{%- set breadcrumbList = breadcrumbList|merge(breadcrumbListItems) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #credit_card_info_label# }}</h1>
+
+  <div class="lc-contentsInner lc-contentsInner--form">
+
+    {%- if (errors|length > 0) -%}
+      {%- for error in errors -%}
+        <p class="lc-contentSection__note error">
+          {{ error }}
+        </p>
+      {%- endfor -%}
+    {%- elseif (isFormValid == false) -%}
+      <p class="lc-contentSection__note error">
+        {{ form_errors(form) }}
+      </p>
+    {%- endif -%}
+
+    <form action="{{ path('ec_client_consumer_card_add') }}" method="post" name="{{ form.vars.id }}" id="{{ form.vars.id }}">
+      {{ form_widget(form._token) }}
+      {% if form.token is defined %}{{ form_widget(form.token) }}{% endif %}
+      {% if form.tokennumber is defined %}{{ form_widget(form.tokennumber) }}{% endif %}
+      <input name="hdnSendChk" type="hidden" id="hdnSendChk" value="">
+
+      {# registered card information #}
+      {%- if cardNo -%}
+        <dl>
+          <dt class="lc-heading--3">{{ #registed_cardno_label# }}</dt>
+          <dd class="lc-contentSection__note">
+            {{ cardNo }}
+          </dd>
+        </dl>
+        <hr>
+        <h3 class="lc-heading--3">{{ #change_card_info_label# }}</h3>
+        <br>
+      {%- endif -%}
+
+      {# input forms #}
+      <ul class="lc-form">
+        <li class="lc-form__item">
+          <label class="lc-form__label lc-form__label--half">
+            <h4 class="lc-form__title">{{ #cardno_label# }}</h4>
+            <p class="lc-form__detail">
+              {{ form_widget(form.cardno, { attr: { placeholder: #placeholder_cardno# } }) }}
+            </p>
+          </label>
+          {% if not form.cardno.vars.valid %}<p class="lc-form__note error is-error">{{ form_errors(form.cardno) }}</p>{% endif %}
+          <p class="lc-form__note"><small>{{ #cardno_note# | raw }}</small></p>
+        </li>
+        <li class="lc-form__item">
+          <label class="lc-form__label lc-form__label--half">
+            <h4 class="lc-form__title">{{ #csc_label# }}</h4>
+            <p class="lc-form__detail">
+              {{ form_widget(form.csc) }}
+            </p>
+          </label>
+          {% if not form.csc.vars.valid %}<p class="lc-form__note error is-error">{{ form_errors(form.csc) }}</p>{% endif %}
+          <p class="lc-form__note">
+            <small>* 
+              <button class="js-lc--openModal" type="button" aria-controls="modalCSC" aria-haspopup="true">{{ #csc_position_label# }}<i class="lc-icon--arrow2Right"></i></button>
+            </small>
+          </p>
+        </li>
+        <li class="lc-form__item">
+          <label class="lc-form__label lc-form__label--select">
+            <h4 class="lc-form__title is-required">{{ #card_exp_label# }}</h4>
+            <p class="lc-form__detail">
+              {{ form_widget(form.exp_mm) }}
+            </p>
+          </label>&nbsp;
+          <label class="lc-form__label lc-form__label--select">
+            <h4 class="lc-form__title"></h4>
+            <p class="lc-form__detail">
+              {{ form_widget(form.exp_yy) }}
+            </p>
+          </label>
+          {% if not (form.exp_mm.vars.valid and form.exp_yy.vars.valid) %}<p class="lc-form__note error is-error">{{ form_errors(form.exp_mm) }}{{ form_errors(form.exp_yy) }}</p>{% endif %}
+          <p class="lc-form__note"><small>{{ #card_exp_note# }}</small></p>
+        </li>
+        <li class="lc-form__item">
+          <label class="lc-form__label lc-form__label--half">
+            <h4 class="lc-form__title">{{ #card_holder_label# }}</h4>
+            <p class="lc-form__detail">
+              {{ form_widget(form.cardname, { attr: { placeholder: #placeholder_card_holder# } }) }}
+            </p>
+          </label>
+          {% if not form.cardname.vars.valid %}<p class="lc-form__note error is-error">{{ form_errors(form.cardname) }}</p>{% endif %}
+          <p class="lc-form__note"><small>{{ #card_holder_note# }}</small></p>
+        </li>
+      </ul>
+
+      <p class="lc-contentsInner__buttons">
+        {# submit #}
+        <button class="lc-button--submit js-lc--submit" type="button"><span class="lc-button__label">{{ #register_label# }}</span><i class="lc-button__icon lc-icon--check"></i></button>
+        {# back #}
+        <button class="lc-button--cancel" type="button" onclick="history.back();"><i class="lc-button__icon lc-icon--arrowLeft"></i><span class="lc-button__label">{{ #back_label# }}</span></button>
+      </p>
+
+    </form>
+
+    {# Modal: help for CSC #}
+    <div class="lc-modal" id="modalCSC">
+      <div class="lc-modal__bg js-lc--closeModal"></div>
+      <div class="lc-modal__body">
+        <h3 class="lc-modal__title">{{ #csc_position_label# }}</h3>
+        <ul class="lc-form">
+          <li class="lc-form__item">
+            <p class="lc-form__note">
+              <small>
+                {{ #csc_explanation# | raw }}
+              </small>
+              <img src="/assets/img/img_securitycode.gif" alt="{{ #csc_position_label# }}" width="240"/>
+            </p>
+          </li>
+          <p class="lc-modal__buttons">
+            <button class="lc-button--cancel js-lc--closeModal" type="button"><i class="lc-button__icon lc-icon--close"></i><span class="lc-button__label">close</span></button>
+          </p>
+        </ul>
+      </div>
+    </div>
+
+    {# Modal: sending card information #}
+    <div class="lc-modal" id="modalPayment">
+      <div class="lc-modal__bg"></div>
+      <div class="lc-modal__body">
+        <h3 class="lc-modal__title">{{ #data_sending_label# }}</h3>
+        <p class="lc-form__note lc-align--center">{{ #please_wait# | raw }}</p>
+      </div>
+    </div>
+
+  </div>
+
+  {# mypage navi #}
+  {% TemplateInclude "mypage navi" %}
+
+</section>
+
+{#
+  card token module
+  doStart() is required call on submit.
+  If preLoad() is defined, it will be called on success of get token.
+  If onFail() is defined, it will be called on fail of get token.
+#}
+{{ include('card_token.html.twig') }}
+<script>
+function preLoad () {
+  openModal($('#modalPayment'));
+  $('#hdnSendChk').val('submit');
+  $("#{{ form.vars.id }}").submit();
+}
+function onFail () {
+  $('.js-lc--submit')
+    .prop('disabled', false)
+    .css('visibility', 'visible');
+  $('.lc-modal').removeClass('is-active');
+}
+$(function () {
+  $('.js-lc--submit').on('click', function () {
+    $('.js-lc--submit')
+      .prop('disabled', true)
+      .css('visiblity', 'hidden');
+    doStart();
+    return false;
+  });
+
+  {%- if form.token is defined -%}
+    /**
+    * observe the token value in a input form
+    */
+    var tokenFormElement = document.getElementById('{{ form.token.vars.id }}');
+    var tokenValueObserver = new MutationObserver(function (mutations) {
+      mutations.forEach(function (mutation) {
+        if(!tokenFormElement.value) {
+          onFail();
+        }
+      });
+    });
+    tokenValueObserver.observe(tokenFormElement, {
+      attributes: true
+    });
+  {%- endif -%}
+});
+</script>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

@@ -1,0 +1,114 @@
+{# Reference: https://launchcart.jp/reference/21%e3%83%9e%e3%82%a4%e3%83%9a%e3%83%bc%e3%82%b8-%e5%ae%9a%e6%9c%9f%e8%b3%bc%e5%85%a5%e5%b1%8a%e3%81%91%e5%85%88%e5%a4%89%e6%9b%b4/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = #purchase_history_label# -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- set breadcrumbListItems = [
+    {
+      name: #mypage_label# ,
+      href: path('ec_client_consumer')
+    },
+    {
+      name: #purchase_history_label# ,
+      href: path('ec_client_consumer_regular_list')
+    },
+    {
+      name: #subscription_detail_label# ,
+      href: path('ec_client_consumer_regular_detail', {'id': order_regular.id})
+    },
+    {
+      name: #edit_delivery_address_label# ,
+      href: app.request.uri
+    }
+  ]
+-%}
+{%- set breadcrumbList = breadcrumbList|merge(breadcrumbListItems) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #purchase_history_label# }}</h1>
+  
+  <div class="lc-contentsInner">
+    <form action="{{ path('ec_client_consumer_regular_address_edit_confirm', {'id': order_regular.id}) }}" name="form" id="form" method="POST">
+      <p class="lc-contentSection__note">{{ #message_select_address# | raw }}</p>
+      <section class="lc-shipList">
+        <h2 class="lc-shipList__title">{{ #address_list_label# }}</h2>
+        <ul class="lc-shipList__list">
+          {%- set addresses = app.security.token.user.getAddress -%}
+
+          {# address list #}
+          {%- for key,address in addresses -%}
+            <li class="lc-shipList__item">
+              <input type="radio" name="consumer_address_id" name="consumer_address_id" id="ad-{{ key + 1 }}" value="{{ address.id }}"{% if (address.id == order_regular.getConsumerAddress.id) %} checked="checked"{% endif %}>
+              <div class="lc-shipList__box">
+                <label class="lc-shipList__main" for="ad-{{ key + 1 }}">
+                  <header class="lc-shipList__header">
+                    <h3 class="lc-shipList__name"><i class="c-inputUI c-inputUI--checkbox"></i>{{ address.lastName }} {{ address.firstName }}{% if (key == 0) %} <small>({{ #member_registered_address# }})</small>{% endif %}</h3>
+                    <p class="lc-shipList__tel">{{ address.tel }}</p>
+                  </header>
+                  <p class="lc-shipList__address">
+                    {% if address.country.id == 1 %}〒 {% endif %}{% if address.country.id != 20 %}{{ address.zipcode }}<br>{% endif %}
+                    {% if address.country.id == 1 %}{{ address.district }} {% endif %}{{ address.locality }} {{ address.street }}
+                  </p>
+                </label>
+                <p class="lc-shipList__controls">
+                  {%- if (key == 0) -%}
+                    <a class="lc-button--edit" href="{{ path('ec_client_consumer_edit') }}"><span class="lc-button__label">{{ #edit_label# }}</span></a>
+                  {%- else -%}
+                    <a class="lc-button--edit" href="{{ path('ec_client_consumer_address_edit', {'id': address.id}) }}"><span class="lc-button__label">{{ #edit_label# }}</span></a>
+                    <a class="lc-button--delete js-lc--delete" href="{{ path('ec_client_consumer_address_delete', {'id': address.id }) }}"><span class="lc-button__label">{{ #delete_label# }}</span></a>
+                  {%- endif -%}
+                </p>
+              </div>
+            </li>
+          {%- endfor -%}
+
+          {# add list #}
+          {%- if (addresses|length < 20) -%}
+            <li class="lc-shipList__item"><a class="lc-shipList__box lc-shipList__box--button" href="{{ path('ec_client_consumer_address_add') }}"><i class="lc-icon--plus"></i>{{ #add_address_label# }}</a></li>
+          {%- endif -%}
+
+        </ul>
+      </section>
+
+      <p class="lc-contentsInner__buttons">
+        {# register #}
+        <button type="submit" class="lc-button--submit"><span class="lc-button__label">{{ #edit_label# }}</span><i class="lc-button__icon lc-icon--arrow2Right"></i></button>
+        {# back #}
+        <a href="{{ path('ec_client_consumer_regular_detail', {'id': order_regular.id}) }}" class="lc-button--cancel"><i class="lc-button__icon lc-icon--arrowLeft"></i><span class="lc-button__label">{{ #back_label# }}</span></a>
+      </p>
+      
+    </form>
+  </div>
+
+  {# mypage navi #}
+  {% TemplateInclude "mypage navi" %}
+
+</section>
+
+<script>
+$(function () {
+  // confirm delete
+  $('.js-lc--delete').on('click', function () {
+    var href = $(this).attr('href');
+    openModalConfirm('', function () {
+      location.href = href;
+    });
+    return false;
+  });
+});
+</script>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

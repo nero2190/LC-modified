@@ -1,0 +1,196 @@
+{# Select SKU #}
+{%- if isExistSku1 or isExistSku2 -%}
+  <dl class="skuList">
+    {# SKU1 #}
+    {%- if isExistSku1 -%}
+      <div class="skuList__item">
+        <dt class="skuList__label">{% if productskus.first.skuDetail1.sku.getTransAttribute(lang_id) %}{{ productskus.first.skuDetail1.sku.getTransAttribute(lang_id) }}{% else %}{{ productskus.first.skuDetail1.sku.name }}{% endif %}</dt>
+        <dd class="skuList__detail">
+          {%- for sku1Detail in sku1Details -%}
+            <label class="skuList__radio">
+              <input class="skuList__radio__input js-lc--sku1" type="radio" name="sku1" value="{{ sku1Detail.title }}"/><span class="skuList__radio__button">{%- if sku1Detail.getTransAttribute(lang_id) %}{{ sku1Detail.getTransAttribute(lang_id) }}{% else %}{{ sku1Detail.title }}{% endif -%}</span>
+            </label>
+          {%- endfor -%}
+        </dd>
+      </div>
+    {%- endif -%}
+    {# SKU2 #}
+    {%- if isExistSku2 -%}
+      <div class="skuList__item">
+        <dt class="skuList__label">{% if productskus.first.skuDetail2.sku.getTransAttribute(lang_id) %}{{ productskus.first.skuDetail2.sku.getTransAttribute(lang_id) }}{% else %}{{ productskus.first.skuDetail2.sku.name }}{% endif %}</dt>
+        <dd class="skuList__detail">
+          {%- for sku2Detail in sku2Details -%}
+            <label class="skuList__radio">
+              <input class="skuList__radio__input js-lc--sku2" type="radio" name="sku2" value="{{ sku2Detail.title }}"/><span class="skuList__radio__button">{%- if sku2Detail.getTransAttribute(lang_id) %}{{ sku2Detail.getTransAttribute(lang_id) }}{% else %}{{ sku2Detail.title }}{% endif -%}</span>
+            </label>
+          {%- endfor -%}
+        </dd>
+      </div>
+    {%- endif -%}
+  </dl>
+<script>
+  /**
+    * @type {Array} - 各SKUのデータ
+    */
+  var productSkus = [
+    {%- for productsku in productskus -%}
+      {
+        id: {{ productsku.id }},
+        {%- if isExistSku1 -%}
+          sku1: '{{ productsku.getSkuDetail1.title }}',
+        {%- endif -%}
+        {%- if isExistSku2 -%}
+          sku2: '{{ productsku.getSkuDetail2.title }}',
+        {%- endif -%}
+        basePrice: {{ productsku.price }},
+        stock: {{ productsku.stockUnlimited ? 9999 : productsku.stock }}
+      }{% if not loop.last %},{% endif %}
+    {%- endfor -%}
+  ];
+  
+  /**
+    * @type {Object} - SKUのラベルをまとめたもの
+    */
+  var skuLabels = {
+    {%- if isExistSku1 -%}
+      sku1: '{% if productskus.first.skuDetail1.sku.getTransAttribute(lang_id) %}{{ productskus.first.skuDetail1.sku.getTransAttribute(lang_id) }}{% else %}{{ productskus.first.skuDetail1.sku.name }}{% endif %}',
+    {%- endif -%}
+    {%- if isExistSku2 -%}
+      sku2: '{% if productskus.first.skuDetail2.sku.getTransAttribute(lang_id) %}{{ productskus.first.skuDetail2.sku.getTransAttribute(lang_id) }}{% else %}{{ productskus.first.skuDetail2.sku.name }}{% endif %}'
+    {%- endif -%}
+  }
+  
+</script>
+<script>
+  /**
+    * -------------------------------
+    * SKUの処理
+    */
+  $(function () {
+    /**
+      * @type {Number} - 通貨レート
+      */
+    var curRatio = {{ curRatio }};
+  
+    /**
+      * @type {Number} - 選択可能な最大数量
+      */
+    var quantityMax = 10;
+  
+    /**
+      * @type {Object} - 価格を表示している要素のjQueryオブジェクトをまとめたもの
+      */
+    var $displayPrice = {
+      price: $('.js-lc--price'),
+      basePrice: $('.js-lc--basePrice')
+    }
+  
+    /**
+      * @type {Object} - SKU、quantity、product_sku_idの要素のjQueryオブジェクトをまとめたもの
+      */
+    var $form = {
+      sku1: $('.js-lc--sku1'),
+      sku2: $('.js-lc--sku2'),
+      quantity: $('[name="quantity"]'),
+      product_sku_id: $('input[name="product_sku_id"]'),
+      cartin: $('.js-lc--cartin')
+    }
+  
+    /**
+      * @type {Boolean} - この商品におけるSKU1、SKU2の存在
+      */
+    var hasSku1 = $form.sku1.length ? true : false;
+    var hasSku2 = $form.sku2.length ? true : false;
+  
+    if (hasSku1 || hasSku2) {
+      // SKUが変更されたときとページが表示されたタイミングで情報を更新
+      $form.sku1.on('click', updateSkuState);
+      $form.sku2.on('click', updateSkuState);
+      window.addEventListener('pageshow', function() {
+        updateSkuState();
+      });
+  
+      /**
+        * 選択されている SKU の組み合わせから価格や SKU の disabled を更新
+        */
+      function updateSkuState () {
+        var selectedSku = {};
+        if (hasSku1 && hasSku2) {
+          var sku1Value = $form.sku1.filter(':checked').val();
+          var sku2Value = $form.sku2.filter(':checked').val();
+          for (var i = 0; i < productSkus.length; i++) {
+            if (productSkus[i].sku1 === sku1Value && productSkus[i].sku2 === sku2Value) {
+              selectedSku = productSkus[i];
+            }
+            if (productSkus[i].sku1 === sku1Value || productSkus[i].sku2 === sku2Value) {
+              if (!productSkus[i].stock) {
+                $form.sku1.filter('[value="' + productSkus[i].sku1 + '"]').not(':checked').prop('disabled', true);
+                $form.sku2.filter('[value="' + productSkus[i].sku2 + '"]').not(':checked').prop('disabled', true);
+              } else {
+                $form.sku1.filter('[value="' + productSkus[i].sku1 + '"]').not(':checked').prop('disabled', false);
+                $form.sku2.filter('[value="' + productSkus[i].sku2 + '"]').not(':checked').prop('disabled', false);
+              }
+            }
+          }
+        } else if (hasSku1 || hasSku2) {
+          var skuValue = hasSku1 ? $form.sku1.filter(':checked').val() : $form.sku2.filter(':checked').val();
+          if (!skuValue) {
+            skuValue = false;
+          }
+          for (var i = 0; i < productSkus.length; i++) {
+            if (productSkus[i].sku1 === skuValue || productSkus[i].sku2 === skuValue) {
+              selectedSku = productSkus[i];
+            } else {
+              if (!productSkus[i].stock) {
+                $form.sku1.filter('[value="' + productSkus[i].sku1 + '"]').prop('disabled', true);
+                $form.sku2.filter('[value="' + productSkus[i].sku2 + '"]').prop('disabled', true);
+              } else {
+                $form.sku1.filter('[value="' + productSkus[i].sku1 + '"]').prop('disabled', false);
+                $form.sku2.filter('[value="' + productSkus[i].sku2 + '"]').prop('disabled', false);
+              }
+            }
+          }
+        }
+  
+        $form.product_sku_id.val(selectedSku.id);
+  
+        if ((hasSku1 && $form.sku1.filter(':checked').length === 0) || (hasSku2 && $form.sku2.filter(':checked').length === 0)) {
+          $form.cartin.addClass('is-disabled');
+          $displayPrice.price.text(price_format(curRatio * productSkus[0].basePrice, {{ decimalPoint }}));
+          $displayPrice.basePrice.text(number_format(productSkus[0].basePrice));
+          $form.quantity.find('option')
+            .show()
+            .prop('disabled', false);
+        } else {
+          $form.cartin.removeClass('is-disabled');
+          $displayPrice.price.text(price_format(curRatio * selectedSku.basePrice, {{ decimalPoint }}));
+          $displayPrice.basePrice.text(number_format(selectedSku.basePrice));
+          $form.quantity.find('option')
+            .show()
+            .prop('disabled', false);
+          $form.quantity.find('option:gt(' + (selectedSku.stock - 1) + ')')
+            .hide()
+            .prop('disabled', true)
+            .prop('selected', false);
+        }
+      }
+  
+      // SKUが選択されていないときにカートインボタンが押されたらアラートを返す
+      $form.cartin.on('click', function () {
+        if ($(this).hasClass('is-disabled')) {
+          var message = '{{ #required_select# }}';
+          if (hasSku1 && hasSku2) {
+            message = message.replace('%SKU%', '"' + skuLabels.sku1 + '", "' + skuLabels.sku2 + '"');
+          } else {
+            message = message.replace('%SKU%', '"' + (hasSku1 ? skuLabels.sku1 : skuLabels.sku2) + '"');
+          }
+          openModalNotice(message);
+          return false;
+        }
+      });
+    }
+  });
+</script>
+
+{%- endif -%}
+{# end Select SKU #}

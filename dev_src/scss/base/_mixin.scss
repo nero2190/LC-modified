@@ -1,0 +1,52 @@
+@import "../base/variable";
+
+// clearfix
+@mixin cf {
+  &::after {
+    display: block;
+    clear: both;
+    content: "";
+  }
+}
+
+// breakpoints
+$breakpoints: (
+  'ss': '(max-width: 320px)',
+  'ss-min': '(min-width: 321px)',
+  'sp': '(max-width: 640px)',
+  'tab-min': '(min-width: 769px)',
+  'tab': '(max-width: 768px)'
+) !default;
+
+// メディアクエリー
+@mixin media($breakpoint: sp) {
+  @if ($breakpoint == ss) or ($breakpoint == ss-min) or ($breakpoint == sp) or ($breakpoint == tab-min) or ($breakpoint == tab) or ($breakpoint == pc-min) or($breakpoint == land) {
+    @media #{map-get($breakpoints, $breakpoint)} {
+      @content;
+    }
+  } @else {
+    @media (max-width: $breakpoint) {
+      @content;
+    }
+  }
+}
+
+@mixin placeholder() {
+  &::-webkit-input-placeholder {
+    @content;
+  }
+  &::-moz-placeholder {
+    @content;
+  }
+  &:-ms-input-placeholder {
+    @content;
+  }
+  &:placeholder-shown {
+    @content;
+  }
+}
+@mixin ie9() {
+  body.is-IE9 & {
+    @content;
+  }
+}

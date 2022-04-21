@@ -1,0 +1,47 @@
+{
+  "name": "launchcart_demo_2019",
+  "version": "1.0.0",
+  "description": "cording environment for LaunchCart DEMO 2019",
+  "repository": {
+    "type": "git",
+    "url": "ssh://ftp.ud-ac.com/home/ud-ac/www/lc-demo-2019/20190827.git"
+  },
+  "main": "gulpfile.js",
+  "scripts": {
+    "test": "node test.js",
+    "gulp": "gulp"
+  },
+  "author": "Sterfield Co., Ltd.",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/jquery": "^3.5.14",
+    "@types/slick-carousel": "^1.6.37",
+    "acorn": "^8.6.0",
+    "autoprefixer": "^10.4.0",
+    "browser-sync": "^2.27.7",
+    "browserify": "^17.0.0",
+    "core-js": "^3.19.3",
+    "del": "^6.0.0",
+    "gulp": "^4.0.2",
+    "gulp-concat": "^2.6.1",
+    "gulp-csso": "^4.0.1",
+    "gulp-live-server": "0.0.31",
+    "gulp-notify": "^4.0.0",
+    "gulp-plumber": "^1.2.1",
+    "gulp-postcss": "^9.0.1",
+    "gulp-pug": "^5.0.0",
+    "gulp-sass": "^5.0.0",
+    "gulp-sourcemaps": "^3.0.0",
+    "gulp-uglify": "^3.0.2",
+    "postcss": "^8.4.4",
+    "selenium-webdriver": "^4.1.0",
+    "tsify": "^5.0.4",
+    "vinyl-buffer": "^1.0.1",
+    "vinyl-source-stream": "^2.0.0"
+  },
+  "dependencies": {
+    "jquery": "^3.6.0",
+    "sass": "^1.44.0",
+    "slick-carousel": "^1.8.1"
+  }
+}

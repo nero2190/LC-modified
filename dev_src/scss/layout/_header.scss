@@ -1,0 +1,418 @@
+.l-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  width: 100%;
+  background: $c_base;
+  box-shadow: $s_float;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  &__logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 75px;
+    order: 1;
+  }
+  &__menu {
+    order: 3;
+    width: 100%;
+    height: 44px;
+    border-top: solid 1px $c_border;
+    font-size: 1.4rem;
+    transition: 0.5s;
+    &__list {
+      display: flex;
+      justify-content: center;
+    }
+    &__label {
+      display: flex;
+      align-items: center;
+      height: 44px;
+    }
+    &__item {
+      margin-left: 30px;
+      position: relative;
+      > a {
+        display: flex;
+        align-items: center;
+        height: 44px;
+        font-weight: bold;
+        @include media(tab-min) {
+          &:hover {
+            color: $c_main;
+            opacity: 1;
+          }
+        }
+      }
+      @include media(tab-min) {
+        &:hover {
+          .l-header__subMenu {
+            visibility: visible;
+            opacity: 1;
+          }
+        }
+      }
+    }
+    &__bg {
+      display: none;
+    }
+    body.is-scrollUp:not(.is-pageTopHide):not(.is-menuActive) & {
+      height: 0;
+      overflow: hidden;
+      opacity: 0;
+      visibility: hidden;
+    }
+  }
+  &__subMenu {
+    padding: 15px;
+    background: $c_base;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.25);
+    white-space: nowrap;
+    position: absolute;
+    left: 50%;
+    top: 56px;
+    transform: translate(-50%, 0);
+    visibility: hidden;
+    opacity: 0;
+    transition: 0.3s;
+    &::before {
+      content: "";
+      display: block;
+      border-left: solid 12px transparent;
+      border-right: solid 12px transparent;
+      border-bottom: solid 12px $c_base;
+      position: absolute;
+      left: 50%;
+      top: -12px;
+      z-index: 1;
+      transform: translate(-50%, 0);
+    }
+    &::after {
+      content: "";
+      display: block;
+      width: 100%;
+      height: 12px;
+      background: transparent;
+      position: absolute;
+      left: 0;
+      top: -12px;
+      z-index: 0;
+    }
+    &__item {
+      line-height: 1.25;
+      > a {
+        display: flex;
+        align-items: center;
+        padding: 5px 0;
+        padding-right: 24px;
+        min-height: 32px;
+        position: relative;
+        @extend .lc-icon;
+        @extend .lc-icon--arrow2Right;
+        &::before {
+          color: $c_text_gray;
+          position: absolute;
+          right: -0.25em;
+          top: 50%;
+          transform: translate(0, -50%);
+        }
+        @include media(tab-min) {
+          &:hover {
+            color: $c_main;
+            opacity: 1;
+          }
+        }
+      }
+    }
+  }
+  @include media(tab) {
+    padding-bottom: 15px;
+    &__logo {
+      height: 50px;
+      img {
+        width: auto;
+        height: 35px;
+      }
+    }
+    &__menu {
+      height: 100%;
+      padding: 50px 15px;
+      background: $c_base;
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 10;
+      overflow: auto;
+      transition: 0.5s;
+      opacity: 0;
+      visibility: hidden;
+      -webkit-overflow-scrolling: touch;
+      &__list {
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        margin: 0 35px;
+      }
+      &__label {
+        margin-bottom: 1em;
+        position: relative;
+        z-index: 1;
+      }
+      &__item {
+        width: 100%;
+        margin: 0;
+        font-size: 1.6rem;
+        opacity: 0;
+        transform: scale(1.2);
+        transition: 0.5s;
+        z-index: 1;
+        > a {
+          justify-content: center;
+        }
+        @for $i from 1 through 12 {
+          &:nth-child(#{$i}) {
+            transition-delay: #{ 0.1 * $i }s;
+          }
+        }
+      }
+      &__bg {
+        display: block;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        left: 0;
+        top: 0;
+        z-index: 0;
+        cursor: pointer;
+      }
+      .is-menuActive & {
+        opacity: 1;
+        visibility: visible;
+        &__item {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      .lc-mypageNavi {
+        transform: translate(0, 15%);
+        opacity: 0;
+        transition: 0.75s ease 0.5s;
+        .is-menuActive & {
+          opacity: 1;
+          transform: translate(0, 0);
+        }
+      }
+    }
+    &__subMenu {
+      display: none;
+    }
+    body.is-scrollUp:not(.is-pageTopHide) & {
+      padding-bottom: 0;
+    }
+  }
+}
+.l-navi {
+  order: 2;
+  width: 320px;
+  margin-right: 45px;
+  &__list {
+    display: flex;
+    justify-content: flex-end;
+    line-height: 1;
+  }
+  &__item {
+    margin-left: 64px;
+    position: relative;
+    &:first-child {
+      margin-left: 0;
+      &::before {
+        display: none;
+      }
+    }
+    &::before {
+      content: "";
+      display: block;
+      width: 1px;
+      height: 24px;
+      background: $c_accent;
+      position: absolute;
+      left: -32px;
+      top: 50%;
+      transform: translate(-50%, -50%) skew(-24deg);
+    }
+  }
+  &__label {
+    font-size: 1rem;
+    font-weight: bold;
+  }
+  &__icon {
+    margin-bottom: 5px;
+    font-size: 2.4rem;
+    &--menu {
+      display: block;
+      width: 24px;
+      height: 24px;
+      position: relative;
+      z-index: 11;
+      > span {
+        display: block;
+        width: 19px;
+        height: 2px;
+        border-radius: 1px;
+        background: $c_accent;
+        position: absolute;
+        left: 50%;
+        transform: translate(-50%, 0);
+        transition: margin 0.3s ease 0.3s,
+          top 0.3s ease 0.3s,
+          bottom 0.3s ease 0.3s,
+          opacity 0.3s ease 0.3s,
+          transform 0.3s ease 0s;
+        &:nth-child(1) {
+          top: 6px;
+          
+        }
+        &:nth-child(2) {
+          margin-top: -1px;
+          top: 50%;
+        }
+        &:nth-child(3) {
+          bottom: 6px;
+        }
+        .is-menuActive & {
+          transition: margin 0.3s ease 0s,
+            top 0.3s ease 0s, bottom 0.3s ease 0s,
+            opacity 0.3s ease 0s,
+            transform 0.3s ease 0.3s;
+          &:nth-child(1) {
+            top: 50%;
+            margin-top: -1px;
+            transform: translate(-50%, 0) rotate(45deg);
+          }
+          &:nth-child(2) {
+            opacity: 0;
+          }
+          &:nth-child(3) {
+            bottom: 50%;
+            margin-bottom: -1px;
+            transform: translate(-50%, 0) rotate(-45deg);
+          }
+        }
+      }
+    }
+  }
+  &__button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    @include media(tab-min) {
+      &:hover {
+        color: $c_main;
+        opacity: 1;
+      }
+    }
+  }
+  &__badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    background: $c_main;
+    color: $c_base;
+    font-size: 1rem;
+    font-weight: bold;
+    position: absolute;
+    right: -4px;
+    top: -4px;
+  }
+  @include media(840px) {
+    width: 260px;
+    margin-right: 15px;
+  }
+  @include media(tab) {
+    width: auto;
+    margin-right: 0;
+    &:first-of-type {
+      order: 0;
+    }
+    &__item {
+      margin-left: 0;
+      &::before {
+        display: none;
+      }
+      &.only-pc {
+        display: none;
+      }
+    }
+    &__button {
+      width: 50px;
+      height: 50px;
+    }
+    &__icon {
+      margin-bottom: 0;
+    }
+    &__label {
+      display: none;
+    }
+    &__badge {
+      right: 6px;
+      top: 6px;
+    }
+  }
+}
+.searchForm {
+  order: 0;
+  width: 320px;
+  margin-left: 45px;
+  position: relative;
+  &__input[type="search"] {
+    width: 100%;
+    height: 32px;
+    padding-left: 36px;
+    border: solid 1px $c_border;
+    border-radius: 16px;
+  }
+  &__button {
+    width: 20px;
+    height: 20px;
+    text-indent: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    position: absolute;
+    left: 12px;;
+    top: 50%;
+    transform: translate(0, -50%);
+    &::before {
+      font-size: 2rem;
+      text-indent: 0;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+  }
+  @include media(840px) {
+    width: 260px;
+    margin-left: 15px;
+  }
+  @include media(tab) {
+    order: 3;
+    width: calc(100% - 30px);
+    height: 32px;
+    margin: 0 15px;
+    transition: 0.5s;
+    body.is-scrollUp:not(.is-pageTopHide) & {
+      height: 0;
+      overflow: hidden;
+      opacity: 0;
+      visibility: hidden;
+    }
+  }
+}

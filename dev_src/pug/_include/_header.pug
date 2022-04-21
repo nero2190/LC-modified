@@ -1,0 +1,139 @@
+header.l-header
+
+  if isHome
+    h1.l-header__logo
+      a(href="/")
+        img(src="/assets/img/logo.svg")
+  else
+    p.l-header__logo
+      a(href="/")
+        img(src="/assets/img/logo.svg")
+  .searchForm
+    form(action="")
+      input(type="search").searchForm__input
+      button(type="submit").searchForm__button.lc-icon--search Go
+
+  nav.l-navi.only-sp
+    ul.l-navi__list
+      li.l-navi__item
+        button.l-navi__button.js-toggleMenu
+          i.l-navi__icon.l-navi__icon--menu
+            span
+            span
+            span
+          span.l-navi__label MENU
+      li.l-navi__item
+        button.l-navi__button.js-lc--openModal(
+            aria-controls="modalLangCurrency"
+            aria-haspopup="true"
+          )
+          i.l-navi__icon.lc-icon--globe
+          span.l-navi__label 简体中文 / CNY
+  nav.l-navi
+    ul.l-navi__list
+      li.l-navi__item.only-pc
+        button.l-navi__button.js-lc--openModal(
+            type="button"
+            aria-controls="modalLangCurrency"
+            aria-haspopup="true"
+          )
+          i.l-navi__icon.lc-icon--globe
+          span.l-navi__label 简体中文 / CNY
+      li.l-navi__item
+        - if (isAuthorized)
+          a.l-navi__button(href="/ec/consumer/history/")
+            i.l-navi__icon.lc-icon--user
+            span.l-navi__label 我的帳戶
+        - else
+          a.l-navi__button(href="/auth/login/")
+            i.l-navi__icon.lc-icon--user
+            span.l-navi__label 登入
+      li.l-navi__item
+        a.l-navi__button(href="/ec/cart/list/")
+          i.l-navi__icon.lc-icon--cart
+          span.l-navi__label 购物车
+          span.l-navi__badge 1
+
+  .l-header__menu
+    div.l-header__menu__bg.js-closeMenu
+    dl.l-header__menu__list
+      dt.l-header__menu__label 商品分类
+        span.only-pc :
+      -
+        var menuList = [
+          {
+            parent: '女士们',
+            children: [
+              '商场同款', 'V领T恤', '圆领T恤', '潮流T恤', '条纹T恤', '棉麻T恤', '印花T恤', '长款T恤', '高领T恤'
+            ]
+          },
+          {
+            parent: '男子',
+            children: [
+              '商场同款', 'V领T恤', '圆领T恤', '潮流T恤', '条纹T恤', '棉麻T恤', '印花T恤', '长款T恤', '高领T恤'
+            ]
+          },
+          {
+            parent: '纯色',
+            children: [
+              '商场同款', 'V领T恤', '圆领T恤', '潮流T恤', '条纹T恤', '棉麻T恤', '印花T恤', '长款T恤', '高领T恤'
+            ]
+          },
+          {
+            parent: '印花',
+            children: [
+              '商场同款', 'V领T恤', '圆领T恤', '潮流T恤', '条纹T恤', '棉麻T恤', '印花T恤', '长款T恤', '高领T恤'
+            ]
+          },
+          {
+            parent: '旧衣服',
+            children: [
+              '商场同款', 'V领T恤', '圆领T恤', '潮流T恤', '条纹T恤', '棉麻T恤', '印花T恤', '长款T恤', '高领T恤'
+            ]
+          }
+        ]
+      each item in menuList
+        dd.l-header__menu__item
+          a(href="/ec/product/category/1/") #{ item.parent }
+          if item.children
+            ul.l-header__subMenu
+              each child in item.children
+                li.l-header__subMenu__item
+                  a(href="/ec/product/category/1/") #{ child }
+    - if (isAuthorized)
+      .only-sp
+        include /_include/_mypage-navi.pug
+
+.lc-modal#modalLangCurrency
+  .lc-modal__bg.js-lc--closeModal
+  .lc-modal__body
+    h3.lc-modal__title 语言・币种设置
+    dl.lc-selectModalSettings
+      .lc-selectModalSettings__item
+        dt.lc-selectModalSettings__label 语言
+        dd.lc-selectModalSettings__detail
+          .lc-selectBox
+            select.lc-selectBox__select.js-lc--selectLanguage
+              option(value="1") 簡体中文
+      .lc-selectModalSettings__item
+        dt.lc-selectModalSettings__label 币种
+        dd.lc-selectModalSettings__detail
+          .lc-selectBox
+            select.lc-selectBox__select.js-lc--selectCurrency
+              option(value="1") CNY
+    p.lc-modal__buttons
+      button(type="button").lc-button--submit.js-lc--changeLangCurrency
+        span.lc-button__label 保存更改
+        i.lc-button__icon.lc-icon--check
+      button(type="button").lc-button--cancel.js-lc--closeModal
+        i.lc-button__icon.lc-icon--close
+        span.lc-button__label 取消
+  script.
+    $(function () {
+      $('.js-lc--changeLangCurrency').on('click', function () {
+        var language = $('.js-lc--selectLanguage').val();
+        var currency = $('.js-lc--selectCurrency').val();
+        location.reload();
+      })
+    });
+

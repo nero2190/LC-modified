@@ -1,0 +1,1599 @@
+<!doctype html>
+<html lang="ja" >
+<head>
+<meta charset="UTF-8">
+<title>LaunchCart 管理画面</title>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no" />
+<link rel="shortcut icon" href="/system/images/favicon.ico" type="image/vnd.microsoft.icon">
+<link rel="icon" href="/system/images/favicon.ico" type="image/vnd.microsoft.icon">
+<link rel="icon" href="/system/images/favicon.ico" type="image/vnd.microsoft.icon">
+
+<!-- CSS -->
+<link href="/system/css/jquery-ui-1.10.4.custom.css" rel="stylesheet" type="text/css">
+<link href="/system/css/fix.css" rel="stylesheet" type="text/css">
+<link href="/system/css/media-query.css" rel="stylesheet" type="text/css">
+
+<!-- JavaScript -->
+<script type="text/javascript" src="/system/js/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/system/js/jquery-fixHeightSimple.js"></script>
+<script type="text/javascript" src="/system/js/jquery-ui-1.10.4.custom.min.js"></script>
+<script type="text/javascript" src="/system/js/jquery-ui-i18n.min.js"></script>
+<script type="text/javascript" src="/system/js/jquery-ui-timepicker-addon.js"></script>
+<script type="text/javascript" src="/system/js/jquery-ui-timepicker-addon-i18n.js"></script>
+
+
+<script type="text/javascript">
+
+// requestAnimationFrame polyfill
+(function() {
+  var lastTime = 0;
+  var vendors = ['ms', 'moz', 'webkit', 'o'];
+  for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+    window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+    window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+  }
+
+  if (!window.requestAnimationFrame)
+    window.requestAnimationFrame = function(callback, element) {
+      var currTime = new Date().getTime();
+      var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+      var id = window.setTimeout(function() { callback(currTime + timeToCall); }, timeToCall);
+      lastTime = currTime + timeToCall;
+      return id;
+    };
+
+  if (!window.cancelAnimationFrame)
+    window.cancelAnimationFrame = function(id) {
+      clearTimeout(id);
+    };
+}());
+
+window.onload = function() {
+  $('form').each(function() {
+      $(this).attr('novalidate', 'novalidate');
+  });
+}
+
+$(function() {
+
+  //noscript
+  $("noscript").hide();
+  // datepickerインスタンスへカレンダー言語を適用することでdatetimeインスタンスのカレンダーへも適用する
+  $.datepicker.setDefaults($.datepicker.regional['ja']);
+  // ロード済み言語IDテーブルからデフォルト言語を指定する
+  $.timepicker.setDefaults($.timepicker.regional['ja']);
+
+
+  //レイアウト調整
+  var selectBoxTimeStamp = 0;
+  $("select").focus(function() {
+    selectBoxTimeStamp = Date.now();
+  });
+  $(window).on("resize", function(e)  {
+    setEditColumnPosition();
+    setScrollClass(".optionsList", "Height");
+    setScrollClass(".tableWrap", "Width");
+  });
+  $(window).on("load", function(e) {
+    setScrollClass(".optionsList", "Height");
+    setScrollClass(".tableWrap", "Width");
+  });
+
+  setEditColumnPosition();
+  function setEditColumnPosition() {
+    var resizeTimeStamp = Date.now();
+    if (selectBoxTimeStamp - resizeTimeStamp < -2000 || selectBoxTimeStamp - resizeTimeStamp > 2000) {
+      if ($(window).width() < 1200 && $(".editSideColumn").size() > 0) {
+        $(".editSideColumn").insertAfter(".editMainColumn");
+      } else if ($(".editSideColumn").size() > 0) {
+        $(".editSideColumn").insertBefore(".editMainColumn");
+      }
+    }
+  }
+
+  function setScrollClass(target, direction) {
+    $(target).each(function() {
+      var $targetElm = $(this)
+        $targetElmDom = $targetElm.get(0);
+      if ($targetElmDom["scroll" + direction] > $targetElmDom["offset" + direction]) {
+        $targetElm.addClass("scroll");
+      } else {
+        $targetElm.removeClass("scroll");
+      }
+    });
+  }
+
+
+  //ナビゲーション
+  $("nav .arrow2").click(function() {
+    $(this).parent().nextAll(".subNav").toggle();
+    if ($(this).hasClass("selected")) {
+      $(this).removeClass("selected");
+    } else {
+      $(this).addClass("selected");
+    }
+    return false;
+  });
+
+  var currentPath = location.pathname;
+  currentPath = "/admin/" + currentPath.split("/admin/")[1];
+  $(".subNav li").each(function() {
+    var $navList = $(this),
+    navPath = $navList.children("a").attr("href"),
+    $navDirectories = navPath.split("/"),
+    matchPath = true;
+    if (location.pathname != navPath) {
+      matchPath = false;
+    }
+    if (currentPath.indexOf("add") > -1 && navPath.indexOf("add") == -1)
+      matchPath = false;
+    if (matchPath) {
+      $navList.addClass("selected");
+      $navList.closest(".subNav").prev(".arrow").hide();
+    }
+  });
+
+
+  //ヘッダーオプション表示切り替え
+  $("#managementArea #viewOption a, #managementArea #account a").click(function() {
+    var thisElm = $(this);
+    var thisParentId = $(this).parent("li").attr("id");
+    var tgElm = $(thisElm.attr("href"));
+
+    $("#managementArea li").not("#" + thisParentId).removeClass("selected");
+    thisElm.parent("li").toggleClass("selected");
+    tgElm.slideToggle(0);
+
+    return false;
+  });
+
+  $("#spNavView a, #spNavAccount a").click(function() {
+    var thisElm = $(this);
+    var thisParentId = $(this).parent("li").attr("id");
+    var tgElm = $(thisElm.attr("href"));
+
+    $("#spNav li:not(#" + thisParentId + ")").removeClass("selected");
+    $("#spNav li:not(#" + thisParentId + ") a[href^='#']").each(function() {
+      $($(this).attr("href")).slideUp(0);
+    });
+    thisElm.parent("li").toggleClass("selected");
+    tgElm.slideToggle(0);
+
+    return false;
+  });
+
+  //サイドナビ表示
+  var spNavFlag = false;
+  $("#spNavMenu a").click(function() {
+    if (!(spNavFlag)) {
+      $("nav").show();
+      $("article").css({
+        "position": "relative",
+        "overflow-x" : "hidden"
+      });
+      $("#articleWrap").css({
+        "position": "relative",
+        "left" : "180px"
+      });
+      spNavFlag = true;
+    } else {
+      $("nav").hide();
+      $("article").css({
+        "position": "static",
+        "overflow-x" : "visible"
+      });
+      $("#articleWrap").css({
+        "position": "static",
+        "left" : "0"
+      });
+      spNavFlag = false;
+    }
+
+    return false;
+  });
+
+  //インフォメーションバー閉じる
+  $(document).on("click", ".success .close, .alert .close, .error .close, .info .close, .caution .close",function() {
+    $(this).parent().parent().parent("section").hide();
+    return false;
+  });
+
+  //tableスマホ対策
+  setTableMinWidth();
+  $("#option_setting :checkbox").on("click", function() {
+    var $setTableMinWidthTimer = setTimeout(function() {
+      setTableMinWidth();
+    }, 200);
+  })
+  $('.tabMenu').on("click", function () {
+    setTableMinWidth();
+  });
+  function setTableMinWidth() {
+    $(".generalTable").each(function() {
+      var columnSize = $(this).find("tr:first-child th:visible").length;
+      $(this).css("min-width", columnSize + "20px");
+    });
+  }
+
+  $(".section.column2:not(.nofix) .wrap").fixHeightSimple({
+    column : 2,
+    responsive : true,
+    responsiveWidth : 840
+  });
+  $(".section.column3 .wrap").fixHeightSimple({
+    column : 3,
+    responsive : true,
+    responsiveWidth : 840
+  });
+  $(".section.column4 .wrap").fixHeightSimple({
+    column : 4,
+    responsive : true,
+    responsiveWidth : 840
+  });
+  $(".refineSearchArea.column2 .box").fixHeightSimple({
+    column : 2,
+    responsive : true,
+    responsiveWidth : 400
+  });
+  $(".refineSearchArea.column3 .box").fixHeightSimple({
+    column : 3,
+    responsive : true,
+    responsiveWidth : 400
+  });
+  $(".refineSearchArea.column4 .box").fixHeightSimple({
+    column : 4,
+    responsive : true,
+    responsiveWidth : 400
+  });
+  $(".refineSearchArea.column5 .box").fixHeightSimple({
+    column : 5,
+    responsive : true,
+    responsiveWidth : 400
+  });
+
+  //絞り込み検索開閉
+  $(".refineSearch").click(function() {
+    $(".refineSearchArea").toggle(0, function() {
+      $(".refineSearchArea .box").css("height" ,"auto");
+      $(window).resize();
+    });
+  });
+
+  //絞り込み検索カスタムフィールドエリア開閉
+  var fieldsSearchFlag = true;
+  $(document).on("click", ".refineSearchArea .openFields", function() {
+    if (fieldsSearchFlag) {
+      $(".fieldsSearch").show();
+      $(".refineSearchArea .box").css("height" ,"auto");
+      $(window).resize();
+      $(this).val("拡張フィールド検索を閉じる");
+      fieldsSearchFlag = false;
+    } else {
+      $(".fieldsSearch").hide();
+      $(this).val("拡張フィールド検索");
+      $(".fieldsSearch :text").val('');
+      $(".fieldsSearch :radio, .fieldsSearch :checkbox").removeAttr('checked');
+      fieldsSearchFlag = true;
+    }
+  });
+
+  //一括チェック
+  $(".generalTable th.checkbox :checkbox").click(function() {
+    if ($(this).prop("checked")) {
+      $(this).parents("table").find("td.checkbox :checkbox").prop("checked",true);
+    } else {
+      $(this).parents("table").find("td.checkbox :checkbox").prop("checked",false);
+    }
+  });
+
+  //タブパネル
+  if($('.tabMenu').length > 0){
+    $('.tabMenu a:not(.selected)').each(function(){
+        $($(this).attr('href')).hide();
+    });
+    $(document).on('click', '.tabMenu a', function(){
+      var $clicked = $(this);
+      if(!$clicked.hasClass('disabled')){
+        $clicked.addClass('selected');
+        $($clicked.attr('href')).show();
+        $clicked.closest('.tabMenu').find('a').not(this).each(function() {
+          var $noClicked = $(this);
+          $noClicked.removeClass('selected');
+          $($noClicked.attr('href')).hide();
+        })
+      }
+      return false;
+    });
+  }
+  if($('.tabMenuSelect').length > 0){
+    $(document).on('change', '.tabMenuSelect', function(){
+      var $select = $(this);
+      $($select.val()).show();
+      $select.children('option').not(':selected').each(function() {
+        $($(this).val()).hide();
+      });
+      var id = $select.val();
+      id = id.split('_');
+      var selectedTmpLang = id[2];
+      localStorage.setItem('selectedTmpLang', selectedTmpLang);
+      $('.tabMenuSelect').not(this).each(function () {
+        var $otherSelect = $(this);
+        var id = $otherSelect.children().first().val();
+        id = id.split('_');
+        $otherSelect.val(id[0] + '_' + id[1] + '_' + selectedTmpLang);
+        $(id[0] + '_' + id[1] + '_' + selectedTmpLang).show();
+        $otherSelect.children('option').not('[value="' + id[0] + '_' + id[1] + '_' + selectedTmpLang + '"]').each(function() {
+          $($(this).val()).hide();
+        });
+      });
+      return false;
+    });
+
+    var selectedTmpLang = localStorage.getItem('selectedTmpLang');
+    if(selectedTmpLang) {
+      $('.tabMenuSelect').each(function () {
+        var $select = $(this);
+        var id = $select.children().first().val();
+        id = id.split('_');
+        $(this).val(id[0] + '_' + id[1] + '_' + selectedTmpLang).trigger('change');
+      });
+    }
+    $('.tabMenuSelect > option').not(':selected').each(function(){
+        $($(this).val()).hide();
+    });
+  }
+
+  // 削除の確認
+  $(".delete").click(function() {
+    return deleteConfirm($(this).attr("href"));
+  });
+
+  //サムネイル画像のcanvas表示
+  if ($(".thumbnailCanvas").size() > 0) {
+    var cnt = 1, //preset counter
+      $canvas = [], //preset array for canvas
+      canvasWidth = 140, //preset canvas width
+      canvasHeight = 140 //preset canvas height
+        $(".thumbnailCanvas").each(function() {
+          var imgSrc = $(this).attr("data-src"), //get image src
+          $img = new Image(); //load Image Object
+          $img.src = imgSrc; //set src to Image Object
+          var canvasId = "thumbnailCanvas" + cnt;
+          $(this).attr("id", canvasId);
+
+          //preparate canvas
+          $canvas[cnt] = document.getElementById(canvasId);
+          var $ctx = $canvas[cnt].getContext('2d');
+
+          $img.onload = function() {
+            var imgWidth = $img.width, //get a image normal width
+            imgHeight = $img.height, //get a image normal height
+            imgRatio = imgWidth / imgHeight, //get a image aspect ratio
+            imgPos = 0, //preset image position in canvas
+            reductionRatio = 1;
+
+            if (imgRatio > 1) {
+              reductionRatio = canvasHeight / imgHeight;
+              imgPos = (canvasWidth - (imgWidth * reductionRatio)) / 2;
+              $ctx.drawImage($img, imgPos, 0, imgWidth * reductionRatio, imgHeight * reductionRatio); //rendering image in canvas
+            } else {
+              reductionRatio = canvasWidth / imgWidth;
+              imgPos = (canvasHeight - (imgHeight * reductionRatio)) / 2; //calculate a image vetical position
+              $ctx.drawImage($img, 0, imgPos, imgWidth * reductionRatio, imgHeight * reductionRatio); //rendering image in canvas
+            }
+          }
+
+          cnt++; //set counter
+        });
+  }
+
+  //一括処理のチェックボックス
+  var $tableCheck = $("td.checkbox"),
+  $tableCheckbox = $tableCheck.find("input");
+  if ($tableCheckbox.size() > 0) {
+    $tableCheckbox.click(function(e) {
+      e.stopPropagation();
+    });
+    $tableCheck.click(function() {
+      $(this).children("input").click();
+      return false;
+    });
+  }
+});
+
+function deleteConfirm(tgHref) {
+  if (!window.confirm("本当に削除しますか？")) {
+    return false;
+  }
+  location.href = tgHref;
+}
+
+function updateIdsValue(idsHdn, ids) {
+  var idsHdn = $(idsHdn);
+  var ids = $('[name="'+ids+'"]');
+  var index;
+  var list = '';
+  for (index = 0; index < ids.length; index++ ) {
+    id = ids[index];
+    if (id.checked) {
+      list += id.value + ',';
+    }
+  }
+  idsHdn.val(list.substr(0,list.length-1));
+}
+
+function checkIdsValue(ids, msg) {
+  var ids = $('[name="'+ids+'"]');
+  var index;
+  var list = '';
+  var listlen = 0;
+  for (index = 0; index < ids.length; index++ ) {
+    id = ids[index];
+    if (id.checked) {
+      list += id.value + ',';
+      listlen = listlen+1;
+    }
+  }
+  if (list.length < 1) {
+    alert(msg);
+    return false;
+  }
+
+  return listlen;
+}
+
+// 小数点を含む数字列を3桁カンマ区切りに整形する
+function delimitNum(num) {
+  var str = num.toString();
+  // 小数点の有無で正規表現パターンを切り替える
+  var exp = new RegExp((str.indexOf('.') > -1) ?  '(\\d)(?=(\\d{3})+(\\.\\d+))' : '(\\d)(?=(\\d{3})+$)', 'g');
+  return str.replace(exp, '$1,');
+}
+
+function escapeJsonResult(value) {
+  if (typeof value !== 'string') return value;
+  return value.replace(/[&'`"<>]/g, function(match) {
+    return {
+      '&': '&amp;',
+      "'": '&#x27;',
+      '`': '&#x60;',
+      '"': '&quot;',
+      '<': '&lt;',
+      '>': '&gt;',
+    }[match]
+  });
+}
+
+/**
+ * チェックボックス
+ */
+function initIds(){
+    updateIdsValue('#idsHdn', 'ids[]');
+    var idsHdn = $("#idsHdn").val();
+    if (!idsHdn) {
+      $("#idsHdn").val($("#unchecked_ids").val());
+    }
+}
+
+/**
+ * テンプレートの {$キー$} にアイテムの値を置換
+ * @param  {String} template アイテムのテンプレート
+ * @param  {Object} item     アイテムのデータ
+ * @return {String}          実際の値が入ったアイテムの文字列
+ */
+function setItemValues(template, item) {
+  for(var key in item) {
+    template = template.replace(new RegExp("\\{\\$" + key + "\\$\\}", "g"), item[key]);
+  }
+  template = template.replace(new RegExp("\\{\\$.*?\\$\\}", "g"), "");
+  return template;
+}
+
+function viewLoading()
+{
+  $modal = $(".bgModal");
+  $loading = $(".loading");
+
+  $modal.show();
+  $loading.show();
+}
+function hideLoading()
+{
+  $modal = $(".bgModal");
+  $loading = $(".loading");
+
+  $modal.hide();
+  $loading.hide();
+}
+
+</script>
+
+<script type="text/javascript">
+var touchDevice = ("ontouchstart" in window) ? true : false,
+    ua = window.navigator.userAgent.toLowerCase();
+if(!(ua.indexOf("android") > -1 || ua.indexOf("iphone") > -1 || ua.indexOf("ipad") > -1 || ua.indexOf("ipod") > -1))
+    touchDevice = false;
+if (touchDevice) {
+    $("head link:last").after("<link rel='stylesheet' type='text/css' href='/system/css/touch-device.css'>");
+}
+
+$(function(){
+
+    $( '#cacheClear a' ).click(function(){
+        $.ajax({
+            type: "POST",
+            url: "/admin/system/cache/clear",
+            data: {},
+            beforeSend: function(xhr, settings) {
+                $('#cacheClear').hide();
+                $('#cacheClearOn').css("display", "inline-block");
+            },
+            success: function(data, status, xhr){
+                if (data.responseCode == '400') {
+                    $('#cacheClear').css("display", "inline-block");
+                    $('#cacheClearOn').hide();
+                    $("h2").after('<section class="section column1 error cf"><div class="wrap"><p class="cf newLine"><a href="#" class="close">' + "閉じる" + '</a>' + "キャッシュクリアに失敗しました" +'</p></div></section>');
+                } else {
+                    $('#cacheClear').css("display", "inline-block");
+                    $('#cacheClearOn').hide();
+                }
+            },
+            error: function(xhr, status){
+                $('#cacheClear').css("display", "inline-block");
+                $('#cacheClearOn').hide();
+                $("h2").after('<section class="section column1 error cf"><div class="wrap"><p class="cf newLine"><a href="#" class="close">' + "閉じる" + '</a>' + "キャッシュクリアに失敗しました" +'</p></div></section>');
+            },
+        });
+        return false;
+    });
+
+    $( '#spNavCacheClear a' ).click(function(){
+        $.ajax({
+            type: "POST",
+            url: "/admin/system/cache/clear",
+            data: {},
+            beforeSend: function(xhr, settings) {
+                $('#spNavCacheClear').hide();
+                $('#spNavCacheClearOn').show();
+            },
+            success: function(data, status, xhr){
+                if (data.responseCode == '400') {
+                    $('#spNavCacheClear').show();
+                    $('#spNavCacheClearOn').hide();
+                    $("h2").after('<section class="section column1 error cf"><div class="wrap"><p class="cf newLine"><a href="#" class="close">' + "閉じる" + '</a>' + "キャッシュクリアに失敗しました" +'</p></div></section>');
+                } else {
+                    $('#spNavCacheClear').show();
+                    $('#spNavCacheClearOn').hide();
+                }
+            },
+            error: function(xhr, status){
+                $('#spNavCacheClear').show();
+                $('#spNavCacheClearOn').hide();
+                $("h2").after('<section class="section column1 error cf"><div class="wrap"><p class="cf newLine"><a href="#" class="close">' + "閉じる" + '</a>' + "キャッシュクリアに失敗しました" +'</p></div></section>');
+            },
+        });
+        return false;
+    });
+});
+</script>
+
+<!--[if lt IE 9]>
+<script src="/system/js/html5shiv.js"></script>
+<![endif]-->
+
+<!--[if IE 6]>
+<script type="text/javascript" src="/system/js/DD_belatedPNG_0.0.8a-min.js"></script>
+<script type="text/javascript">
+DD_belatedPNG.fix('body *');
+</script>
+<![endif]-->
+</head>
+
+<body>
+  <div class="bgModal">
+  </div>
+  <header class="cf">
+    <h1 class="sp">
+      <a href="/admin/">
+        <img src="/system/images/logo.png" width="130" alt="LaunchCart">
+      </a>
+    </h1>
+    <ul id="spNav" class="cf">
+      <li id="spNavMenu">
+        <a href="#">
+          <img src="/system/images/ico_menu_sp.png" width="32" alt="MENU">
+        </a>
+      </li>
+      <li id="spNavHome">
+        <a href="/">
+          <img src="/system/images/ico_home_sp.png" width="32" alt="HOME">
+        </a>
+      </li>
+            <li id="spNavCacheClear">
+        <a href="#">
+          <img src="/system/images/ico_cacheclear_off_sp.png" width="32" alt="CACHE CLEAR">
+        </a>
+      </li>
+      <li id="spNavCacheClearOn">
+        <span>
+          <img src="/system/images/ico_cacheclear_on_sp.gif" width="32" alt="CACHE CLEAR">
+        </span>
+      </li>
+      <li id="spNavAccount">
+        <a href="#accountMenu">
+          <img src="/system/images/ico_user_sp.png" width="32" alt="ACCOUNT">
+        </a>
+      </li>
+    </ul>
+    <h1>
+      <a href="/admin/">
+        <img src="/system/images/logo.png" width="130" alt="LaunchCart">
+      </a>
+    </h1>
+    <p id="siteName"  class="is-testMode"  >
+            <a href="/" target="_blank">
+        LaunchCart DEMO<span class="view">&nbsp;&nbsp;サイトを表示</span>
+      </a>
+            <span class="balloonAlert">カード決済　テストモード</span>
+          </p>
+    <ul id="managementArea" class="cf">
+                  <li>
+        <a href="http://launchcart.jp/docs/" target="_blank">
+          <span class="title">使い方</span>
+        </a>
+      </li>
+            <li id="cacheClear">
+        <a href="#">
+          <span class="title">キャッシュクリア</span>
+        </a>
+      </li>
+      <li id="cacheClearOn">
+        <p><span class="title">キャッシュクリア</span></p>
+      </li>
+            <li id="account">
+        <a href="#accountMenu">
+          <span class="title">
+          demo
+          </span>
+        </a>
+        <span class="arrow"></span>
+      </li>
+    </ul>
+  </header>
+  <nav>
+  <ul>
+    <!-- TODO 権限の再分化とチェックの追加 -->
+    <!-- TODO ナビのliにselected追加とaのarrow2にselectedの追加 -->
+    <li id="navDashbord"><span class="cf dspBl"><a href="/admin/"><span class="icon"></span><span class="title noArrow">ダッシュボード</span></a></span><span class="arrow"></span></li>            <li id="navProducts" class="selected"><span class="cf dspBl"><a href="/admin/ec/product"><span class="icon"></span><span class="title">商品</span></a><a href="#" class="arrow2 selected"></a></span><span class="arrow"></span>
+      <ul class="subNav" style="display:block">
+        <li><a href="/admin/ec/product">一覧</a></li>
+        <li><a href="/admin/ec/product/add">新規作成</a></li>
+        <li><a href="/admin/ec/product_category/">カテゴリ</a></li>
+        <li><a href="/admin/ec/addition">オプション商品</a></li>
+        <li><a href="/admin/ec/sku/">SKU管理</a></li>
+        <li><a href="/admin/ec/product/regular_int">配送頻度</a></li>
+      </ul>
+    </li>
+                <li id="navPage" class=""><span class="cf dspBl"><a href="/admin/page"><span class="icon"></span><span class="title">ページ</span></a><a href="#" class="arrow"></a><a href="#" class="arrow2 "></a></span><span class="arrow"></span>
+      <ul class="subNav" >
+        <li><a href="/admin/page">一覧</a></li>
+        <li><a href="/admin/page/add">新規作成</a></li>
+        <li><a href="/admin/page_category/">カテゴリ</a></li>
+      </ul>
+    </li>
+                <li id="navItem" class=""><span class="cf dspBl"><a href="/admin/media"><span class="icon"></span><span class="title">アイテム</span></a><a href="#" class="arrow"></a><a href="#" class="arrow2 "></a></span><span class="arrow"></span>
+      <ul class="subNav" >
+        <li><a href="/admin/media">一覧</a></li>
+        <li><a href="/admin/media/add">新規作成</a></li>
+      </ul>
+    </li>
+                <li id="navDesign" class=""><span class="cf dspBl"><a href="/admin/template/pc"><span class="icon"></span><span class="title">デザイン</span></a><a href="#" class="arrow"></a><a href="#" class="arrow2 "></a></span><span class="arrow"></span>
+      <ul class="subNav" >
+        <li><a href="/admin/template/pc">PCテンプレート</a></li>
+        <li><a href="/admin/template/mail">メールテンプレート</a></li>
+        <li><a href="/admin/template/pdf">PDFテンプレート</a></li>
+      </ul>
+    </li>
+                <li id="navUser" class=""><span class="cf dspBl"><a href="/admin/auth/list"><span class="icon"></span><span class="title">ユーザー</span></a><a href="#" class="arrow"></a><a href="#" class="arrow2 "></a></span><span class="arrow"></span>
+      <ul class="subNav" >
+        <li><a href="/admin/auth/list">一覧</a></li>
+        <li><a href="/admin/auth/add">新規作成</a></li>
+      </ul>
+    </li>
+                <li id="navSetting" class=""><span class="cf dspBl"><a href="/admin/system/settings"><span class="icon"></span><span class="title">設定</span></a><a href="#" class="arrow"></a><a href="#" class="arrow2 "></a></span><span class="arrow"></span>
+      <ul class="subNav" >
+        <li><a href="/admin/system/settings">システム設定</a></li>
+        <li><a href="/admin/custom_field/">拡張フィールド</a></li>
+        <li><a href="/admin/routing/">ルーティング</a></li>
+        <li><a href="/admin/ec/delivery">配送管理</a></li>
+        <li><a href="/admin/ec/payment/">支払管理</a></li>
+        <li><a href="/admin/ec/closeday/">休業日管理</a></li>
+                          <li><a href="https://dev-ninomiya.sterfield.co.jp:443/admin/plugin/launchcart_payment/credit/setting">決済管理</a></li>
+                <li><a href="/admin/sitemaps/">サイトマップ</a></li>
+        <li><a href="/admin/social/">ソーシャルログイン</a></li>
+              </ul>
+    </li>
+                  <li id="navMarketing" class="">
+        <span class="cf dspBl">
+          <a href="/admin/ec/enquete/">
+                      <span class="icon"></span><span class="title">マーケティング</span>
+          </a>
+          <a href="#" class="arrow"></a><a href="#" class="arrow2"></a>
+        </span>
+        <span class="arrow"></span>
+        <ul class="subNav" class="">
+                  <li><a href="/admin/ec/enquete/">フォーム</a></li>
+          <li><a href="/admin/ec/coupon">シリアル</a></li>
+          <li><a href="/admin/ec/coupon_code">クーポン</a></li>
+          <li><a href="/admin/ec/product_review">商品レビュー</a></li>
+          <li><a href="/admin/ec/step_message">ステップメール</a></li>
+                <li><a href="/admin/ec/publicity_agency">キャンペーン</a></li>
+        <li><a href="/admin/ec/tag_summary">分析</a></li>
+        </ul>
+      </li>
+                <li id="navCustomer" class=""><span class="cf dspBl"><a href="/admin/ec/consumer"><span class="icon"></span><span class="title">顧客</span></a><a href="#" class="arrow"></a><a href="#" class="arrow2 "></a></span><span class="arrow"></span>
+      <ul class="subNav" >
+        <li><a href="/admin/ec/consumer">一覧</a></li>
+        <li><a href="/admin/ec/consumer/add">新規作成</a></li>
+        <li><a href="/admin/ec/consumer_rank/">会員ランク</a></li>
+        <li><a href="/admin/ec/consumer/identify">名寄せ</a></li>
+      </ul>
+    </li>
+                <li id="navOrder" class=""><span class="cf dspBl"><a href="/admin/ec/order"><span class="icon"></span><span class="title">受注</span></a><a href="#" class="arrow"></a><a href="#" class="arrow2 "></a></span><span class="arrow"></span>
+      <ul class="subNav" >
+        <li><a href="/admin/ec/order">一覧</a></li>
+        <li><a href="/admin/ec/order/add">新規作成</a></li>
+        <li><a href="/admin/ec/order/setting">タグ管理</a></li>
+        <li><a href="/admin/ec/order_csv">受注CSV管理</a></li>
+        <li><a href="/admin/ec/order/compare_sales">消し込み</a></li>
+        <li><a href="/admin/ec/order_regular">定期購入管理</a></li>
+        <li><a href="/admin/ec/order/inquiry_number_csv">お問い合わせ番号登録</a></li>
+        <li><a href="/admin/ec/order/cancel_orders">受注一括キャンセル</a></li>
+      </ul>
+    </li>
+                <li id="navSales" class=""><span class="cf dspBl"><a href="/admin/ec/sales"><span class="icon"></span><span class="title">売上</span></a><a href="#" class="arrow"></a><a href="#" class="arrow2 "></a></span><span class="arrow"></span>
+      <ul class="subNav" >
+        <li><a href="/admin/ec/sales">一覧</a></li>
+      </ul>
+    </li>
+              </ul>
+</nav>
+  <article class="cf">
+    <section class="headerOptions" id="accountMenu">
+      <div class="group">
+        <ul>
+          <li>
+                        <a href="/admin/auth/edit/1">ユーザー設定</a>
+                      </li>
+          <li>
+            <a href="/admin/auth/logout">ログアウト</a>
+          </li>
+        </ul>
+      </div>
+    </section>
+        <noscript>JavaScriptを有効にしてご利用ください</noscript>
+
+    <div id="articleWrap" class="cf">
+      <h2 class="cf"><span>商品編集</span></h2>
+                              <form name="ec_admin_product_form" method="post">
+  <div class="editSideColumn">
+                  <section class="section open" id="productStatus">
+          <div class="wrap">
+            <h3>状態</h3>
+            <div class="content">
+              <ul>
+                <li><label><input type="radio" name="ec_admin_product_form[release_status]" value="0" checked="checked"> 公開 <span class="inputNote">- 直ちに公開されます</span></label></li>
+                <li><label><input type="radio" name="ec_admin_product_form[release_status]" value="1" > 非公開 <span class="inputNote">- 公開されません</span></label></li>
+                <li>
+                  <label>
+                    <input type="radio" name="ec_admin_product_form[release_status]" value="2" > 公開日指定 <span class="inputNote">- 指定日時に自動的に公開されます</span>
+                    <p class="date">
+                    開始日:　<input type="text" id="ec_admin_product_form_released_at" name="ec_admin_product_form[released_at]" required="required" class="datepicker text" size="16" value="2019-09-30 19:37" /><br>
+                    <img src="/system/images/ico_wavedash.png" width="4" class="wavedash"><br>
+                    終了日:　<input type="text" id="ec_admin_product_form_available_before" name="ec_admin_product_form[available_before]" required="required" class="datepicker text" size="16" />
+                    </p>
+                    <span class="error"></span><span class="error"></span><span class="error"></span>
+                  </label>
+                </li>
+              </ul>
+              <p class="button"><input type="submit" class="submit" value="編 集"></p>
+            </div>
+          </div>
+        </section>
+                        <section class="section open" id="productInfo">
+          <div class="wrap">
+            <h3><span class="toggle">開く ▼</span>基本情報</h3>
+            <div class="content">
+              <ul class="textboxes">
+                <li><label><span class="title">商品コード</span><input type="text" id="ec_admin_product_form_code" name="ec_admin_product_form[code]" required="required" class="text" maxlength="255" value="lss-01" /><span class="error"></span></label></li>
+                <li class="common_display">
+                  <label><span class="title">在庫制限</span><input type="text" id="ec_admin_product_form_stock" name="ec_admin_product_form[stock]" required="required" class="text" maxlength="10" value="0" /></label><br>
+                  <ul id="ec_admin_product_form_stock_unlimited"><li><input type="checkbox" id="ec_admin_product_form_stock_unlimited_0" name="ec_admin_product_form[stock_unlimited][]" value="1" checked="checked" /><label for="ec_admin_product_form_stock_unlimited_0">無制限</label></li></ul><span class="error"></span><span class="error"></span>
+                </li>
+                <li class="gift_hidden">
+                <label>
+                <span class="title">価格</span>
+                                                <input type="text" id="ec_admin_product_form_price" name="ec_admin_product_form[price]" required="required" class="text" maxlength="23" value="2393" />
+                <span class="error"></span>
+                </label>
+                </li>
+                <li class="gift_hidden"><label><span class="title">ポイント還元率(%)</span><input type="text" id="ec_admin_product_form_point_rate" name="ec_admin_product_form[point_rate]" required="required" class="text" maxlength="2" value="0" /><span class="error"></span></label></li>
+                <li class="">
+                  <span class="title">購入制限</span>
+                  <input type="text" id="ec_admin_product_form_max_order" name="ec_admin_product_form[max_order]" required="required" class="text" maxlength="2" value="0" />
+                  <span class="error"></span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+                        <section class="section open" id="productGroup">
+          <div class="wrap">
+            <h3><span class="toggle">開く ▼</span>
+            <span>商品を選択</span></h3>
+            <div class="groupShow">
+              <div class="content">
+                <span class="error"></span>
+                <p><input type="button" data-src="" class="button openPopupProduct" value="商品追加＋">
+                </p>
+                <div class="productList isSideColumn" id="addedProducts">
+                    <input type="hidden" id="prt_cnt" value="0"/>
+                                    </div>
+              </div>
+            </div>
+
+            <div class="regularShow">
+            <div class="content">
+              <p><a href="/admin/ec/product_gift/1">※同梱物設定</a></p>
+              </div>
+            </div>
+          </div>
+        </section>
+                        <section class="section open" id="productType">
+          <div class="wrap">
+            <h3><span class="toggle">開く ▼</span>商品タイプ</h3>
+            <div class="content">
+              <span class="error"></span> <ul id="ec_admin_product_form_product_type" class="optionsList"><li><input type="radio" id="ec_admin_product_form_product_type_0" name="ec_admin_product_form[product_type]" required="required" value="common" checked="checked" /><label for="ec_admin_product_form_product_type_0" class="required">通常</label></li><li><input type="radio" id="ec_admin_product_form_product_type_1" name="ec_admin_product_form[product_type]" required="required" value="regular_group" /><label for="ec_admin_product_form_product_type_1" class="required">定期購入</label></li><li><input type="radio" id="ec_admin_product_form_product_type_2" name="ec_admin_product_form[product_type]" required="required" value="common_group" /><label for="ec_admin_product_form_product_type_2" class="required">セット品</label></li><li><input type="radio" id="ec_admin_product_form_product_type_3" name="ec_admin_product_form[product_type]" required="required" value="gift" /><label for="ec_admin_product_form_product_type_3" class="required">非売品</label></li></ul>
+            </div>
+          </div>
+        </section>
+                        <section class="section open" id="productRegular">
+          <div class="wrap">
+            <h3><span class="toggle">開く ▼</span>配送頻度</h3>
+            <div class="content">
+              <ul class="textboxes">
+                <li><label><span class="title">配送頻度</span><ul id="ec_admin_product_form_regular_intervals" class="optionsList"><li><input type="checkbox" id="ec_admin_product_form_regular_intervals_1" name="ec_admin_product_form[regular_intervals][]" value="1" />
+                            1ヶ月
+             </li><li><input type="checkbox" id="ec_admin_product_form_regular_intervals_2" name="ec_admin_product_form[regular_intervals][]" value="2" />
+                            2ヶ月
+             </li><li><input type="checkbox" id="ec_admin_product_form_regular_intervals_3" name="ec_admin_product_form[regular_intervals][]" value="3" />
+                            4ヶ月
+             </li><li><input type="checkbox" id="ec_admin_product_form_regular_intervals_4" name="ec_admin_product_form[regular_intervals][]" value="4" />
+                            1週
+             </li><li><input type="checkbox" id="ec_admin_product_form_regular_intervals_5" name="ec_admin_product_form[regular_intervals][]" value="5" />
+                            1日
+             </li><li><input type="checkbox" id="ec_admin_product_form_regular_intervals_6" name="ec_admin_product_form[regular_intervals][]" value="6" />
+                            1年
+             </li><li><input type="checkbox" id="ec_admin_product_form_regular_intervals_7" name="ec_admin_product_form[regular_intervals][]" value="7" />
+                            2週
+             </li><li><input type="checkbox" id="ec_admin_product_form_regular_intervals_8" name="ec_admin_product_form[regular_intervals][]" value="8" />
+                            2日
+             </li><li><input type="checkbox" id="ec_admin_product_form_regular_intervals_9" name="ec_admin_product_form[regular_intervals][]" value="9" />
+                            2年
+             </li></ul><span class="error"></span></label></li>
+                <li><label><span class="title">最低利用回数</span><input type="text" id="ec_admin_product_form_regular_min" name="ec_admin_product_form[regular_min]" required="required" maxlength="10" value="0" /><span class="error"></span></label></li>
+              </ul>
+            </div>
+          </div>
+        </section>
+                        <section class="section open" id="productAddition">
+          <div class="wrap">
+            <h3><span class="toggle">開く ▼</span>オプション商品</h3>
+            <div class="content">
+              <span class="error"></span><ul id="ec_admin_product_form_additions" class="optionsList"><li><input type="checkbox" id="ec_admin_product_form_additions_1" name="ec_admin_product_form[additions][]" value="1" checked="checked" /><label for="ec_admin_product_form_additions_1">ギフト包装</label></li></ul>
+            </div>
+          </div>
+        </section>
+                        <section class="section open" id="productSku">
+          <div class="wrap">
+            <h3><span class="toggle">開く ▼</span>SKU</h3>
+            <div class="content">
+              <span class="error"></span><span class="error"></span>
+              <ul class="optionsList">
+                <li>SKU1<select id="ec_admin_product_form_sku1" name="ec_admin_product_form[sku1]" class="unique_sku"><option value="">選択してください(SKU1)</option><option value="6" selected="selected">Size</option><option value="7">Color</option></select></li>
+                <li>SKU2<select id="ec_admin_product_form_sku2" name="ec_admin_product_form[sku2]" class="unique_sku"><option value="">選択してください(SKU2)</option><option value="6">Size</option><option value="7" selected="selected">Color</option></select></li>
+              </ul>
+            </div>
+          </div>
+        </section>
+                        <section class="section open" id="productDelivery">
+          <div class="wrap">
+            <h3><span class="toggle">開く ▼</span>配送業者</h3>
+            <div class="content">
+              <select id="ec_admin_product_form_delivery" name="ec_admin_product_form[delivery]" required="required"><option value="">配送方法を選択</option><option value="1" selected="selected">通常配送</option></select><span class="error"></span>
+            </div>
+          </div>
+        </section>
+                        <section class="section open" id="productPayment">
+          <div class="wrap">
+            <h3><span class="toggle">開く ▼</span>支払方法</h3>
+            <div class="content">
+              <span class="error"></span><ul id="ec_admin_product_form_payments" class="optionsList"><li><input type="checkbox" id="ec_admin_product_form_payments_2" name="ec_admin_product_form[payments][]" value="2" checked="checked" /><label for="ec_admin_product_form_payments_2">代金引換</label></li><li><input type="checkbox" id="ec_admin_product_form_payments_3" name="ec_admin_product_form[payments][]" value="3" checked="checked" /><label for="ec_admin_product_form_payments_3">クレジットカード</label></li><li><input type="checkbox" id="ec_admin_product_form_payments_4" name="ec_admin_product_form[payments][]" value="4" checked="checked" /><label for="ec_admin_product_form_payments_4">China UnionPay(银联银行卡)</label></li><li><input type="checkbox" id="ec_admin_product_form_payments_5" name="ec_admin_product_form[payments][]" value="5" checked="checked" /><label for="ec_admin_product_form_payments_5">アリペイ(支付宝)</label></li><li><input type="checkbox" id="ec_admin_product_form_payments_6" name="ec_admin_product_form[payments][]" value="6" checked="checked" /><label for="ec_admin_product_form_payments_6">WeChatPay(微信支付)</label></li><li><input type="checkbox" id="ec_admin_product_form_payments_16" name="ec_admin_product_form[payments][]" value="16" checked="checked" /><label for="ec_admin_product_form_payments_16">PayPal</label></li></ul>
+            </div>
+          </div>
+        </section>
+                        <section class="section open" id="productCategory">
+          <div class="wrap">
+            <h3><span class="toggle">開く ▼</span>カテゴリ</h3>
+            <div class="content" id="category_checkbox">
+               <span class="error"></span><ul id="ec_admin_product_form_categories"><li><input type="checkbox" class="category_checkbox" id="ec_admin_product_form_categories_1" name="ec_admin_product_form[categories][1]" value="1" ><label for="ec_admin_product_form_categories_1">Womens</label></li><li><input type="checkbox" class="category_checkbox" id="ec_admin_product_form_categories_2" name="ec_admin_product_form[categories][2]" value="2" ><label for="ec_admin_product_form_categories_2">Mens</label><ul><li><input type="checkbox" class="category_checkbox" id="ec_admin_product_form_categories_13" name="ec_admin_product_form[categories][13]" value="13" checked=checked><label for="ec_admin_product_form_categories_13">T-shirt</label></li></ul></li><li><input type="checkbox" class="category_checkbox" id="ec_admin_product_form_categories_3" name="ec_admin_product_form[categories][3]" value="3" ><label for="ec_admin_product_form_categories_3">Solid Color</label></li><li><input type="checkbox" class="category_checkbox" id="ec_admin_product_form_categories_4" name="ec_admin_product_form[categories][4]" value="4" ><label for="ec_admin_product_form_categories_4">Printed</label></li><li><input type="checkbox" class="category_checkbox" id="ec_admin_product_form_categories_5" name="ec_admin_product_form[categories][5]" value="5" ><label for="ec_admin_product_form_categories_5">Old Clothes</label></li><li><input type="checkbox" class="category_checkbox" id="ec_admin_product_form_categories_6" name="ec_admin_product_form[categories][6]" value="6" ><label for="ec_admin_product_form_categories_6">Top Sallers</label><ul><li><input type="checkbox" class="category_checkbox" id="ec_admin_product_form_categories_7" name="ec_admin_product_form[categories][7]" value="7" checked=checked><label for="ec_admin_product_form_categories_7">1</label></li><li><input type="checkbox" class="category_checkbox" id="ec_admin_product_form_categories_8" name="ec_admin_product_form[categories][8]" value="8" ><label for="ec_admin_product_form_categories_8">2</label></li><li><input type="checkbox" class="category_checkbox" id="ec_admin_product_form_categories_9" name="ec_admin_product_form[categories][9]" value="9" ><label for="ec_admin_product_form_categories_9">3</label></li><li><input type="checkbox" class="category_checkbox" id="ec_admin_product_form_categories_10" name="ec_admin_product_form[categories][10]" value="10" ><label for="ec_admin_product_form_categories_10">4</label></li><li><input type="checkbox" class="category_checkbox" id="ec_admin_product_form_categories_11" name="ec_admin_product_form[categories][11]" value="11" ><label for="ec_admin_product_form_categories_11">5</label></li></ul></li><li><input type="checkbox" class="category_checkbox" id="ec_admin_product_form_categories_12" name="ec_admin_product_form[categories][12]" value="12" checked=checked><label for="ec_admin_product_form_categories_12">Featured Products</label></li></ul>
+            </div>
+          </div>
+        </section>
+                        <section class="section" id="productCategoryNew">
+          <div class="wrap">
+            <h3><span class="toggle">開く ▼</span>カテゴリ新規作成</h3>
+            <div class="content">
+              <ul class="textboxes">
+                <li id="category_selectbox">
+                  <span class="title">親カテゴリ</span>
+                  <select id="ec_admin_product_category_type_parent" name="ec_admin_product_category_type[parent]"><option value="">(トップレベル)</option><option value="1">Womens</option><option value="2">Mens</option><option value="13">&nbsp;&nbsp;T-shirt</option><option value="3">Solid Color</option><option value="4">Printed</option><option value="5">Old Clothes</option><option value="6">Top Sallers</option><option value="7">&nbsp;&nbsp;1</option><option value="8">&nbsp;&nbsp;2</option><option value="9">&nbsp;&nbsp;3</option><option value="10">&nbsp;&nbsp;4</option><option value="11">&nbsp;&nbsp;5</option><option value="12">Featured Products</option></select>
+                </li>
+                <li>
+                  <span class="title">商品カテゴリ</span>
+                  <input type="text" id="ec_admin_product_category_type_name" name="ec_admin_product_category_type[name]" required="required" maxlength="255" />
+                </li>
+              </ul>
+              <p class="button"><input id="category_new" type="button" class="button" value="新規作成"></p>
+            </div>
+          </div>
+        </section>
+            </div>
+  <div class="editMainColumn">
+    <span class="error"></span>
+    <input type="hidden" id="ec_admin_product_form__token" name="ec_admin_product_form[_token]" value="XFwsJuF5jcoZqO2-YsFAlnnU2UoiJ3YITBP4Z5jZqxY" />
+    <section class="section column1">
+      <div class="wrap">
+        <p class="editHead"><input type="text" id="ec_admin_product_form_name" name="ec_admin_product_form[name]" required="required" class="title" placeholder="商品名を入力してください" maxlength="255" value="小熊夏季新款女装可爱卡通短袖t恤宽松韩版半袖" /><span class="error"></span></p>
+      </div>
+    </section>
+
+    <section class="section column1">
+      <div class="wrap">
+        <h3>拡張フィールド（言語別）</h3>
+        <p class="listHead cf">
+          言語を選択: <select class="tabMenuSelect">
+            <option selected="" value="#fields_zh-tw">繁體中文</option>
+            <option value="#fields_zh-cn">简体中文</option>
+            <option value="#fields_en">English</option>
+            <option value="#fields_ja">日本語</option>
+          </select>
+        </p>
+        <div class="fields" id="fields_zh-tw">
+          <!-- hasChildrenの判断を一時取る -->
+          <dl class="content" id="content_950">
+            <dt><label for="ec_admin_product_form_950">description</label></dt>
+            <dd class="cf">
+              <p class="description"></p>
+              <span class="error"></span><textarea id="ec_admin_product_form_950" name="ec_admin_product_form[950]"
+                class="tinymce" data-theme="medium"
+                style="width: 100%; height: 400px;">ZH-TW description</textarea>
+            </dd>
+          </dl>
+          <!-- hasChildrenの判断を一時取る -->
+          <dl class="content" id="content_951">
+            <dt><label for="ec_admin_product_form_951">detail</label></dt>
+            <dd class="cf">
+              <p class="description"></p>
+              <span class="error"></span><textarea id="ec_admin_product_form_951" name="ec_admin_product_form[951]"
+                class="tinymce" data-theme="medium"
+                style="width: 100%; height: 400px;">ZH-TW detail</textarea>
+            </dd>
+          </dl>
+          <!-- hasChildrenの判断を一時取る -->
+        </div>
+        <div class="fields" id="fields_zh-cn">
+          <!-- hasChildrenの判断を一時取る -->
+          <dl class="content" id="content_950">
+            <dt><label for="ec_admin_product_form_950">description</label></dt>
+            <dd class="cf">
+              <p class="description"></p>
+              <span class="error"></span><textarea id="ec_admin_product_form_950" name="ec_admin_product_form[950]"
+                class="tinymce" data-theme="medium"
+                style="width: 100%; height: 400px;">ZH-CN description</textarea>
+            </dd>
+          </dl>
+          <!-- hasChildrenの判断を一時取る -->
+          <dl class="content" id="content_951">
+            <dt><label for="ec_admin_product_form_951">detail</label></dt>
+            <dd class="cf">
+              <p class="description"></p>
+              <span class="error"></span><textarea id="ec_admin_product_form_951" name="ec_admin_product_form[951]"
+                class="tinymce" data-theme="medium"
+                style="width: 100%; height: 400px;">ZH-CN detail</textarea>
+            </dd>
+          </dl>
+          <!-- hasChildrenの判断を一時取る -->
+        </div>
+        <div class="fields" id="fields_en">
+          <!-- hasChildrenの判断を一時取る -->
+          <dl class="content" id="content_950">
+            <dt><label for="ec_admin_product_form_950">description</label></dt>
+            <dd class="cf">
+              <p class="description"></p>
+              <span class="error"></span><textarea id="ec_admin_product_form_950" name="ec_admin_product_form[950]"
+                class="tinymce" data-theme="medium"
+                style="width: 100%; height: 400px;">EN description</textarea>
+            </dd>
+          </dl>
+          <!-- hasChildrenの判断を一時取る -->
+          <dl class="content" id="content_951">
+            <dt><label for="ec_admin_product_form_951">detail</label></dt>
+            <dd class="cf">
+              <p class="description"></p>
+              <span class="error"></span><textarea id="ec_admin_product_form_951" name="ec_admin_product_form[951]"
+                class="tinymce" data-theme="medium"
+                style="width: 100%; height: 400px;">EN detail</textarea>
+            </dd>
+          </dl>
+          <!-- hasChildrenの判断を一時取る -->
+        </div>
+        <div class="fields" id="fields_ja">
+          <!-- hasChildrenの判断を一時取る -->
+          <dl class="content" id="content_950">
+            <dt><label for="ec_admin_product_form_950">description</label></dt>
+            <dd class="cf">
+              <p class="description"></p>
+              <span class="error"></span><textarea id="ec_admin_product_form_950" name="ec_admin_product_form[950]"
+                class="tinymce" data-theme="medium"
+                style="width: 100%; height: 400px;">JA description</textarea>
+            </dd>
+          </dl>
+          <!-- hasChildrenの判断を一時取る -->
+          <dl class="content" id="content_951">
+            <dt><label for="ec_admin_product_form_951">detail</label></dt>
+            <dd class="cf">
+              <p class="description"></p>
+              <span class="error"></span><textarea id="ec_admin_product_form_951" name="ec_admin_product_form[951]"
+                class="tinymce" data-theme="medium"
+                style="width: 100%; height: 400px;">JA detail</textarea>
+            </dd>
+          </dl>
+          <!-- hasChildrenの判断を一時取る -->
+        </div>
+      </div>
+    </section>
+    <section class="section column1">
+      <div class="wrap">
+        <h3>拡張フィールド（言語共通）</h3>
+        <div class="fields" id="fields_zh-tw">
+          <dl class="content" id="content_941">
+            <dt><label for="ec_admin_product_form_941">image1</label></dt>
+            <dd class="cf">
+              <p class="description"></p>
+              <span class="error"></span><input type="hidden" id="ec_admin_product_form_941" name="ec_admin_product_form[941]"
+                value="27" />
+              <p id="ec_admin_product_form_941_src" class="image">
+                <img src="/uploads/media/523f28fd211cae48f33d178e48751a6313938637.jpeg" />
+              </p>
+              <ul class="control" id="ec_admin_product_form_941_ul">
+                <li><a href="" class="openPopup" puid="ec_admin_product_form_941">編集<a> |</li>
+                <li><a href="javascript:void(0);" onclick='doDeleteImage(1, "941");'>削除</a></li>
+              </ul>
+            </dd>
+          </dl>
+          <dl class="content" id="content_942">
+            <dt><label for="ec_admin_product_form_942">image2</label></dt>
+            <dd class="cf">
+              <p class="description"></p>
+              <span class="error"></span><input type="hidden" id="ec_admin_product_form_942" name="ec_admin_product_form[942]"
+                value="28" />
+              <p id="ec_admin_product_form_942_src" class="image">
+                <img src="/uploads/media/164aca328fdd589b7b86a0b4120761140aaf5353.jpeg" />
+              </p>
+              <ul class="control" id="ec_admin_product_form_942_ul">
+                <li><a href="" class="openPopup" puid="ec_admin_product_form_942">編集<a> |</li>
+                <li><a href="javascript:void(0);" onclick='doDeleteImage(1, "942");'>削除</a></li>
+              </ul>
+            </dd>
+          </dl>
+          <dl class="content" id="content_943">
+            <dt><label for="ec_admin_product_form_943">image3</label></dt>
+            <dd class="cf">
+              <p class="description"></p>
+              <span class="error"></span><input type="hidden" id="ec_admin_product_form_943" name="ec_admin_product_form[943]"
+                value="29" />
+              <p id="ec_admin_product_form_943_src" class="image">
+                <img src="/uploads/media/61b898d2f551ce5e20b4456cd2ade9330d506dbe.jpeg" />
+              </p>
+              <ul class="control" id="ec_admin_product_form_943_ul">
+                <li><a href="" class="openPopup" puid="ec_admin_product_form_943">編集<a> |</li>
+                <li><a href="javascript:void(0);" onclick='doDeleteImage(1, "943");'>削除</a></li>
+              </ul>
+            </dd>
+          </dl>
+          <dl class="content" id="content_944">
+            <dt><label for="ec_admin_product_form_944">image4</label></dt>
+            <dd class="cf">
+              <p class="description"></p>
+              <span class="error"></span><input type="hidden" id="ec_admin_product_form_944" name="ec_admin_product_form[944]" />
+              <p id="ec_admin_product_form_944_src" class="image">
+              </p>
+              <input type="button" class="button openPopup" puid="ec_admin_product_form_944" value="アイテムを選択">
+            </dd>
+          </dl>
+          <dl class="content" id="content_945">
+            <dt><label for="ec_admin_product_form_945">image5</label></dt>
+            <dd class="cf">
+              <p class="description"></p>
+              <span class="error"></span><input type="hidden" id="ec_admin_product_form_945" name="ec_admin_product_form[945]" />
+              <p id="ec_admin_product_form_945_src" class="image">
+              </p>
+              <input type="button" class="button openPopup" puid="ec_admin_product_form_945" value="アイテムを選択">
+            </dd>
+          </dl>
+          <dl class="content" id="content_946">
+            <dt><label for="ec_admin_product_form_946">image6</label></dt>
+            <dd class="cf">
+              <p class="description"></p>
+              <span class="error"></span><input type="hidden" id="ec_admin_product_form_946" name="ec_admin_product_form[946]" />
+              <p id="ec_admin_product_form_946_src" class="image">
+              </p>
+              <input type="button" class="button openPopup" puid="ec_admin_product_form_946" value="アイテムを選択">
+            </dd>
+          </dl>
+          <dl class="content" id="content_947">
+            <dt><label for="ec_admin_product_form_947">image7</label></dt>
+            <dd class="cf">
+              <p class="description"></p>
+              <span class="error"></span><input type="hidden" id="ec_admin_product_form_947" name="ec_admin_product_form[947]" />
+              <p id="ec_admin_product_form_947_src" class="image">
+              </p>
+              <input type="button" class="button openPopup" puid="ec_admin_product_form_947" value="アイテムを選択">
+            </dd>
+          </dl>
+          <dl class="content" id="content_948">
+            <dt><label for="ec_admin_product_form_948">image8</label></dt>
+            <dd class="cf">
+              <p class="description"></p>
+              <span class="error"></span><input type="hidden" id="ec_admin_product_form_948" name="ec_admin_product_form[948]" />
+              <p id="ec_admin_product_form_948_src" class="image">
+              </p>
+              <input type="button" class="button openPopup" puid="ec_admin_product_form_948" value="アイテムを選択">
+            </dd>
+          </dl>
+          <dl class="content" id="content_952">
+            <dt><label for="ec_admin_product_form_952">related product ids</label></dt>
+            <dd class="cf">
+              <p class="description">product ids separated by commas (example: 12,25,34)</p>
+              <span class="error"></span><input type="text" id="ec_admin_product_form_952" name="ec_admin_product_form[952]"
+                maxlength="255" />
+            </dd>
+          </dl>
+          </div>
+      </div>
+    </section>
+  </div>
+</form>
+    </div><!-- #articleWrap -->
+    <footer class="cf">
+    <address><small>&copy; sterfield</small></address>
+</footer>  </article>
+    <script type="text/javascript">
+    $(document).ready(function(){
+      var types = $("input[name = 'ec_admin_product_form[product_type]']:checked").val();
+      sessionDisplay(types);
+    });
+$(function(){
+  // ul
+  $('#ec_admin_product_form_product_type').attr("class", "optionsList");
+  $('#ec_admin_product_form_categories').attr("class", "optionsList");
+  $('.ulCheckList ul').attr("class", "checkList");
+
+  // カテゴリ新規作成
+  $(document).on("click", "#category_new", function(){
+    var thisElm = $(this);
+    var parent = $('#ec_admin_product_category_type_parent').val();
+    var name = $('#ec_admin_product_category_type_name').val();
+    $.ajax({
+      type: "POST",
+      url: "/admin/ec/product/category_new",
+      data: {
+        "parent":parent,
+        "name":name
+      },
+      beforeSend: function(xhr, settings) {
+        thisElm.next(".error").remove();
+      },
+      success: function(data, status, xhr){
+        if (data.responseCode == '400') {
+          // エラーメッセージを表示
+          var msg = '';
+          for (var i=0;i<data.error_msg.length;i++) {
+            msg = msg+data.error_msg[i];
+          }
+          thisElm.after('<span class="error">' + msg + '</span>');
+        } else {
+          // カテゴリ部分に新規作成したカテゴリのHTMLを追加
+          $('#category_checkbox').html(data.newCategoryCheckboxHtml);
+          $('#ec_admin_product_form_categories').attr("class", "optionsList");
+          $('#category_selectbox').html('<span class="title">' + "親カテゴリ" + '</span>\n'+data.newCategorySelectboxHtml);
+
+          // フォームを元に戻す
+          $('#ec_admin_product_category_type_parent').val('');
+          $('#ec_admin_product_category_type_name').val('');
+        }
+      },
+      error: function(xhr, status){
+        thisElm.after('<span class="error">' + "カテゴリの新規作成に失敗しました。" + '</span>');
+        $(document).fixNavHeight();
+      },
+    });
+  });
+
+  $(".openPopup").click(function(){
+
+    $("body").append('<div class="bgPopup"></div><div class="popup"><iframe id="pu_iframe" name="'+$(this).attr("puid")+'" src="/admin/ec/product/popup_media_list_image"></div>');
+    $( '.bgPopup' ).height( $( document ).height() );
+    if($(window).width() < 960){
+      $(".bgPopup").hide();
+      $("body .popup").css({
+        "width" : "auto",
+        "height": "100%",
+        "position" : "static"
+      });
+      $("body .popup iframe").css({
+        "height": "100%"
+      });
+      $("body:not(.popup) header, body:not(.popup) article").hide();
+      $("body").scrollTop(0);
+    }
+    return false;
+  });
+
+  $('#popupClose').click(function (){
+    if($(window).width() < 960){
+      $('header, article', parent.document).show();
+    }
+    $('.bgPopup', parent.document).remove();
+    $('.popup', parent.document).remove();
+
+    return false;
+  });
+
+  /*--  同梱商品選択ここから  --*/
+  $(".openPopupProduct").click(function(){
+    $("body").append('<div class="bgPopup"></div><div class="popup"><iframe src="'+$(this).attr("data-src")+'"></div>');
+    $( '.bgPopup' ).height( $( document ).height() );
+    if($(window).width() < 960){
+      $(".bgPopup").hide();
+      $("body .popup").css({
+        "width" : "auto",
+        "height": "100%",
+        "position" : "static"
+      });
+      $("body .popup iframe").css({
+        "height": "100%"
+      });
+      $("body:not(.popup) header, body:not(.popup) article").hide();
+      $("body").scrollTop(0);
+    }
+    return false;
+  });
+
+  //同梱商品追加
+  $.get_product_data = function(a) {
+    var addedElm = $('#addedProducts'), overlapFlag = false;
+    addedElm.find('.product_code').each(function() {
+      if ($(this).text() == a.code) overlapFlag = true;
+    });
+    if (!overlapFlag) {
+      var list_cnt = $("#prt_cnt").val();
+      var position = Number(list_cnt);
+      var append_text = '';
+
+      var gourp_list = a.groupItems.split(",");
+      if (!gourp_list[0] && gourp_list.length == 1) {
+        gourp_list[0] = a.skuid + '/' + a.name+ '/' +a.code+ '/' + '1';
+      }
+
+      for (var i = 0; i < gourp_list.length; i++ ) {
+        var info = gourp_list[i].split("/");
+        if (info.length != 4 || info[2] == '-') {
+          continue;
+        }
+        subOverlapFlag = false;
+        addedElm.find('.product_code').each(function() {
+          if ($(this).text() == info[2]) subOverlapFlag = true;
+        });
+        if (!subOverlapFlag) {
+          //noteSku.getId ~ '/' ~ noteSku.getProductName ~ '/' ~ noteSku.getProductCode ~'/' ~ note.getQuantity
+          append_text += '<input type="hidden" id="ec_admin_product_form_group_items_' + position
+            + '_child" name="ec_admin_product_form[group_items][' + position + '][child]" value="'
+            + escapeJsonResult(info[0]) + '" >'
+            + '<input type="hidden" id="ec_admin_product_form_group_items_' + position
+            + '_parent" name="ec_admin_product_form[group_items][' + position + '][parent]" value="1" >'
+            +'<div class="productBox"><div class="boxMain"><dl class="orderDl"><dt>商品コード</dt><dd class="product_code">'
+            + info[2] + '</dd></dl><dl class="orderDl"><dt>商品名</dt><dd>'
+            + escapeJsonResult(info[1])
+            +'</dd></dl></div><div class="boxSub"><dl><dt>個数</dt><dd>'
+            + '<input type="number" id="ec_admin_product_form_group_items_' + position + '_quantity" name="ec_admin_product_form[group_items]['
+            + position + '][quantity]" value="' + info[3] + '" size="4" maxlength="4">'
+            + '</dd></dl></div><div class="boxSub is-delete"><dl><dt><a href="#" class="delete">'
+            + "×</a></dt>"
+            + '<dd><a href="#" class="delete">削除</a></dd></dl></div></div>';
+          position ++;
+        }
+      }
+      addedElm.append(append_text);
+    }
+    $("#prt_cnt").val(position);
+  };
+  //同梱商品追加
+  $(document).on('click', '#addedProducts .delete', function() {
+    var tgElm = $(this).parents('.productBox');
+    tgElm.remove();
+    var list_cnt = $("#prt_cnt").val();
+    $("#prt_cnt").val(Number(list_cnt) - 1);
+    return false;
+  });
+  /*--  同梱商品選択ここまで  --*/
+
+  $( 'input[name="ec_admin_product_form\[product_type\]"]:checked' ).each(function()
+    {
+      var types = $( this ).val();
+      sessionDisplay(types);
+    });
+  $( 'input[name="ec_admin_product_form\[product_type\]"]' ).change( function()
+    {
+      var types = $( this ).val();
+      sessionDisplay(types);
+    });
+
+  $('.datepicker').datetimepicker({
+    dateFormat: 'yy-mm-dd',
+    timeFormat: 'HH:mm',
+    buttonImageOnly: true,
+    buttonImage: "/system/images/ico_calender.png"
+  });
+  // サイドバーの開閉
+  $(".editSideColumn .toggle").each(function(){
+    $(this).parent().next(".content").hide();
+    $(this).parents("section.open").find(".content").show();
+    $(this).parents("section.open").find(".toggle").text("閉じる ▲");
+  });
+  $(".editSideColumn .toggle").click(function(){
+    $(this).parent().next(".content").toggle();
+    $(this).parents("section").toggleClass("open");
+    $(this).parents("section").find(".toggle").text("開く ▼");
+    $(this).parents("section.open").find(".toggle").text("閉じる ▲");
+  });
+  // sortable
+  if(!touchDevice) {
+    $('.editSideColumn').sortable({
+      connectWith: '.editSideColumn',
+      handle: 'h3',
+      cursor: 'move',
+      placeholder: 'placeholder',
+      forcePlaceholderSize: true,
+      opacity: 0.4,
+      stop: function(event, ui){
+        var sortorder = $(".editSideColumn").sortable('toArray');
+        $.ajax({
+          type: "POST",
+          url: "/admin/ec/product/sortset",
+          data: {
+            "sortorder":sortorder,
+            "sorttype":"editSideColumn",
+          }
+        });
+      }
+    })
+      .disableSelection();
+
+    // 拡張フィールドがなければ実行しないように
+    $('.fields').sortable({
+      connectWith: '.fields',
+      handle: 'dt',
+      cursor: 'move',
+      placeholder: 'placeholder',
+      forcePlaceholderSize: true,
+      opacity: 0.4,
+      stop: function(event, ui){
+        var sortorder = $(".fields").sortable('toArray');
+        $.ajax({
+          type: "POST",
+          url: "/admin/ec/product/sortset",
+          data: {
+            "sortorder":sortorder,
+            "sorttype":"fields",
+          }
+        });
+      }
+    })
+      .disableSelection();
+  }
+
+  // sku unique select [text='●●']のselectorが使えないのようで
+  $("select.unique_sku").each(function(){
+    sel = $(this)
+    opt_val = sel.find('option:selected').val();
+    if (opt_val!=''){
+      $("select.unique_sku").not(this).find("option[value='"+opt_val+"']").attr("disabled", "disabled");
+    }
+  });
+
+  $("select.unique_sku").change(function(){
+    opt_val = $(this).find('option:selected').val();
+    $("select.unique_sku").not(this).find("option[value='"+opt_val+"']").removeAttr("disabled");
+    if (opt_val!=''){
+      $("select.unique_sku").not(this).find("option[value='"+opt_val+"']").attr("disabled", "disabled");
+    }
+  });
+});
+
+function doDeleteImage(product_id, attr_key) {
+  if (confirm("本当に削除しますか？}")) {
+    $.ajax({
+      type: "POST",
+      url: "/admin/ec/product/delete_image",
+      data: {
+        "product_id":product_id,
+        "attr_key":attr_key
+      },
+      success: function(data, status, xhr){
+        if (data.responseCode == '400') {
+          alert("notice.common.result.delete_image_error'|trans}}}");
+          return false;
+        } else {
+          $("#ec_admin_product_form_"+attr_key+"_src").fadeOut("fast");
+          $("#ec_admin_product_form_"+attr_key+"_ul").parent().append('<input type="button" class="button openPopup" puid="ec_admin_product_form_'+attr_key+'" value="' + "アイテムを選択" + '>');
+          $("#ec_admin_product_form_"+attr_key+"_ul").fadeOut("fast");
+          $("#ec_admin_product_form_"+attr_key).val('');
+        }
+      },
+      error: function(xhr, status){
+        alert("原因不明のエラーが発生しました。(%name%)");
+        return false;
+      }
+    });
+  }
+  return false;
+}
+function sessionDisplay(types) {
+  if (types.indexOf("regular") == 0) {
+    $("#productRegular").show();
+    $("#productSku").hide();
+    $("#productGroup").show();
+    $(".regularShow").show();
+    $("#productAddition").hide();
+    $("#productAddition :checkbox").each(function() {
+      $(this).prop({
+        "checked": false,
+        "disabled": true
+      });
+    });
+    $(".openPopupProduct").attr('data-src', "/admin/ec/order/product_search/1%3Fproduct_mod=regular%26sale=0%26edit_id=1");
+  } else if (types.indexOf("common") == 0) {
+    $("#productRegular").hide();
+    $(".regularShow").hide();
+    $(".openPopupProduct").attr('data-src', "/admin/ec/order/product_search/1%3Fproduct_mod=common%26sale=0%26edit_id=1");
+    if (types == 'common') {
+      $("#productSku").show();
+      $("#productAddition").show();
+      $("#productGroup").hide();
+      $("#productAddition :checkbox").each(function() {
+        $(this).prop({
+          "disabled": false
+        });
+      });
+    } else {
+      $("#productSku").hide();
+      $("#productAddition").hide();
+      $("#productAddition :checkbox").each(function() {
+        $(this).prop({
+          "disabled": false
+        });
+      });
+    }
+  }
+
+  if (types.indexOf("group") + ("group").length == types.length) {
+    $("#productGroup").show();
+    $(".common_display").hide();
+    if (types.indexOf("regular") != 0) {
+      $(".groupShow").show();
+      $(".regularShow").hide();
+      $("#productRegular").hide();
+    } else {
+              $(".groupShow").show();
+         $(".regularShow").hide();
+            $("#productRegular").show();
+    }
+  } else {
+    $(".common_display").show();
+    $(".groupShow").hide();
+    $(".regularShow").hide();
+    $("#productRegular").hide();
+  }
+  if (types == "gift") {
+    $(".common_display").show();
+    $("input[name = 'ec_admin_product_form[release_status]']:eq(0)").prop('disabled', true);
+    $("input[name = 'ec_admin_product_form[release_status]']:eq(2)").prop('disabled', true);
+    $("input[name = 'ec_admin_product_form[release_status]']:eq(1)").prop('checked', true);
+    $("#ec_admin_product_form_released_at").prop('disabled', true);
+    $("#ec_admin_product_form_available_before").prop('disabled', true);
+    $(".gift_hidden").hide();
+    $("#productSku").hide();
+    $("#productAddition").hide();
+    $("#productDelivery").hide();
+    $("#productPayment").hide();
+    $("#productCategory").hide();
+    $("#productCategoryNew").hide();
+    $("#productGroup").hide();
+  } else {
+    $("input[name = 'ec_admin_product_form[release_status]']:eq(0)").prop('checked', true);
+    $("input[name = 'ec_admin_product_form[release_status]']:eq(0)").prop('disabled', false);
+    $("input[name = 'ec_admin_product_form[release_status]']:eq(2)").prop('disabled', false);
+    $("#ec_admin_product_form_released_at").prop('disabled', false);
+    $("#ec_admin_product_form_available_before").prop('disabled', false);
+    $(".gift_hidden").show();
+    $("#productDelivery").show();
+    $("#productPayment").show();
+    $("#productCategory").show();
+    $("#productCategoryNew").show();
+  }
+}
+  </script>
+      <script type="text/javascript" src="/bundles/stfalcontinymce/vendor/tinymce/jquery.tinymce.min.js"></script>
+    <script type="text/javascript" src="/bundles/stfalcontinymce/js/init.jquery.js"></script>
+<script type="text/javascript">
+    //<![CDATA[
+    stfalcon_tinymce_config = {"include_jquery":false,"tinymce_jquery":true,"selector":".tinymce","base_url":"\/","theme":{"advanced":{"plugins":["advlist autolink lists link image charmap print preview hr anchor pagebreak","searchreplace wordcount visualblocks visualchars code fullscreen","insertdatetime media nonbreaking save table contextmenu directionality","emoticons template paste textcolor"],"toolbar1":"insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image","toolbar2":"print preview media | forecolor backcolor emoticons","image_advtab":true,"language":"ja"},"medium":{"plugins":["advlist autolink lists link image charmap print preview hr anchor pagebreak","searchreplace wordcount visualblocks visualchars code fullscreen","insertdatetime media nonbreaking save table contextmenu directionality","emoticons template paste textcolor"],"element_format":"html","toolbar1":"insertfile undo redo | styleselect | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent","toolbar2":"code | forecolor backcolor emoticons | link insertimage table","document_base_url":"dev-lc2.sterfield.co.jp","relative_urls":false,"remove_script_host":false,"language":"ja"},"bbcode":{"plugins":["bbcode, code, link"],"menubar":false,"toolbar1":"bold,italic,underline,undo,redo,link,unlink,removeformat,cleanup,code,insertimage","language":"ja"}},"use_callback_tinymce_init":false,"language":"ja","tinymce_buttons":{"insertimage":{"title":"\u5199\u771f\u633f\u5165","image":"\/bundles\/stfalcontinymce\/vendor\/tinymce\/themes\/medium\/img\/insert_image.png","text":null}},"external_plugins":[],"jquery_script_url":"\/bundles\/stfalcontinymce\/vendor\/tinymce\/tinymce.jquery.min.js"};
+    stfalcon_tinymce_config.use_callback_tinymce_init = true;
+    var isTinyMCEInit = false;
+    initTinyMCE();
+    function callback_tinymce_init(editor) {
+        editor.iframeElement.contentWindow.document.body.style.minHeight = '384px';
+        isTinyMCEInit = true;
+    }
+    //]]>
+</script>
+
+  <script type="text/javascript">
+    function tinymce_button_insertimage(ed) {
+      ed.focus();
+      $("body").append('<div class="bgPopup"></div><div class="popup"><iframe id="pu_iframe" name="'+ed.id+'" src="/admin/media/list_popup"></div>');
+      $( '.bgPopup' ).height( $( document ).height() );
+      if($(window).width() < 960){
+        $(".bgPopup").hide();
+        $("body .popup").css({
+          "width" : "auto",
+          "height": "100%",
+          "position" : "static"
+        });
+        $("body .popup iframe").css({
+          "height": "100%"
+        });
+        $("body:not(.popup) header, body:not(.popup) article").hide();
+        $("body").scrollTop(0);
+      }
+      return false;
+    }
+  </script>
+  <script type="text/javascript">
+    $(function() {
+      //ページ移動の確認
+      $("#articleWrap").on("keydown", function() {
+        $(window).on('beforeunload', function() {
+          return "変更が保存されていません。このまま移動しますか？";
+        });
+        $("form").submit(function() {
+          $(window).off('beforeunload');
+        });
+      });
+    });
+  </script>
+  </body>
+</html>

@@ -1,0 +1,91 @@
+extends /_include/_layout.pug
+
+block title
+  title 定期订购记录 | LC E-SHOP
+block header
+  - var isAuthorized = true;
+  include /_include/_header.pug
+block content
+
+  -
+    var breadcrumbList = [
+      {
+        name: '首页',
+        href: '/'
+      },
+      {
+        name: '我的帳戶',
+        href: '/ec/consumer/history/'
+      },
+      {
+        name: '定期订购记录',
+        href: '/ec/consumer/regular_list/'
+      },
+      {
+        name: '详细信息',
+        href: '/ec/consumer/regular_detail/1/'
+      },
+      {
+        name: '送货地址变更',
+        href: '/ec/consumer/regualr_address_edit/1/'
+      }
+    ]
+  include /_include/_breadcrumblist.pug
+
+
+  section.lc-contentSection
+    h1.lc-contentSection__title.lc-contentSection__title--center 定期订购记录 - 送货地址变更
+
+    div.lc-contentsInner
+
+      form(action="/ec/consumer/regular_detail/1/", method="POST")
+        section.lc-shipList
+          h2.lc-shipList__title 收货地址一览
+          ul.lc-shipList__list
+            li.lc-shipList__item
+              input#shipRadio1(type="radio", name="radio1", checked)
+              .lc-shipList__box
+                label(for="shipRadio1").lc-shipList__main
+                  header.lc-shipList__header
+                    h3.lc-shipList__name
+                      i.c-inputUI.c-inputUI--checkbox
+                      | 星野 翔太
+                      small (会员注册住址)
+                    p.lc-shipList__tel
+                      | 09012345678
+                  p.lc-shipList__address
+                    | 171-0033
+                    | 東京都豊島区高田3ー9−7 ダイワビル
+                p.lc-shipList__controls
+                  a(href="").lc-button--edit
+                    span.lc-button__label 更改
+            li.lc-shipList__item
+              input#shipRadio2(type="radio", name="radio1")
+              .lc-shipList__box
+                label(for="shipRadio2").lc-shipList__main
+                  header.lc-shipList__header
+                    h3.lc-shipList__name
+                      i.c-inputUI.c-inputUI--checkbox
+                      | 星野 翔太
+                    p.lc-shipList__tel
+                      | 02160206756
+                  p.lc-shipList__address
+                    | 上海市黄浦区淮海中路222号力宝广场26楼
+                p.lc-shipList__controls
+                  a(href="").lc-button--edit
+                    span.lc-button__label 更改
+                  a(href="").lc-button--delete
+                    span.lc-button__label 删除
+            li.lc-shipList__item
+              a(href="").lc-shipList__box.lc-shipList__box--button
+                i.lc-icon--plus
+                | 追加新收货地址
+
+        p.lc-contentsInner__buttons
+          button(type="submit").lc-button--submit
+            span.lc-button__label 登入
+          a(href="/ec/consumer/regular_detail/1/").lc-button--cancel
+            i.lc-button__icon.lc-icon--arrowLeft
+            span.lc-button__label 返回
+
+    include /_include/_mypage-navi.pug

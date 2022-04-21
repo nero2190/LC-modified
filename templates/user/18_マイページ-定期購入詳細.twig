@@ -1,0 +1,192 @@
+{# Reference: https://launchcart.jp/reference/18%e3%83%9e%e3%82%a4%e3%83%9a%e3%83%bc%e3%82%b8-%e5%ae%9a%e6%9c%9f%e8%b3%bc%e5%85%a5%e8%a9%b3%e7%b4%b0/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = #purchase_history_label# -%}
+
+{# get base currency unit #}
+{%- set baseCurrency = get_entity_manager().find('EcCoreBundle:Currency', system_config('base_currency')) -%}
+{%- set baseUnitFront = baseCurrency.getBeforeUnit() -%}
+{%- set baseUnitBack = baseCurrency.getAfterUnit() -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- set breadcrumbListItems = [
+    {
+      name: #mypage_label# ,
+      href: path('ec_client_consumer')
+    },
+    {
+      name: #purchase_history_label# ,
+      href: path('ec_client_consumer_regular_list')
+    },
+    {
+      name: #subscription_detail_label# ,
+      href: app.request.uri
+    }
+  ]
+-%}
+{%- set breadcrumbList = breadcrumbList|merge(breadcrumbListItems) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #purchase_history_label# }}</h1>
+  
+  <div class="lc-contentsInner">
+
+    {# order information #}
+    <table class="lc-table lc-table--numbers">
+      <tbody>
+        {# next delivery date #}
+        <tr>
+          <th>{{ #next_delivery_date_label# }}</th>
+          <td><em>{{ (order_regular.nextDeliveryMonth ~ '-' ~ order_regular.getArriveDay(true))|date('Y.m.d') }}</em></td>
+        </tr>
+        {# purchase date #}
+        <tr>
+          <th>{{ #purchase_date_label# }}</th>
+          <td><em>{{ order_regular.getCreatedAt|date('Y.m.d H:i') }}</em></td>
+        </tr>
+        {# order id #}
+        <tr>
+          <th>{{ #order_id_label# }}</th>
+          <td><em>{{ order_regular.id }}</em></td>
+        </tr>
+        {# delivered count #}
+        <tr>
+          <th>{{ #order_count_label# }}</th>
+          <td><em>{{ order_regular.orderCount }}</em></td>
+        </tr>
+        {# status #}
+        <tr>
+          <th>{{ #status_label# }}</th>
+          <td><em>{{ order_regular.status }}</em></td>
+        </tr>
+      </tbody>
+    </table>
+
+    {# delivery and product information #}
+    <section class="lc-shipList">
+      <h2 class="lc-shipList__title">{{ #address_list_label# }}</h2>
+      <ul class="lc-shipList__list">
+        <li class="lc-shipList__item">
+          <div class="lc-shipList__box">
+
+            {# address #}
+            <div class="lc-shipList__main">
+              <header class="lc-shipList__header">
+                <h3 class="lc-shipList__name"><i class="c-inputUI c-inputUI--checkbox"></i>{{ order_regular.consumerAddress.lastName }} {{ order_regular.consumerAddress.firstName }}</h3>
+                <p class="lc-shipList__tel">{{ order_regular.consumerAddress.tel }}</p>
+              </header>
+              <p class="lc-shipList__address">
+                {% if order_regular.consumerAddress.country == 'Japan' %}〒 {% endif %}{% if order_regular.consumerAddress.country != 'Hong Kong' %}{{ order_regular.consumerAddress.zipcode }}<br>{% endif %}
+                {% if order_regular.consumerAddress.country == 'Japan' %}{{ order_regular.consumerAddress.district }} {% endif %}{{ order_regular.consumerAddress.locality }} {{ order_regular.consumerAddress.street }}
+              </p>
+            </div>
+
+            {# edit address #}
+            <p class="lc-shipList__controls"><a class="lc-button--edit" href="{{ path('ec_client_consumer_regular_address_edit', {'id':order_regular.id}) }}"><span class="lc-button__label">{{ #edit_label# }}</span></a></p>
+
+            {# product information #}
+            <div class="lc-shipList__main">
+              <ul class="lc-list">
+                {%- set product = order_regular.product -%}
+                {%- set productsku = order_regular.productSku -%}
+                {%- set productName = product.attribute('product name', language) ? product.attribute('product name', language) : product.name -%}
+                <li class="lc-productInfo">
+
+                  {# product image #}
+                  <figure class="lc-productInfo__figure">
+                    <a class="lc-productInfo__figure__inner" href="{{ path('ec_product_detail', {'id': product.id}) }}">
+                      <img src="{% if product.attribute('image1') %}{{ ('/uploads/media/'~get_entity_manager().find('MediaCoreBundle:Media', product.attribute('image1')).path) }}{% else %}{{ asset('assets/img/no-image.png') }}{% endif %}" alt="{{ productName|striptags }}"/>
+                    </a>
+                  </figure>
+
+                  <div class="lc-productInfo__text">
+
+                    {# product name and skus titles #}
+                    <h2 class="lc-productInfo__name">
+                      <a href="{{ path('ec_product_detail', {'id': product.id}) }}">
+                        {{ productName }}
+                        {% if productsku.skuDetail1 %}&emsp;{% if productsku.skuDetail1.getTransAttribute(lang_id) %}{{ productsku.skuDetail1.getTransAttribute(lang_id) }}{% else %}{{ productsku.skuDetail1.title }}{% endif %}{% endif %}
+                        {% if productsku.skuDetail2 %}&emsp;{% if productsku.skuDetail2.getTransAttribute(lang_id) %}{{ productsku.skuDetail2.getTransAttribute(lang_id) }}{% else %}{{ productsku.skuDetail2.title }}{% endif %}{% endif %}
+                      </a>
+                    </h2>
+
+                    <div class="lc-productInfo__detail">
+                      <dl class="lc-productInfo__detail__list">
+
+                        {# price #}
+                        <div class="lc-productInfo__detail__item">
+                          <dt class="lc-productInfo__detail__label">{{ #unit_price_label# }}</dt>
+                          <dd class="lc-productInfo__detail__detail">
+                            {{ #unitFront# }}{{ (productsku.price * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}
+                            {%- if curRatio != 1 -%}
+                              <small class="productArchive__price__sub">({{ baseUnitFront }}{{ (productsku.price)|price_format(decimalPoint) }}{{ baseUnitBack }})</small>
+                            {%- endif -%}
+                          </dd>
+                        </div>
+
+                        {# quantity and regular interval #}
+                        {%- set regularInt = get_entity_manager().find('EcCoreBundle:RegularInterval',  order_regular.regularInterval.id) -%}
+                        <div class="lc-productInfo__detail__item">
+                          <dt class="lc-productInfo__detail__label">{{ #quantity_label# }} / {{ #regular_int_value_label# }}</dt>
+                          <dd class="lc-productInfo__detail__detail">{{ order_regular.quantity|number_format }} / {{ regularInt.value }}{{ ('regular.units.regular_interval.each_' ~ regularInt.getUnit) |trans({}, 'clients') }}</dd>
+                        </div>
+
+                      </dl>
+                    </div>
+
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    {# payment method #}
+    <h2 class="lc-heading--3">{{ #payment_method_label# }}</h2>
+    <p>{% if order_regular.payment.getTransAttribute(lang_id) %}{{ order_regular.payment.getTransAttribute(lang_id) }}{% else %}{{ order_regular.payment.name }}{% endif %}</p>
+
+
+    <p class="lc-contentsInner__buttons lc-contentsInner__buttons--horizontal">
+      {# edit the order information #}
+      <a class="lc-button--submit" href="{{ path('ec_client_consumer_regular_edit', {'id': order_regular.id}) }}"><span class="lc-button__label">{{ #edit_subscription_label# }}</span></a>
+      {# cancel the subscription #}
+      <a class="lc-button--submit js-lc--openModal" href="{{ path('ec_client_consumer_regular_cancel', {'id': order_regular.id}) }}" aria-controls="modalCancelRegular" aria-haspopup="true"><i class="lc-button__icon lc-icon--close"></i><span class="lc-button__label">{{ #cancel_label# }}</span></a>
+    </p>
+    
+    {# back #}
+    <p class="lc-contentsInner__buttons lc-contentsInner__buttons--horizontal"><a class="lc-button--cancel" href="{{ path('ec_client_consumer_regular_list') }}"><i class="lc-button__icon lc-icon--arrowLeft"></i><span class="lc-button__label">{{ #back_label# }}</span></a></p>
+
+  </div>
+
+  {# mypage navi #}
+  {% TemplateInclude "mypage navi" %}
+
+</section>
+
+{# Modal: confirm cancel the subscription #}
+<div class="lc-modal" id="modalCancelRegular">
+  <div class="lc-modal__bg js-lc--closeModal"></div>
+  <div class="lc-modal__body">
+    <h3 class="lc-modal__title">{{ #message_really_cancel# }}</h3>
+    <p class="lc-modal__buttons"><a class="lc-button--submit js-lc--changeLangCurrency" href="{{ path('ec_client_consumer_regular_cancel', {'id': order_regular.id}) }}"><span class="lc-button__label">OK</span><i class="lc-button__icon lc-icon--check"></i></a>
+      <button class="lc-button--cancel js-lc--closeModal" type="button"><i class="lc-button__icon lc-icon--arrowLeft"></i><span class="lc-button__label">{{ #back_label# }}</span></button>
+    </p>
+  </div>
+</div>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

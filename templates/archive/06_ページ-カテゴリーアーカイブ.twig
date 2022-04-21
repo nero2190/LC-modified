@@ -1,0 +1,101 @@
+{# Reference: https://launchcart.jp/reference/6%e3%83%9a%e3%83%bc%e3%82%b8-%e3%82%ab%e3%83%86%e3%82%b4%e3%83%aa%e3%82%a2%e3%83%bc%e3%82%ab%e3%82%a4%e3%83%96/ #}
+
+{# Variables Settings #}
+
+{# topCategory #}
+{% set topCategory = (category.getAncestors|length > 0) ? category.getAncestors|last : category %}
+
+{# insert to html head title #}
+{%- set title = category.node.getTransAttribute(lang_id) ? category.node.getTransAttribute(lang_id) : category.node.name -%}
+{%- if (category.getAncestors|length > 0) -%}
+  {%- for ancestor in category.getAncestors|reverse -%}
+    {%- if ancestor.node.getTransAttribute(lang_id) -%}
+      {%- set title = title ~ ' | ' ~ ancestor.node.getTransAttribute(lang_id) -%}
+    {%- else -%}
+      {%- set title = title ~ ' | ' ~ ancestor.node.name -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- if (category.getAncestors|length > 0) -%}
+  {%- for AncestorCategory in category.getAncestors -%}
+    {%- set breadcrumbListItem = {
+        name: AncestorCategory.node.getTransAttribute(lang_id) ? AncestorCategory.node.getTransAttribute(lang_id) : AncestorCategory.node.name,
+        href: path('page_category_archive', {'id': AncestorCategory.node.id})
+    } -%}
+    {%- set breadcrumbList = breadcrumbList|merge([breadcrumbListItem]) -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- set breadcrumbListItem = {
+    name: category.node.getTransAttribute(lang_id) ? category.node.getTransAttribute(lang_id) : category.node.name,
+    href: path('page_view', {'id': category.id})
+  }
+-%}
+{%- set breadcrumbList = breadcrumbList|merge([breadcrumbListItem]) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+
+  {# parent category name #}
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ topCategory.node.getTransAttribute(lang_id) ? topCategory.node.getTransAttribute(lang_id) : topCategory.node.name }}</h1>
+
+  {%- set pages = _pager.getResults -%}
+  
+  {# type: no thumbnail #}
+  {%- if topCategory.id == 1 -%}
+  <div class="lc-contentsInner">
+    <ul class="newsArchive">
+      {%- for page in pages -%}
+        <li class="newsArchive__item">
+          <a href="{{ path('page_view', {'id': page.id}) }}">
+            <div class="newsArchive__status">
+              <p class="pageCategory">{%- if page.categories[1].getTransAttribute(lang_id) -%}{{ page.categories[1].getTransAttribute(lang_id) }}{%- else -%}{{ page.categories[1].name }}{%- endif -%}</p>
+              <p class="pageDate">
+                <time datetime="page.getReleasedAt|date('Y-m-d')">{{ page.getReleasedAt|date('Y.m.d') }}</time>
+              </p>
+            </div>
+            <div class="newsArchive__title">{{ page.title|striptags }}</div>
+          </a>
+        </li>
+      {%- endfor -%}
+    </ul>
+    <div class="lc-archiveGuide">
+      {% RenderPager %}
+    </div>
+  </div>
+
+  {# type: has thumbnail #}
+  {%- elseif topCategory.id == 2 -%}
+    <ul class="blogArchive">
+      {%- for page in pages -%}
+        <li class="blogArchive__item">
+          <a href="{{ path('page_view', {'id': page.id}) }}">
+            <figure class="blogArchive__figure"><img src="{% if page.attribute('featured image') %}{{ ('/uploads/media/'~get_entity_manager().find('MediaCoreBundle:Media', page.attribute('featured image')).path) }}{% else %}{{ asset("assets/img/no-image.png") }}{% endif %}" alt="{{ page.title|striptags }}"></figure>
+            <div class="blogArchive__status">
+              <p class="pageCategory">{%- if page.categories[1].getTransAttribute(lang_id) -%}{{ page.categories[1].getTransAttribute(lang_id) }}{%- else -%}{{ page.categories[1].name }}{%- endif -%}</p>
+              <p class="pageDate">
+                <time datetime="{{ page.getReleasedAt|date('Y-m-d') }}">{{ page.getReleasedAt|date('Y.m.d') }}</time>
+              </p>
+            </div>
+            <div class="blogArchive__title">{{ page.title|striptags }}</div>
+          </a>
+        </li>
+      {%- endfor -%}
+    </ul>
+    <div class="lc-archiveGuide">
+      {% RenderPager %}
+    </div>
+  {%- endif -%}
+</section>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

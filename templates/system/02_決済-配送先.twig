@@ -1,0 +1,121 @@
+{%- if is_authorized() -%}
+
+  {# Reference: https://launchcart.jp/reference/2-%e6%b1%ba%e6%b8%88-%e9%85%8d%e9%80%81%e5%85%88/ #}
+
+  {# Variables Settings #}
+
+  {# insert to html head title #}
+  {%- set title = #select_destination# -%}
+
+  {# end Variables Settings #}
+
+  {% TemplateInclude "header" %}
+
+  {# Contents #}
+
+  {# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+  {%- set breadcrumbList = [] -%}
+  {%- set breadcrumbListItem = {
+      name: #select_destination# ,
+      href: app.request.uri
+    }
+  -%}
+  {%- set breadcrumbList = breadcrumbList|merge([breadcrumbListItem]) -%}
+  {% TemplateInclude "breadcrumb list" %}
+
+  <section class="lc-contentSection">
+    <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #select_destination# }}</h1>
+    
+    {# step list #}
+    {%- set step = 2 -%}
+    {% TemplateInclude "step list" %}
+
+    <div class="lc-contentsInner">
+      <form action="{{path("ec_client_ship_select")}}" name="form" id="form" method="post">
+        {%- if error_msg is defined -%}
+          <p class="lc-contentSection__note error">{{ error_msg }}</p>
+        {%- endif -%}
+        <p class="lc-contentSection__note">{{ #message_select_address# | raw }}</p>
+        <section class="lc-shipList">
+          <h2 class="lc-shipList__title">{{ #address_list_label# }}</h2>
+          <ul class="lc-shipList__list">
+            {%- set addresses = app.security.token.user.getAddress -%}
+
+            {# address list #}
+            {%- for key,address in addresses -%}
+              <li class="lc-shipList__item">
+                <input type="radio" name="consumer_address_id" name="consumer_address_id" id="ad-{{ key + 1 }}" value="{{ address.id }}"{% if (key == 0) %} checked="checked"{% endif %}>
+                <div class="lc-shipList__box">
+                  <label class="lc-shipList__main" for="ad-{{ key + 1 }}">
+                    <header class="lc-shipList__header">
+                      <h3 class="lc-shipList__name"><i class="c-inputUI c-inputUI--checkbox"></i>{{ address.lastName }} {{ address.firstName }}{% if (key == 0) %} <small>({{ #member_registered_address# }})</small>{% endif %}</h3>
+                      <p class="lc-shipList__tel">{{ address.tel }}</p>
+                    </header>
+                    <p class="lc-shipList__address">
+                      {% if address.country.id == 1 %}〒 {% endif %}{% if address.country.id != 20 %}{{ address.zipcode }}<br>{% endif %}
+                      {% if address.country.id == 1 %}{{ address.district }} {% endif %}{{ address.locality }} {{ address.street }}
+                    </p>
+                  </label>
+                  <p class="lc-shipList__controls">
+                    {%- if (key == 0) -%}
+                      <a class="lc-button--edit" href="{{ path('ec_client_consumer_edit') }}"><span class="lc-button__label">{{ #edit_label# }}</span></a>
+                    {%- else -%}
+                      <a class="lc-button--edit" href="{{ path('ec_client_consumer_address_edit', {'id': address.id}) }}"><span class="lc-button__label">{{ #edit_label# }}</span></a>
+                      <a class="lc-button--delete js-lc--delete" href="{{ path('ec_client_consumer_address_delete', {'id': address.id }) }}"><span class="lc-button__label">{{ #delete_label# }}</span></a>
+                    {%- endif -%}
+                  </p>
+                </div>
+              </li>
+            {%- endfor -%}
+
+            {# add list #}
+            {%- if (addresses|length < 20) -%}
+              <li class="lc-shipList__item"><a class="lc-shipList__box lc-shipList__box--button" href="{{ path('ec_client_consumer_address_add') }}"><i class="lc-icon--plus"></i>{{ #add_address_label# }}</a></li>
+            {%- endif -%}
+
+            {# select multiple address #}
+            {%- if ((addresses|length > 1) and (cart_api.hasProductRegular == false)) and (cart_api.count > 1) -%}
+              <li class="lc-shipList__item">
+                <input type="radio" name="consumer_address_id" id="ad-multi" value="multi">
+                <div class="lc-shipList__box">
+                  <label class="lc-shipList__main" for="ad-multi">
+                    <h3 class="lc-shipList__name"><i class="c-inputUI c-inputUI--checkbox"></i>{{ #select_multiple_address# }}</h3>
+                  </label>
+                </div>
+              </li>
+            {%- endif -%}
+          </ul>
+        </section>
+        <p class="lc-contentsInner__buttons">
+          {# to next step #}
+          <button class="lc-button--submit"><span class="lc-button__label">{{ #proceed_label# }}</span><i class="lc-button__icon lc-icon--arrow2Right"></i></button>
+          {# back #}
+          <a class="lc-button--cancel" href="{{ path('ec_client_cart_list') }}"><i class="lc-button__icon lc-icon--arrowLeft"></i><span class="lc-button__label">{{ #back_label# }}</span></a>
+        </p>
+      </form>
+    </div>
+  </section>
+
+  <script>
+  $(function () {
+    // confirm delete
+    $('.js-lc--delete').on('click', function () {
+      var href = $(this).attr('href');
+      openModalConfirm('', function () {
+        location.href = href;
+      });
+      return false;
+    });
+  });
+  </script>
+
+  {# end Contents #}
+
+  {% TemplateInclude "footer" %}
+
+{%- else -%}{# not is_authorized() #}
+
+{# login #}
+{% TemplateInclude "login form" %}
+
+{%- endif -%}{# end is_authorized() #}

@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html class="is-archiveFigureCovered" lang="zh-cn">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <script src="/assets/js/lib.js"></script>
+    <script src="/assets/js/common.js"></script>
+    <link rel="stylesheet" href="/assets/css/style.css"/>
+    <title>指定收货地址 | LC E-SHOP</title>
+  </head>
+  <body class="lc-root"><a id="top"></a>
+    <header class="l-header">
+      <p class="l-header__logo"><a href="/"><img src="/assets/img/logo.svg"/></a></p>
+      <div class="searchForm">
+        <form action="">
+          <input class="searchForm__input" type="search"/>
+          <button class="searchForm__button lc-icon--search" type="submit">Go</button>
+        </form>
+      </div>
+      <nav class="l-navi only-sp">
+        <ul class="l-navi__list">
+          <li class="l-navi__item">
+            <button class="l-navi__button js-toggleMenu"><i class="l-navi__icon l-navi__icon--menu"><span></span><span></span><span></span></i><span class="l-navi__label">MENU</span></button>
+          </li>
+          <li class="l-navi__item">
+            <button class="l-navi__button js-lc--openModal" aria-controls="modalLangCurrency" aria-haspopup="true"><i class="l-navi__icon lc-icon--globe"></i><span class="l-navi__label">简体中文 / CNY</span></button>
+          </li>
+        </ul>
+      </nav>
+      <nav class="l-navi">
+        <ul class="l-navi__list">
+          <li class="l-navi__item only-pc">
+            <button class="l-navi__button js-lc--openModal" type="button" aria-controls="modalLangCurrency" aria-haspopup="true"><i class="l-navi__icon lc-icon--globe"></i><span class="l-navi__label">简体中文 / CNY</span></button>
+          </li>
+          <li class="l-navi__item"><a class="l-navi__button" href="/auth/login/"><i class="l-navi__icon lc-icon--user"></i><span class="l-navi__label">登入</span></a>
+          </li>
+          <li class="l-navi__item"><a class="l-navi__button" href="/ec/cart/list/"><i class="l-navi__icon lc-icon--cart"></i><span class="l-navi__label">购物车</span><span class="l-navi__badge">1</span></a></li>
+        </ul>
+      </nav>
+      <div class="l-header__menu">
+        <div class="l-header__menu__bg js-closeMenu"></div>
+        <dl class="l-header__menu__list">
+          <dt class="l-header__menu__label">商品分类<span class="only-pc">:</span></dt>
+          <dd class="l-header__menu__item"><a href="/ec/product/category/1/">女士们</a>
+            <ul class="l-header__subMenu">
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">商场同款</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">V领T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">圆领T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">潮流T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">条纹T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">棉麻T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">印花T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">长款T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">高领T恤</a></li>
+            </ul>
+          </dd>
+          <dd class="l-header__menu__item"><a href="/ec/product/category/1/">男子</a>
+            <ul class="l-header__subMenu">
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">商场同款</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">V领T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">圆领T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">潮流T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">条纹T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">棉麻T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">印花T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">长款T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">高领T恤</a></li>
+            </ul>
+          </dd>
+          <dd class="l-header__menu__item"><a href="/ec/product/category/1/">纯色</a>
+            <ul class="l-header__subMenu">
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">商场同款</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">V领T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">圆领T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">潮流T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">条纹T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">棉麻T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">印花T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">长款T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">高领T恤</a></li>
+            </ul>
+          </dd>
+          <dd class="l-header__menu__item"><a href="/ec/product/category/1/">印花</a>
+            <ul class="l-header__subMenu">
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">商场同款</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">V领T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">圆领T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">潮流T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">条纹T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">棉麻T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">印花T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">长款T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">高领T恤</a></li>
+            </ul>
+          </dd>
+          <dd class="l-header__menu__item"><a href="/ec/product/category/1/">旧衣服</a>
+            <ul class="l-header__subMenu">
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">商场同款</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">V领T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">圆领T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">潮流T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">条纹T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">棉麻T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">印花T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">长款T恤</a></li>
+              <li class="l-header__subMenu__item"><a href="/ec/product/category/1/">高领T恤</a></li>
+            </ul>
+          </dd>
+        </dl>
+      </div>
+    </header>
+    <div class="lc-modal" id="modalLangCurrency">
+      <div class="lc-modal__bg js-lc--closeModal"></div>
+      <div class="lc-modal__body">
+        <h3 class="lc-modal__title">语言・币种设置</h3>
+        <dl class="lc-selectModalSettings">
+          <div class="lc-selectModalSettings__item">
+            <dt class="lc-selectModalSettings__label">语言</dt>
+            <dd class="lc-selectModalSettings__detail">
+              <div class="lc-selectBox">
+                <select class="lc-selectBox__select js-lc--selectLanguage">
+                  <option value="1">簡体中文</option>
+                </select>
+              </div>
+            </dd>
+          </div>
+          <div class="lc-selectModalSettings__item">
+            <dt class="lc-selectModalSettings__label">币种</dt>
+            <dd class="lc-selectModalSettings__detail">
+              <div class="lc-selectBox">
+                <select class="lc-selectBox__select js-lc--selectCurrency">
+                  <option value="1">CNY</option>
+                </select>
+              </div>
+            </dd>
+          </div>
+        </dl>
+        <p class="lc-modal__buttons">
+          <button class="lc-button--submit js-lc--changeLangCurrency" type="button"><span class="lc-button__label">保存更改</span><i class="lc-button__icon lc-icon--check"></i></button>
+          <button class="lc-button--cancel js-lc--closeModal" type="button"><i class="lc-button__icon lc-icon--close"></i><span class="lc-button__label">取消</span></button>
+        </p>
+      </div>
+      <script>
+        $(function () {
+          $('.js-lc--changeLangCurrency').on('click', function () {
+            var language = $('.js-lc--selectLanguage').val();
+            var currency = $('.js-lc--selectCurrency').val();
+            location.reload();
+          })
+        });
+      </script>
+    </div>
+    <main class="l-main">
+      <div class="l-breadcrumbList">
+        <ol class="l-breadcrumbList__list" itemscope="" itemtype="https://schema.org/BreadcrumbList">
+          <li class="l-breadcrumbList__item" itemprop="itemListElement" itemscope="" itemtype="https://schema.org/ListItem"><a itemtype="https://schema.org/Thing" itemprop="item" href="/"><span itemprop="name">首页</span>
+              <meta itemprop="position" content="1"/></a></li>
+          <li class="l-breadcrumbList__item" itemprop="itemListElement" itemscope="" itemtype="https://schema.org/ListItem"><a itemtype="https://schema.org/Thing" itemprop="item" href="/ec/cart/ship/new/"><span itemprop="name">指定收货地址</span>
+              <meta itemprop="position" content="2"/></a></li>
+        </ol>
+      </div>
+      <section class="lc-contentSection">
+        <h1 class="lc-contentSection__title lc-contentSection__title--center">指定收货地址</h1>
+        <ol class="lc-stepList">
+          <li class="lc-stepList__item"><i class="lc-stepList__icon"></i><span class="lc-stepList__label">购物车</span></li>
+          <li class="lc-stepList__item is-current"><i class="lc-stepList__icon"></i><span class="lc-stepList__label">指定<wbr>收货地址</span></li>
+          <li class="lc-stepList__item"><i class="lc-stepList__icon"></i><span class="lc-stepList__label">送货<wbr>时间</span></li>
+          <li class="lc-stepList__item"><i class="lc-stepList__icon"></i><span class="lc-stepList__label">选择<wbr>付款方式</span></li>
+          <li class="lc-stepList__item"><i class="lc-stepList__icon"></i><span class="lc-stepList__label">确认<wbr>购物清单</span></li>
+          <li class="lc-stepList__item"><i class="lc-stepList__icon"></i><span class="lc-stepList__label">支付</span></li>
+          <li class="lc-stepList__item"><i class="lc-stepList__icon"></i><span class="lc-stepList__label">购买<wbr>成功</span></li>
+        </ol>
+        <div class="lc-contentsInner lc-contentsInner--form">
+          <p class="lc-contentSection__note lc-contentSection__note--center">请输入下列所有项目（<i class="is-required"></i>必填）</p>
+          <form action="/ec/cart/addition/" method="POST">
+            <ul class="lc-form">
+              <li class="lc-form__item">
+                <div class="lc-form__columns">
+                  <div class="lc-form__column">
+                    <label class="lc-form__label">
+                      <h4 class="lc-form__title is-required">姓</h4>
+                      <p class="lc-form__detail">
+                        <input type="text"/>
+                      </p>
+                    </label>
+                  </div>
+                  <div class="lc-form__column">
+                    <label class="lc-form__label">
+                      <h4 class="lc-form__title is-required">名</h4>
+                      <p class="lc-form__detail">
+                        <input type="text"/>
+                      </p>
+                    </label>
+                  </div>
+                </div>
+              </li>
+              <li class="lc-form__item">
+                <label class="lc-form__label lc-form__label--half">
+                  <h4 class="lc-form__title is-required">手机号码</h4>
+                  <p class="lc-form__detail">
+                    <input type="text"/>
+                  </p>
+                </label>
+              </li>
+              <li class="lc-form__item">
+                <label class="lc-form__label">
+                  <h4 class="lc-form__title is-required">電子信箱</h4>
+                  <p class="lc-form__detail">
+                    <input type="text"/>
+                  </p>
+                </label>
+              </li>
+              <li class="lc-form__item">
+                <label class="lc-form__label lc-form__label--select">
+                  <h4 class="lc-form__title is-required">国家</h4>
+                  <p class="lc-form__detail">
+                    <select>
+                      <option>请选择国家或地区</option>
+                      <option>china</option>
+                    </select>
+                  </p>
+                </label>
+              </li>
+              <li class="lc-form__item">
+                <label class="lc-form__label lc-form__label--half">
+                  <h4 class="lc-form__title is-required">邮编号码</h4>
+                  <p class="lc-form__detail">
+                    <input type="text"/>
+                  </p>
+                </label>
+              </li>
+              <li class="lc-form__item">
+                <label class="lc-form__label">
+                  <h4 class="lc-form__title is-required">省市县乡镇村</h4>
+                  <p class="lc-form__detail">
+                    <input type="text"/>
+                  </p>
+                </label>
+              </li>
+              <li class="lc-form__item">
+                <label class="lc-form__label">
+                  <h4 class="lc-form__title is-required">详细地址</h4>
+                  <p class="lc-form__detail">
+                    <input type="text"/>
+                  </p>
+                </label>
+              </li>
+            </ul>
+            <h2 class="lc-heading--3">指定收货地址</h2>
+            <ul class="lc-form">
+              <li class="lc-form__item">
+                <label class="lc-form__label lc-form__label--plain">
+                  <p class="lc-form__detail">
+                    <input class="js-lc--confirmShipAddress" id="checkbox_2" type="checkbox" checked="checked"/>
+                    <label for="checkbox_2">同一收貨地址是購買信息</label>
+                  </p>
+                </label>
+              </li>
+            </ul>
+            <div class="js-lc--shipAddressArea">
+              <ul class="lc-form">
+                <li class="lc-form__item">
+                  <div class="lc-form__columns">
+                    <div class="lc-form__column">
+                      <label class="lc-form__label">
+                        <h4 class="lc-form__title is-required">姓</h4>
+                        <p class="lc-form__detail">
+                          <input type="text"/>
+                        </p>
+                      </label>
+                    </div>
+                    <div class="lc-form__column">
+                      <label class="lc-form__label">
+                        <h4 class="lc-form__title is-required">名</h4>
+                        <p class="lc-form__detail">
+                          <input type="text"/>
+                        </p>
+                      </label>
+                    </div>
+                  </div>
+                </li>
+                <li class="lc-form__item">
+                  <label class="lc-form__label lc-form__label--half">
+                    <h4 class="lc-form__title is-required">手机号码</h4>
+                    <p class="lc-form__detail">
+                      <input type="text"/>
+                    </p>
+                  </label>
+                </li>
+                <li class="lc-form__item">
+                  <label class="lc-form__label lc-form__label--select">
+                    <h4 class="lc-form__title is-required">国家</h4>
+                    <p class="lc-form__detail">
+                      <select>
+                        <option>请选择国家或地区</option>
+                        <option>china</option>
+                      </select>
+                    </p>
+                  </label>
+                </li>
+                <li class="lc-form__item">
+                  <label class="lc-form__label lc-form__label--half">
+                    <h4 class="lc-form__title is-required">邮编号码</h4>
+                    <p class="lc-form__detail">
+                      <input type="text"/>
+                    </p>
+                  </label>
+                </li>
+                <li class="lc-form__item">
+                  <label class="lc-form__label">
+                    <h4 class="lc-form__title is-required">省市县乡镇村</h4>
+                    <p class="lc-form__detail">
+                      <input type="text"/>
+                    </p>
+                  </label>
+                </li>
+                <li class="lc-form__item">
+                  <label class="lc-form__label">
+                    <h4 class="lc-form__title is-required">详细地址</h4>
+                    <p class="lc-form__detail">
+                      <input type="text"/>
+                    </p>
+                  </label>
+                </li>
+              </ul>
+            </div>
+            <p class="lc-contentSection__note lc-contentSection__note--center"> 
+              <input class="js-confirmConsent" id="checkbox_1" type="checkbox"/>
+              <label for="checkbox_1">同意隐私政策</label><a class="lc-button--cancel js-lc--closeModal" hre=""><span class="lc-button__label">隐私政策</span><i class="lc-button__icon lc-icon--arrowRight"></i></a>
+            </p>
+            <p class="lc-contentsInner__buttons">
+              <button class="lc-button--submit" type="submit"><span class="lc-button__label">确认</span><i class="lc-button__icon lc-icon--arrowRight"></i></button>
+            </p>
+            <script>
+              $(function () {
+                if ($('.js-confirmConsent').length) {
+                  var $confirmConcent = $('.js-confirmConsent');
+                  var $form = $confirmConcent.closest('form');
+                  var $submit = $form.find(':submit');
+                  confirmConcent();
+                  $confirmConcent.on('change', function () {
+                    confirmConcent();
+                  });
+                  function confirmConcent () {
+                    $submit.prop('disabled', !$confirmConcent.prop('checked'));
+                  }
+                }
+                
+                if ($('.js-lc--confirmShipAddress').length) {
+                  var $confirmShipAddressInput = $('.js-lc--confirmShipAddress');
+                  confirmShipAddress();
+                  $confirmShipAddressInput.on('change', function () {
+                    confirmShipAddress();
+                  });
+                  function confirmShipAddress () {
+                    if ($confirmShipAddressInput.prop('checked')) {
+                      $('.js-lc--shipAddressArea').hide();
+                    } else {
+                      $('.js-lc--shipAddressArea').show();
+                    }
+                  }
+                }
+              });
+            </script>
+          </form>
+        </div>
+      </section>
+    </main>
+    <footer class="l-footer">
+      <p class="l-footer__pagetop"><a class="js-scroll" href="#top"><span class="l-footer__pagetop__icon"></span>Page Top</a></p>
+      <ul class="floatingNavi">
+        <li class="floatingNavi__item"><a class="floatingNavi__button floatingNavi__button--contact" href="#inquiry"><i class="floatingNavi__icon icon--mail"></i><span class="floatingNavi__label">contact</span></a></li>
+        <li class="floatingNavi__item"><a class="floatingNavi__button floatingNavi__button--price" href="/prices/"><i class="floatingNavi__icon">¥</i><span class="floatingNavi__label">料金を見る</span><span class="floatingNavi__balloon">料金シュミレーション</span></a></li>
+      </ul>
+      <div class="l-footer__bannerBg only-pc"></div>
+      <div class="l-footer__banner only-pc">
+        <div class="l-footer__bannerWrapper"><a class="l-footer__bannerLink" href="/download/"><img src="https://launchcart.jp/admin/wp-content/themes/launchcart/ver2019/img/bn_download.jpg"/></a>
+          <p class="l-footer__cuponCode">XXXYZ012345</p>
+          <button class="l-footer__bannerButton" type="button"><span>閉じる</span></button>
+        </div>
+      </div>
+      <dl class="footerPaymentMethods">
+        <div class="footerPaymentMethods__item">
+          <dt class="footerPaymentMethods__label">可使用各种信用卡</dt>
+          <dd class="footerPaymentMethods__detail">
+            <p class="footerPaymentMethods__method"><img src="/assets/img/icon/pay_alipay.svg" alt="Alipay"/></p>
+            <p class="footerPaymentMethods__method"><img src="/assets/img/icon/pay_unionpay.svg" alt="UnionPay"/></p>
+            <p class="footerPaymentMethods__method"><img src="/assets/img/icon/pay_wechat.svg" alt="WeChatPay"/></p>
+          </dd>
+        </div>
+        <div class="footerPaymentMethods__item">
+          <dt class="footerPaymentMethods__label">可使用中国结算</dt>
+          <dd class="footerPaymentMethods__detail">
+            <p class="footerPaymentMethods__method"><img src="/assets/img/icon/pay_visa.svg" alt="VISA"/></p>
+            <p class="footerPaymentMethods__method"><img src="/assets/img/icon/pay_master.svg" alt="MasterCard"/></p>
+            <p class="footerPaymentMethods__method"><img src="/assets/img/icon/pay_jcb.svg" alt="JCB"/></p>
+            <p class="footerPaymentMethods__method"><img src="/assets/img/icon/pay_amex.png" alt="American Express"/></p>
+            <p class="footerPaymentMethods__method"><img src="/assets/img/icon/pay_diners.svg" alt="Diners Club"/></p>
+          </dd>
+        </div>
+      </dl>
+      <div class="l-footer__inner">
+        <div class="l-footer__navi">
+          <ul class="footerNavi">
+            <li class="footerNavi__item"><a href="/">首页</a></li>
+            <li class="footerNavi__item"><a href="/law/">特约商户交易法</a></li>
+          </ul>
+          <dl class="footerNavi">
+            <div class="footerNavi__section">
+              <dt class="footerNavi__label">Account</dt>
+              <dd class="footerNavi__item"><a href="/auth/login/">登入</a></dd>
+              <dd class="footerNavi__item"><a href="/auth/regist/">注册</a></dd>
+            </div>
+            <div class="footerNavi__section">
+              <dt class="footerNavi__label">Categories</dt>
+              <dd class="footerNavi__item"><a href="/ec/product/category/1/">女士们</a></dd>
+              <dd class="footerNavi__item"><a href="/ec/product/category/1/">男子</a></dd>
+              <dd class="footerNavi__item"><a href="/ec/product/category/1/">纯色</a></dd>
+              <dd class="footerNavi__item"><a href="/ec/product/category/1/">印花</a></dd>
+              <dd class="footerNavi__item"><a href="/ec/product/category/1/">旧衣服</a></dd>
+            </div>
+          </dl>
+        </div>
+        <div class="l-footer__contact">
+          <div class="l-footer__inquiry">
+            <p class="l-footer__address">
+              3-9-7 Takada, Toshima-ku, Tokyo 171-0033<br>
+              TEL: +81 3 5956 9292
+            </p>
+            <ul class="snsLinks">
+              <li class="snsLinks__item"><a href="" target="_blank"><i class="snsLinks__icon lc-icon--snsTwitter"></i><span class="snsLinks__label">twitter</span></a></li>
+              <li class="snsLinks__item"><a href="" target="_blank"><i class="snsLinks__icon lc-icon--snsFacebook"></i><span class="snsLinks__label">facebook</span></a></li>
+            </ul>
+          </div>
+          <p class="l-footer__logo"><a href="/"><img src="/assets/img/logo.svg" alt="LC E-SHOP" width="90"/></a></p>
+        </div>
+      </div>
+      <p class="l-footer__copyright"><small>&copy; 2019 Sterfield Co., Ltd.</small></p>
+    </footer>
+    <script>
+      $(function () {
+        var $window = $(window);
+      
+        //==========================================================
+        // Modal
+        //==========================================================
+        $('.js-lc--openModal').on('click', function() {
+          var $trigger = $(this);
+          $('#' + $trigger.attr('aria-controls')).addClass('is-active');
+          $('#' + $trigger.attr('aria-controls')).find('.lc-modal__body').css({
+            top: ($window.scrollTop() + 60) + 'px'
+          });
+          return false;
+        })
+        $('.js-lc--closeModal').on('click', function () {
+          $('.lc-modal').removeClass('is-active');
+        })
+      
+        //==========================================================
+        // Tab
+        //==========================================================
+        if ($('.lc-tab[role="application"]').length) {
+          $('.lc-tab[role="application"]').each(function () {
+            var $wrapper = $(this);
+            var $tab = $wrapper.find('.lc-tab__tab');
+            var $tabPanel = $wrapper.find('.lc-tab__panel');
+            $tab.on('click', function () {
+              var $currentTab = $(this);
+              $tab.removeClass('is-active');
+              $tabPanel.removeClass('is-active');
+              $currentTab.addClass('is-active');
+              $('#' + $currentTab.attr('aria-controls')).addClass('is-active');
+            })
+          })
+        }
+      
+        //==========================================================
+        // Forms
+        //==========================================================
+        var $form__items = $('.lc-form__item');
+        if ($form__items.length) {
+          $form__items.each(function (index, form__item) {
+            var $form__item = $(form__item);
+            var $label = $form__item.find('.lc-form__label');
+            var $input = $form__item.find('input, select, textarea');
+            $label.filter(':has(.error)').addClass('is-errored');
+            $input.on('focus', function () {
+              $label.addClass('is-focused');
+            }).on('blur', function () {
+              $label.removeClass('is-focused');
+            })
+          })
+        }
+      });
+    </script>
+  </body>
+</html>

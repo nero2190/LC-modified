@@ -1,0 +1,414 @@
+extends /_include/_layout.pug
+
+block title
+  title 小熊夏季新款女装可爱卡通短袖t恤宽松韩版半袖 | LC E-SHOP
+block content
+
+  -
+    var breadcrumbList = [
+      {
+        name: '首页',
+        href: '/'
+      },
+      {
+        name: '女士们',
+        href: '/ec/product/category/1/'
+      },
+      {
+        name: '棉麻T恤',
+        href: '/ec/product/category/1/'
+      },
+      {
+        name: '小熊夏季新款女装可爱卡通短袖t恤宽松韩版半袖',
+        href: '/product/1/'
+      }
+    ]
+  include /_include/_breadcrumblist.pug
+
+  article.l-article
+    .productMainSection
+      header.productMainSection__header
+        h1.productMainSection__title 小熊夏季新款女装可爱卡通短袖t恤宽松韩版半袖
+        p.productMainSection__code BSW00352-H
+      figure.productImages
+        ul.productImages__main
+          - for (var i = 1; i <= 8; i++)
+            li.productImages__main__item
+              a.productImages__main__inner(href=`/assets/img/img_product_0${i}.jpg`, target="_blank")
+                img(src=`/assets/img/img_product_0${i}.jpg`, alt="product title")
+        div.productImages__thumbnails
+          ul.productImages__thumbnails__list
+            - for (var i = 1; i <= 8; i++)
+              li.productImages__thumbnails__item(data-index=(i - 1))
+                img(src=`/assets/img/img_product_0${i}.jpg`, alt="product title")
+      p.productMainSection__price
+        em <span class="js-lc--price">159.00</span>CNY
+        small (<span class="js-lc--basePrice">2,393</span>JPY)
+      .cartInArea
+        dl.skuList
+          .skuList__item
+            dt.skuList__label 颜色
+            dd.skuList__detail
+              label.skuList__radio
+                input.skuList__radio__input.js-lc--sku1(type="radio", name="sku1", value="Black")
+                span.skuList__radio__button 黑色
+              label.skuList__radio
+                input.skuList__radio__input.js-lc--sku1(type="radio", name="sku1", value="Gray")
+                span.skuList__radio__button 灰色
+              label.skuList__radio
+                input.skuList__radio__input.js-lc--sku1(type="radio", name="sku1", value="White")
+                span.skuList__radio__button 白色
+              label.skuList__radio
+                input.skuList__radio__input.js-lc--sku1(type="radio", name="sku1", value="Brown")
+                span.skuList__radio__button 棕色
+          .skuList__item
+            dt.skuList__label 尺寸
+            dd.skuList__detail
+              label.skuList__radio
+                input.skuList__radio__input.js-lc--sku2(type="radio", name="sku2", value="SS")
+                span.skuList__radio__button SS
+              label.skuList__radio
+                input.skuList__radio__input.js-lc--sku2(type="radio", name="sku2", value="S")
+                span.skuList__radio__button S
+              label.skuList__radio
+                input.skuList__radio__input.js-lc--sku2(type="radio", name="sku2", value="M")
+                span.skuList__radio__button M
+              label.skuList__radio
+                input.skuList__radio__input.js-lc--sku2(type="radio", name="sku2", value="L")
+                span.skuList__radio__button L
+              label.skuList__radio
+                input.skuList__radio__input.js-lc--sku2(type="radio", name="sku2", value="LL")
+                span.skuList__radio__button LL
+        script.
+          /**
+            * @type {Array} - 各SKUのデータ
+            */
+          var productSkus = [
+            {
+              id: 1,
+              sku1: 'Black',
+              sku2: 'SS',
+              basePrice: 2393,
+              stock: 9999
+            },
+            {
+              id: 2,
+              sku1: 'Black',
+              sku2: 'S',
+              basePrice: 2393,
+              stock: 2
+            },
+            {
+              id: 3,
+              sku1: 'Black',
+              sku2: 'M',
+              basePrice: 2393,
+              stock: 9999
+            },
+            {
+              id: 4,
+              sku1: 'Black',
+              sku2: 'L',
+              basePrice: 2493,
+              stock: 9999
+            },
+            {
+              id: 5,
+              sku1: 'Black',
+              sku2: 'LL',
+              basePrice: 2493,
+              stock: 0
+            },
+            {
+              id: 6,
+              sku1: 'Gray',
+              sku2: 'SS',
+              basePrice: 2393,
+              stock: 9999
+            },
+            {
+              id: 7,
+              sku1: 'Gray',
+              sku2: 'S',
+              basePrice: 2393,
+              stock: 9999
+            },
+            {
+              id: 8,
+              sku1: 'Gray',
+              sku2: 'M',
+              basePrice: 2393,
+              stock: 9999
+            },
+            {
+              id: 9,
+              sku1: 'Gray',
+              sku2: 'L',
+              basePrice: 2493,
+              stock: 9999
+            },
+            {
+              id: 10,
+              sku1: 'Gray',
+              sku2: 'LL',
+              basePrice: 2493,
+              stock: 9999
+            },
+            {
+              id: 11,
+              sku1: 'White',
+              sku2: 'SS',
+              basePrice: 2393,
+              stock: 0
+            },
+            {
+              id: 12,
+              sku1: 'White',
+              sku2: 'S',
+              basePrice: 2393,
+              stock: 9999
+            },
+            {
+              id: 13,
+              sku1: 'White',
+              sku2: 'M',
+              basePrice: 2393,
+              stock: 9999
+            },
+            {
+              id: 14,
+              sku1: 'White',
+              sku2: 'L',
+              basePrice: 2493,
+              stock: 9999
+            },
+            {
+              id: 15,
+              sku1: 'White',
+              sku2: 'LL',
+              basePrice: 2493,
+              stock: 9999
+            },
+            {
+              id: 16,
+              sku1: 'Brown',
+              sku2: 'SS',
+              basePrice: 2393,
+              stock: 9999
+            },
+            {
+              id: 17,
+              sku1: 'Brown',
+              sku2: 'S',
+              basePrice: 2393,
+              stock: 9999
+            },
+            {
+              id: 18,
+              sku1: 'Brown',
+              sku2: 'M',
+              basePrice: 2393,
+              stock: 9999
+            },
+            {
+              id: 19,
+              sku1: 'Brown',
+              sku2: 'L',
+              basePrice: 2493,
+              stock: 9999
+            },
+            {
+              id: 20,
+              sku1: 'Brown',
+              sku2: 'LL',
+              basePrice: 2493,
+              stock: 0
+            }
+          ];
+
+          /**
+            * @type {Object} - SKUのラベルをまとめたもの
+            */
+          var skuLabels = {
+            sku1: '颜色',
+            sku2: '尺寸'
+          }
+
+        include /_include/_productsku-script.pug
+        
+        form(action="/ec/cart/list/", method="post")
+          input(type="hidden" name="product_sku_id")
+          dl.skuList
+            .skuList__item
+              dt.skuList__label 数量
+              dd.skuList__detail
+                .lc-selectBox
+                  select.lc-selectBox__select(name="quantity")
+                    - for (var i = 1; i <= 10; i++)
+                      option(value=i) #{i}
+          p.cartInArea__actions
+            button.lc-button--submit.lc-button--action.js-lc--cartin(type="submit")
+              span.lc-button__label 加入购物车
+              i.lc-button__icon.lc-icon--cart
+            button.lc-button--submit.lc-button--onlyIcon.js-lc--favorite(type="button", title="我的最爱")
+              span.lc-button__label 我的最爱
+              i.lc-button__icon.lc-icon--heart
+          dl.additionsForm
+            dt.additionsForm__title.lc-icon--plus OPTIONS
+            dd.additionsForm__item
+              label.additionsForm__label
+                input.additionsForm__input(type="checkbox", name="addition_quantity[1]", value="1")
+                .additionsForm__box
+                  p.additionsForm__name
+                    i.additionsForm__checkbox
+                    | 礼品包装
+                  p.additionsForm__price
+                    em 0.00CNY
+                    small (0JPY)
+                  p.additionsForm__detail 推荐用于礼品和纪念品
+            dd.additionsForm__item
+              label.additionsForm__label
+                input.additionsForm__input(type="checkbox", name="addition_quantity[2]", value="1")
+                .additionsForm__box
+                  p.additionsForm__name
+                    i.additionsForm__checkbox
+                    | 快点航班
+                  p.additionsForm__price
+                    em 1.00CNY
+                    small (15JPY)
+                  p.additionsForm__detail 船舶的优先级高于平时
+    
+    section.lc-contentsInner.productDetail
+      h2 关于产品
+      section
+        h3 说明
+        p 趁着活动买了几件上衣，同事推荐这家，说质量不错。款式的确都好看。昨天买的，今天就到，快递很快！
+      section
+        h3 详细
+        p
+          | 品牌名称：裂帛
+        p
+          | 产品参数：<br>
+          | 品牌: 裂帛 适用年龄: 25-29周岁 尺码: S M L XL XXL 图案: 植物花卉 风格: 通勤 通勤: 淑女 领型: 圆领流行元素: 绣花 主要颜色: 深蓝 深蓝A 深蓝B 白色 袖型: 常规 货号: 51151485 图案文化: 经典 年份季节: 2019年夏季 袖长: 短袖衣长: 常规款 服装版型: 修身 材质成分: 棉100%
+
+    section.lc-contentsInner.lc-reviewsArchive
+      header.lc-reviewsArchive__header
+        h2.lc-reviewsArchive__title 商品评价
+        p.lc-reviewsArchive__total 24件
+        p.lc-reviewStars.lc-reviewStars--large(data-grade="10")
+          - for (var i = 0; i < 5; i++)
+            span
+        p.lc-reviewsArchive__number 4.8
+      ul.lc-reviewsArchive__list
+        li.lc-reviewsArchive__item
+          .lc-reviewsArchive__reviewHeader
+            p.lc-reviewStars(data-grade="10")
+              - for (var i = 0; i < 5; i++)
+                span
+            h3.lc-reviewsArchive__reviewTitle 手感很好啊
+          p.lc-reviewsArchive__detail
+            | 手感很好啊，触感柔软、凉快，透气。15年买了一套，因为洗很勤，床单磨坏了，所以再买一套。
+          p.lc-reviewsArchive__nickname hogehoge
+        li.lc-reviewsArchive__item
+          .lc-reviewsArchive__reviewHeader
+            p.lc-reviewStars(data-grade="8")
+              - for (var i = 0; i < 5; i++)
+                span
+            h3.lc-reviewsArchive__reviewTitle 宝贝已收到比我想象的好
+          p.lc-reviewsArchive__detail
+            | 宝贝已收到比我想象的好，真心不错还会回购！
+          p.lc-reviewsArchive__nickname fuga
+      p.lc-contentsInner__buttons.lc-contentsInner__buttons--horizontal
+        a.lc-button--submit(href="/ec/product/1/")
+          span.lc-button__label More
+          i.lc-button__icon.lc-icon--arrowRight
+        button.lc-button--submit.js-lc--openModal(
+            type="button"
+            aria-controls="modalLangAddReview"
+            aria-haspopup="true"
+          )
+          span.lc-button__label 我要评价
+          i.lc-button__icon.lc-icon--star
+
+      .lc-modal#modalLangAddReview
+        .lc-modal__bg.js-lc--closeModal
+        .lc-modal__body.lc-modal__body--wide
+          h3.lc-modal__title 写评论
+          form(action="")
+            ul.lc-form
+              li.lc-form__item
+                label.lc-form__label.lc-form__label--half
+                  h4.lc-form__title.is-required 昵称
+                  p.lc-form__detail
+                    input(type="text")
+              li.lc-form__item
+                label.lc-form__label.lc-form__label--plain
+                  h4.lc-form__title.is-required 汇率
+                  div.lc-form__detail.lc-form__detail--stars
+                    input.js-lc--reviewStarsInput(type="hidden")
+                    p.lc-reviewStars.lc-reviewStars--large.js-lc--changeReviewStars(data-grade="10")
+                      - for (var i = 0; i < 5; i++)
+                        span
+                    p.lc-reviewStars__number.js-lc--reviewStarsNumber 5
+              li.lc-form__item
+                label.lc-form__label
+                  h4.lc-form__title.is-required 题目
+                  p.lc-form__detail
+                    input(type="text")
+              li.lc-form__item
+                label.lc-form__label
+                  h4.lc-form__title.is-required 内容
+                  p.lc-form__detail
+                    textarea(rows="5")
+                    
+            p.lc-modal__buttons
+              button(type="submit").lc-button--submit
+                span.lc-button__label 登入
+                i.lc-button__icon.lc-icon--check
+              button(type="button").lc-button--cancel.js-lc--closeModal
+                i.lc-button__icon.lc-icon--close
+                span.lc-button__label 取消
+
+      include /_include/_reviewstars-script.pug
+    
+    section.lc-contentsInner.productDetail
+      h2 邮费
+      .lc-tableWrapper 
+        table.is-align--center
+          thead
+            tr
+              th 重量
+              td.is-align--right Asia
+              td.is-align--right Europe
+              td.is-align--right North America
+          tbody
+            tr
+              th - 1kg
+              td.is-align--right 0.00CNY
+              td.is-align--right 0.00CNY
+              td.is-align--right 0.00CNY
+            tr
+              th 1kg - 15kg
+              td.is-align--right 10.00CNY
+              td.is-align--right 10.00CNY
+              td.is-align--right 10.00CNY
+            tr
+              th 15kg - 30kg
+              td.is-align--right 20.00CNY
+              td.is-align--right 20.00CNY
+              td.is-align--right 20.00CNY
+  
+    aside.lc-contentSection
+      h2.lc-contentSection__title 相关产品
+      ul.productArchive
+        - for (var i = 1; i <= 4; i++)
+          li.productArchive__item
+            a(href="/product/1/")
+              figure.productArchive__figure
+                img(src=`/assets/img/img_product_0${i}.jpg`, alt="product title")
+              h3.productArchive__name 小熊夏季新款女装可爱卡通短袖t恤宽松韩版半袖
+              p.productArchive__price
+                span.productArchive__price__main 159.00CNY
+                small.productArchive__price__sub (2,393JPY)
+
+

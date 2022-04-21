@@ -1,0 +1,336 @@
+{# Reference: https://launchcart.jp/reference/7-%e6%b1%ba%e6%b8%88-%e7%a2%ba%e8%aa%8d/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = #confirm_label# -%}
+
+{# user rank #}
+{% set security_user_rank = is_granted('ROLE_USER') ? app.security.token.user.rank : null %}
+
+{# get base currency unit #}
+{%- set baseCurrency = get_entity_manager().find('EcCoreBundle:Currency', system_config('base_currency')) -%}
+{%- set baseUnitFront = baseCurrency.getBeforeUnit() -%}
+{%- set baseUnitBack = baseCurrency.getAfterUnit() -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- set breadcrumbListItem = {
+    name: #confirm_label# ,
+    href: app.request.uri
+  }
+-%}
+{%- set breadcrumbList = breadcrumbList|merge([breadcrumbListItem]) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #confirm_label# }}</h1>
+  
+  {# step list #}
+  {%- set step = 5 -%}
+  {% TemplateInclude "step list" %}
+
+  <div class="lc-contentsInner">
+    <form name="form1" id="form1" method="POST" action="">
+      <p class="lc-contentsInner__buttons">
+        <button type="submit" class="lc-button--submit lc-button--action"><span class="lc-button__label">{{ #order_label# }}</span><i class="lc-button__icon lc-icon--check"></i></button>
+      </p>
+
+      {# breakdown of the order price #}
+      <table class="lc-table lc-table--numbers">
+        <tbody> 
+          <tr>
+            <th>{{ #total_products_price_label# }}</th>
+            <td><em>{{ #unitFront# }}{{ (productTotal * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}</em></td>
+            {%- if curRatio != 1 -%}
+              <td>({{ baseUnitFront }}{{ productTotal|price_format(decimalPoint) }}{{ baseUnitBack }})</td>
+            {%- endif -%}
+          </tr>
+          <tr>
+            <th>{{ #total_optional_products_price_label# }}</th>
+            <td><em>{{ #unitFront# }}{{ (additionTotal * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}</em></td>
+            {%- if curRatio != 1 -%}
+              <td>({{ baseUnitFront }}{{ additionTotal|price_format(decimalPoint) }}{{ baseUnitBack }})</td>
+            {%- endif -%}
+          </tr>
+          <tr>
+            <th>{{ #shipping_fee_label# }}</th>
+            <td><em>{{ #unitFront# }}{{ (deliveryFeeTotal * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}</em></td>
+            {%- if curRatio != 1 -%}
+              <td>({{ baseUnitFront }}{{ deliveryFeeTotal|price_format(decimalPoint) }}{{ baseUnitBack }})</td>
+            {%- endif -%}
+          </tr>
+          <tr>
+            <th>{{ #handling_fee_label# }}</th>
+            <td><em>{{ #unitFront# }}{{ (chargeTotal * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}</em></td>
+            {%- if curRatio != 1 -%}
+              <td>({{ baseUnitFront }}{{ chargeTotal|price_format(decimalPoint) }}{{ baseUnitBack }})</td>
+            {%- endif -%}
+          </tr>
+          <tr>
+            <th>{{ #points_used_label# }}</th>
+            <td><em>-{{ #unitFront# }}{{ (usePoint * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}</em></td>
+            {%- if curRatio != 1 -%}
+              <td>(-{{ baseUnitFront }}{{ usePoint|price_format(decimalPoint) }}{{ baseUnitBack }})</td>
+            {%- endif -%}
+          </tr>
+          <tr>
+            <th>{{ #coupon_used_label# }}</th>
+            <td><em>-{{ #unitFront# }}{{ (useCouponDiscount * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}</em></td>
+            {%- if curRatio != 1 -%}
+              <td>(-{{ baseUnitFront }}{{ useCouponDiscount|price_format(decimalPoint) }}{{ baseUnitBack }})</td>
+            {%- endif -%}
+          </tr>
+        </tbody>
+      </table>
+
+      {# total price #}
+      <p class="lc-contentSection__note lc-contentSection__note--large lc-align--right">
+        {{ #total_label# }}:
+        <strong>
+          {{ #unitFront# }}{{ (paymentTotal * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}
+          {%- if curRatio != 1 -%}
+            <small>({{ baseUnitFront }}{{ paymentTotal|price_format(decimalPoint) }}{{ baseUnitBack }})</small>
+          {%- endif -%}
+        </strong>
+      </p>
+
+      {# points information #}
+      <h2 class="lc-heading--3">{{ #points_label# }}</h2>
+      <table class="lc-table lc-table--numbers">
+        <tbody>
+          {%- if is_authorized() -%}
+            <tr>
+              <th>{{ #points_before_label# }}</th>
+              <td>
+                <em>
+                  {{ app.security.token.user.point|number_format }}{{ #point_unit# }}
+                </em>
+              </td>
+            </tr>
+          {%- endif -%}
+          <tr>
+            <th>{{ #points_used_this_order_label# }}</th>
+            <td><em>-{{ usePoint|number_format }}{{ #point_unit# }}</em></td>
+          </tr>
+          {%- if is_authorized() -%}
+            <tr>
+              <th>{{ #points_get_this_order# }}</th>
+              <td><em>+{{ addPoint|number_format }}{{ #point_unit# }}</em></td>
+            </tr>
+            <tr>
+              <th>{{ #total_points_label# }}</th>
+              <td><em>{{ (app.security.token.user.point-usePoint)|number_format }}{{ #point_unit# }}</em></td>
+            </tr>
+          {%- endif -%}
+        </tbody>
+      </table>
+
+      {# products and delivery information #}
+      <section class="lc-shipList">
+        <h2 class="lc-shipList__title">{{ #address_list_label# }}</h2>
+        <ul class="lc-shipList__list">
+          {%- set ship = app.session.get('ship') -%}
+          {%- for consumerAddressId, tmpship in ship -%}
+            {%- if (consumerAddressId > 0) -%}
+              {%- set address = get_entity_manager().find('EcCoreBundle:ConsumerAddress', consumerAddressId) -%}
+            {%- else -%}
+              {%- set address = app.session.get('consumer_shipment_data') -%}
+            {%- endif -%}
+            {%- for deliveryId,tmpship2 in tmpship -%}
+              {%- set delivery = get_entity_manager().find('EcCoreBundle:Delivery', deliveryId) -%}
+              {%- set deliveryDay = #not_input_label# -%}
+              {%- if tmpship2['delivery_day'] is defined and (tmpship2['delivery_day'] != '') -%}
+                {%- set deliveryDay = tmpship2['delivery_day'] -%}
+              {%- endif -%}
+              {%- set deliveryTime = #not_input_label# -%}
+              {%- if tmpship2['delivery_time'] is defined and (tmpship2['delivery_time'] != '') -%}
+                {%- set delivery_time = get_entity_manager().find('EcCoreBundle:DeliveryTime', tmpship2['delivery_time']) -%}
+                {%- set deliveryTime = delivery_time.time -%}
+              {%- endif -%}
+              {%- if tmpship2['delivery_abroad'] is defined and (tmpship2['delivery_abroad'] != '') -%}
+                {%- set delivery_abroad = get_entity_manager().find('EcCoreBundle:DeliveryAbroad', tmpship2['delivery_abroad']) -%}
+              {%- endif -%}
+              {%- set products = tmpship2[0] -%}
+              {%- set additions = '' -%}
+              {%- if tmpship2['additions'] is defined and (tmpship2['additions']|length > 0) -%}
+                {%- set additions = tmpship2['additions'] -%}
+              {%- endif -%}
+              <li class="lc-shipList__item">
+                <div class="lc-shipList__box">
+                  <div class="lc-shipList__main">
+
+                    {# delivery information #}
+                    <header class="lc-shipList__header">
+                      <h3 class="lc-shipList__name"><i class="c-inputUI c-inputUI--checkbox"></i>{{ address.lastName }} {{ address.firstName }}</h3>
+                      <p class="lc-shipList__tel">{{ address.tel }}</p>
+                    </header>
+                    <p class="lc-shipList__address">
+                      {% if address.country.id == 1 %}〒 {% endif %}{% if address.country.id != 20 %}{{ address.zipcode }}<br>{% endif %}
+                      {% if address.country.id == 1 %}{{ address.district }} {% endif %}{{ address.locality }} {{ address.street }}
+                    </p>
+
+                    {# products information #}
+                    <ul class="lc-list">
+                      {%- for product_array in products -%}
+                        {%- set productsku = get_entity_manager().find("EcCoreBundle:ProductSku", product_array[0]) -%}
+                        {%- set product = productsku.product -%}
+                        {%- set productName = product.attribute('product name', language) ? product.attribute('product name', language) : product.name -%}
+                        <li class="lc-productInfo">
+
+                          {# product image #}
+                          <figure class="lc-productInfo__figure">
+                            <a class="lc-productInfo__figure__inner" href="{{ path('ec_product_detail', {'id': product.id}) }}">
+                              <img src="{% if product.attribute('image1') %}{{ ('/uploads/media/'~get_entity_manager().find('MediaCoreBundle:Media', product.attribute('image1')).path) }}{% else %}{{ asset('assets/img/no-image.png') }}{% endif %}" alt="{{ productName|striptags }}"/>
+                            </a>
+                          </figure>
+
+                          <div class="lc-productInfo__text">
+                          
+                            {# product name and skus titles #}
+                            <h2 class="lc-productInfo__name">
+                              <a href="{{ path('ec_product_detail', {'id': product.id}) }}">
+                                {{ productName }}
+                                {% if productsku.skuDetail1 %}&emsp;{% if productsku.skuDetail1.getTransAttribute(lang_id) %}{{ productsku.skuDetail1.getTransAttribute(lang_id) }}{% else %}{{ productsku.skuDetail1.title }}{% endif %}{% endif %}
+                                {% if productsku.skuDetail2 %}&emsp;{% if productsku.skuDetail2.getTransAttribute(lang_id) %}{{ productsku.skuDetail2.getTransAttribute(lang_id) }}{% else %}{{ productsku.skuDetail2.title }}{% endif %}{% endif %}
+                              </a>
+                            </h2>
+
+                            <div class="lc-productInfo__detail">
+                              <dl class="lc-productInfo__detail__list">
+
+                                {# price #}
+                                <div class="lc-productInfo__detail__item">
+                                  <dt class="lc-productInfo__detail__label">{{ #unit_price_label# }}</dt>
+                                  <dd class="lc-productInfo__detail__detail">
+                                    {{ #unitFront# }}{{ (productsku.getPrice(security_user_rank) * product_array[1]* curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}
+                                    {%- if curRatio != 1 -%}
+                                      <small class="productArchive__price__sub">({{ baseUnitFront }}{{ (productsku.getPrice(security_user_rank) * product_array[1])|price_format(decimalPoint) }}{{ baseUnitBack }})</small>
+                                    {%- endif -%}
+                                  </dd>
+                                </div>
+
+                                {# weight #}
+                                <div class="lc-productInfo__detail__item">
+                                  <dt class="lc-productInfo__detail__label">{{ #weight_label# }}</dt>
+                                  <dd class="lc-productInfo__detail__detail">{{ (productsku.getWeight * product_array[1])|number_format }}</span>g</dd>
+                                </div>
+
+                                {# quantity and regular interval #}
+                                <div class="lc-productInfo__detail__item">
+                                  <dt class="lc-productInfo__detail__label">{{ #quantity_label# }}{% if (product_array[2] > 0) %} / {{ #regular_interval_label# }}{% endif %}</dt>
+                                  <dd class="lc-productInfo__detail__detail">
+                                    {{ product_array[1]|number_format }}
+                                    {%- if (product_array[2] > 0) -%}
+                                      &nbsp;/&nbsp;
+                                      {% set regularInt = get_entity_manager().find('EcCoreBundle:RegularInterval',  product_array[2]) %}
+                                      {{ regularInt.getValue }}{{ ('regular.units.regular_interval.each_' ~ regularInt.getUnit) |trans({}, 'clients') }}
+                                    {%- endif -%}
+                                  </dd>
+                                </div>
+
+                              </dl>
+                            </div>
+                          </div>
+                          
+                          {# additions (optional service) #}
+                          {%- if (additions|length > 0) -%}
+                            <dl class="lc-productInfo__additions">
+                              {%- for addition_array in additions -%}
+                                {%- if (addition_array[0] == product_array[0]) -%}
+                                  {% set addition = get_entity_manager().find("EcCoreBundle:Addition", addition_array[1]) %}
+                                  <div class="lc-productInfo__additions__item">
+                                    <dt class="lc-productInfo__additions__name">{% if addition.getTitleTransAttribute(lang_id) %}{{ addition.getTitleTransAttribute(lang_id) }}{% else %}{{ addition.title }}{% endif %}</dt>
+                                    <dd class="lc-productInfo__additions__detail">
+                                      <dl class="lc-productInfo__detail__list">
+                                        <div class="lc-productInfo__detail__item">
+                                          <dt class="lc-productInfo__detail__label">{{ #unit_price_label# }}</dt>
+                                          <dd class="lc-productInfo__detail__detail">
+                                            {{ #unitFront# }}{{ (addition.price * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}
+                                            {%- if curRatio != 1 -%}
+                                              <small class="productArchive__price__sub">({{ baseUnitFront }}{{ addition.price|price_format(decimalPoint) }}{{ baseUnitBack }})</small>
+                                            {%- endif -%}
+                                          </dd>
+                                        </div>
+                                      </dl>
+                                    </dd>
+                                  </div>
+                                {%- endif -%}
+                              {%- endfor -%}
+                            </dl>
+                          {%- endif -%}
+
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+                    <dl class="lc-shipList__info">
+
+                      {# delivery method #}
+                      <div class="lc-shipList__info__item">
+                        <dt class="lc-shipList__info__label">{{ #delivery_method_label# }}</dt>
+                        <dd class="lc-shipList__info__detail">{% if delivery_abroad is defined %}{{delivery_abroad.name}}{% else %}{{ delivery.name }}{% endif %}</dd>
+                      </div>
+
+                      {# delivery date time #}
+                      <div class="lc-shipList__info__item">
+                        <dt class="lc-shipList__info__label">{{ #delivery_datetime_label# }}</dt>
+                        <dd class="lc-shipList__info__detail">
+                          {%- if ( deliveryDay == #not_input_label# ) and ( deliveryTime == #not_input_label# ) -%}
+                            {{ #not_input_label# }}
+                          {%- else -%}
+                            {%- if deliveryDay != #not_input_label# -%}
+                              {{ deliveryDay }}&nbsp;
+                            {%- endif -%}
+                            {%- if deliveryTime != #not_input_label# -%}
+                              {{ deliveryTime }}
+                            {%- endif -%}
+                          {%- endif -%}
+                        </dd>
+                      </div>
+                      
+                    </dl>
+                  </div>
+                </div>
+              </li>
+            {%- endfor -%}
+          {%- endfor -%}
+        </ul>
+      </section>
+
+      {# payment method #}
+      <h2 class="lc-heading--3">{{ #payment_method_label# }}</h2>
+      <p>{% if payment.getTransAttribute(lang_id) %}{{ payment.getTransAttribute(lang_id) }}{% else %}{{ payment.name }}{% endif %}</p>
+
+      {# message #}
+      <h2 class="lc-heading--3">{{ #inquiry_label# }}</h2>
+      <p>
+        {%- if message -%}
+          {{ message }}
+        {%- else -%}
+          {{ #not_input_label# }}
+        {%- endif -%}
+      </p>
+
+      {# When you set option1 - option10 on the previous page, you can output data of option1 - option10.
+       # example) {{ option1 }}
+       #}
+
+      <p class="lc-contentsInner__buttons">
+        {# to order (or payment) #}
+        <button type="submit" class="lc-button--submit lc-button--action"><span class="lc-button__label">{{ #order_label# }}</span><i class="lc-button__icon lc-icon--check"></i></button>
+        {# back #}
+        <a href="{{ path("ec_client_cart_payment")}}" class="lc-button--cancel"><i class="lc-button__icon lc-icon--arrowLeft"></i><span class="lc-button__label">{{ #back_label# }}</span></a>
+      </p>
+    </form>
+  </div>
+</section>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

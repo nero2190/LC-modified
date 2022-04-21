@@ -1,0 +1,62 @@
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = #payment_error_label# -%}
+
+{# get base currency unit #}
+{%- set baseCurrency = get_entity_manager().find('EcCoreBundle:Currency', system_config('base_currency')) -%}
+{%- set baseUnitFront = baseCurrency.getBeforeUnit() -%}
+{%- set baseUnitBack = baseCurrency.getAfterUnit() -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- set breadcrumbListItem = {
+    name: #payment_error_label# ,
+    href: app.request.uri
+  }
+-%}
+{%- set breadcrumbList = breadcrumbList|merge([breadcrumbListItem]) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #payment_error_label# }}</h1>
+  
+  {# step list #}
+  {%- set step = 7 -%}
+  {% TemplateInclude "step list" %}
+
+  <div class="lc-contentsInner lc-contentsInner--form">
+
+    <p class="lc-contentSection__note lc-contentSection__note--center lc-contentSection__note--large">{{ #message_order_complete# | raw }}</p>
+    <table class="lc-table lc-table--wide">
+      <tr>
+        <th>{{ #order_number_label# }}</th>
+        <td>{{ orderStr }}</td>
+      </tr>
+      <tr>
+        <th>{{ #http_status_code_label# }}</th>
+        <td>{{ code }}</td>
+      </tr>
+      <tr>
+        <th>{{ #error_code_label# }}</th>
+        <td>{{ label }}</td>
+      </tr>
+      <tr>
+        <th>{{ #error_message_label# }}</th>
+        <td>{{ message }}</td>
+      </tr>
+    </table>
+    <p class="lc-contentsInner__buttons"><a class="lc-button--submit" href="{{ path("homepage") }}"><i class="lc-button__icon lc-icon--arrowLeft"></i><span class="lc-button__label">{{ #back_to_top_label# }}</span></a></p>
+
+  </div>
+</section>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

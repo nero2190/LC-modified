@@ -1,0 +1,21 @@
+{{ consumer.getLastName }} {{ consumer.getFirstName }} 先生/女士
+
+感謝您一直愛用本網站。
+我們在此通知您，會員註冊已順利完成。
+
+請從以下頁面登入：
+
+◆登入頁面
+{{ url('homepage') }}/auth/login
+
+◆使用者名稱
+{{ consumer.getUsername }}
+
+請您繼續惠顧本網站。
+
+------------------------------------
+{{ system_config("application_name") }}
+〒{{ system_config("company_zipcode") }}
+{{ system_config("company_address") }}
+TEL: {{ system_config("company_tel") }}
+{{ url('homepage') }}

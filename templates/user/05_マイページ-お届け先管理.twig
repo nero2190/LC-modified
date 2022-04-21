@@ -1,0 +1,99 @@
+{# Reference: https://launchcart.jp/reference/10%e3%83%9e%e3%82%a4%e3%83%9a%e3%83%bc%e3%82%b8-%e7%99%bb%e9%8c%b2%e6%83%85%e5%a0%b1%e7%ae%a1%e7%90%86/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = #shipping_information_label# -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- set breadcrumbListItems = [
+    {
+      name: #mypage_label# ,
+      href: path('ec_client_consumer')
+    },
+    {
+      name: #shipping_information_label# ,
+      href: app.request.uri
+    }
+  ]
+-%}
+{%- set breadcrumbList = breadcrumbList|merge(breadcrumbListItems) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #shipping_information_label# }}</h1>
+  
+  <div class="lc-contentsInner">
+
+    <div class="lc-archiveGuide">
+      <p class="lc-pagingNavi">{{ #pagingnavi_prev# }} <em>{{ addresses|length }}</em> {{ #pagingnavi_next# }}</p>
+    </div>
+
+    <section class="lc-shipList">
+      <h2 class="lc-shipList__title">{{ #address_list_label# }}</h2>
+      <ul class="lc-shipList__list">
+        {%- for key,address in addresses -%}
+          <li class="lc-shipList__item">
+            <div class="lc-shipList__box">
+              <div class="lc-shipList__main">
+                <header class="lc-shipList__header">
+                  <h3 class="lc-shipList__name"><i class="c-inputUI c-inputUI--checkbox"></i>{{ address.lastName }} {{ address.firstName }}{% if (key == 0) %} <small>({{ #member_registered_address# }})</small>{% endif %}</h3>
+                  <p class="lc-shipList__tel">{{ address.tel }}</p>
+                </header>
+                <p class="lc-shipList__address">
+                  {% if address.country.id == 1 %}〒 {% endif %}{% if address.country.id != 20 %}{{ address.zipcode }}<br>{% endif %}
+                  {% if address.country.id == 1 %}{{ address.district }} {% endif %}{{ address.locality }} {{ address.street }}
+                </p>
+              </div>
+              <p class="lc-shipList__controls">
+                {%- if (key == 0) -%}
+                  <a class="lc-button--edit" href="{{ path('ec_client_consumer_edit') }}"><span class="lc-button__label">{{ #edit_label# }}</span></a>
+                {%- else -%}
+                  <a class="lc-button--edit" href="{{ path('ec_client_consumer_address_edit', {'id': address.id}) }}"><span class="lc-button__label">{{ #edit_label# }}</span></a>
+                  <a class="lc-button--delete js-lc--delete" href="{{ path('ec_client_consumer_address_delete', {'id': address.id }) }}"><span class="lc-button__label">{{ #delete_label# }}</span></a>
+                {%- endif -%}
+              </p>
+            </div>
+          </li>
+        {%- endfor -%}
+
+        {# add list #}
+        {%- if (addresses|length < 20) -%}
+          <li class="lc-shipList__item"><a class="lc-shipList__box lc-shipList__box--button" href="{{ path('ec_client_consumer_address_add') }}"><i class="lc-icon--plus"></i>{{ #add_address_label# }}</a></li>
+        {%- endif -%}
+
+      </ul>
+    </section>
+    <p class="lc-contentsInner__buttons">
+      <button class="lc-button--cancel" type="button" onclick="history.back();"><i class="lc-button__icon lc-icon--arrowLeft"></i><span class="lc-button__label">{{ #back_label# }}</span></button>
+    </p>
+  </div>
+
+  {# mypage navi #}
+  {% TemplateInclude "mypage navi" %}
+
+</section>
+
+<script>
+$(function () {
+  // confirm delete
+  $('.js-lc--delete').on('click', function () {
+    var href = $(this).attr('href');
+    openModalConfirm('', function () {
+      location.href = href;
+    });
+    return false;
+  });
+});
+</script>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

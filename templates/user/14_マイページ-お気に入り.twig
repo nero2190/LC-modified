@@ -1,0 +1,142 @@
+{# Reference: https://launchcart.jp/reference/14-%e3%83%9e%e3%82%a4%e3%83%9a%e3%83%bc%e3%82%b8-%e3%81%8a%e6%b0%97%e3%81%ab%e5%85%a5%e3%82%8a/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = #favorites_label# -%}
+
+{# get base currency unit #}
+{%- set baseCurrency = get_entity_manager().find('EcCoreBundle:Currency', system_config('base_currency')) -%}
+{%- set baseUnitFront = baseCurrency.getBeforeUnit() -%}
+{%- set baseUnitBack = baseCurrency.getAfterUnit() -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- set breadcrumbListItems = [
+    {
+      name: #mypage_label# ,
+      href: path('ec_client_consumer')
+    },
+    {
+      name: #favorites_label# ,
+      href: app.request.uri
+    }
+  ]
+-%}
+{%- set breadcrumbList = breadcrumbList|merge(breadcrumbListItems) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #favorites_label# }}</h1>
+
+  <div class="lc-contentsInner">
+
+    {# number of favorite items #}
+    <p class="lc-pagingNavi lc-align--left">{{ #pagingnavi_prev# }} <em>{{ _pager.adapter.getTotalResults|number_format }}</em> {{ #pagingnavi_next# }}<br><br></p>
+
+    {# list #}
+    <ul class="lc-list">
+      {%- for result in _pager.getResults -%}
+        {%- set product = result.product -%}
+        {%- set productskus = product.getProductSku -%}
+
+        {# calculate min price in sku #}
+        {%- set isMultiplePrices = false -%}
+        {%- set minPrice = 0 -%}
+        {%- set displayed_price = 0 -%}
+        {%- for productsku in productskus -%}
+          {%- if (productsku.getStockUnlimited or (productsku.getStock > 0)) -%}
+            {%- set productAvailable = true -%}
+            {%- if minPrice == 0 -%}
+              {%- set minPrice = productsku.price -%}
+            {%- else -%}
+              {%- if (productsku.price != minPrice) -%}
+                {%- if (productsku.price < minPrice) -%}
+                  {%- set minPrice = productsku.price -%}
+                {%- endif -%}
+              {%- endif -%}
+            {%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
+        
+        {%- set productName = product.attribute('product name', language) ? product.attribute('product name', language) : product.name -%}
+        <li class="lc-productInfo">
+
+          {# product image #}
+          <figure class="lc-productInfo__figure">
+            <a class="lc-productInfo__figure__inner" href="{{ path('ec_product_detail', {'id': product.id}) }}">
+              <img src="{% if product.attribute('image1') %}{{ ('/uploads/media/'~get_entity_manager().find('MediaCoreBundle:Media', product.attribute('image1')).path) }}{% else %}{{ asset('assets/img/no-image.png') }}{% endif %}" alt="{{ productName|striptags }}"/>
+            </a>
+          </figure>
+
+          <div class="lc-productInfo__text">
+
+            {# product name #}
+            <h2 class="lc-productInfo__name">
+              <a href="{{ path('ec_product_detail', {'id': product.id}) }}">{{ productName }}</a>
+            </h2>
+
+            <div class="lc-productInfo__detail">
+              <dl class="lc-productInfo__detail__list">
+
+                {# price #}
+                <div class="lc-productInfo__detail__item">
+                  <dt class="lc-productInfo__detail__label">{{ #unit_price_label# }}</dt>
+                  <dd class="lc-productInfo__detail__detail">
+                    {{ #unitFront# }}{{ (minPrice * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}
+                    {%- if curRatio != 1 -%}
+                      <small class="productArchive__price__sub">({{ baseUnitFront }}{{ minPrice|price_format(decimalPoint) }}{{ baseUnitBack }})</small>
+                    {%- endif -%}
+                  </dd>
+                </div>
+
+              </dl>
+            </div>
+
+            {# delete button #}
+            <p class="lc-productInfo__controls"><a class="lc-button--delete js-lc--delete" href="{{ path('ec_client_consumer_favorite_delete', {'productId': product.id}) }}"><span class="lc-button__label">{{ #delete_label# }}</span></a></p>
+
+          </div>
+        </li>
+      {%- endfor -%}
+    </ul>
+
+    {# pager #}
+    <div class="lc-archiveGuide">
+      {% RenderPager %}
+    </div>
+
+    {# back #}
+    <p class="lc-contentsInner__buttons">
+      <button class="lc-button--cancel" type="button" onclick="history.back();"><i class="lc-button__icon lc-icon--arrowLeft"></i><span class="lc-button__label">{{ #back_label# }}</span></button>
+    </p>
+
+  </div>
+
+  {# mypage navi #}
+  {% TemplateInclude "mypage navi" %}
+
+</section>
+
+<script>
+$(function () {
+  // confirm delete
+  $('.js-lc--delete').on('click', function () {
+    var href = $(this).attr('href');
+    openModalConfirm('', function () {
+      location.href = href;
+    });
+    return false;
+  });
+});
+</script>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

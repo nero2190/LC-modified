@@ -1,0 +1,148 @@
+{# Reference: https://launchcart.jp/reference/5%e3%83%9a%e3%83%bc%e3%82%b8/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = page.title -%}
+
+{# get base currency unit #}
+{%- set baseCurrency = get_entity_manager().find('EcCoreBundle:Currency', system_config('base_currency')) -%}
+{%- set baseUnitFront = baseCurrency.getBeforeUnit() -%}
+{%- set baseUnitBack = baseCurrency.getAfterUnit() -%}
+
+{# set primary category #}
+{%- set primaryCategory = page.categories|last -%}
+{%- set hierarchyPrimaryCategory = [primaryCategory] -%}
+{%- if (page.categories|length > 1) -%}
+  {%- set hierarchyPrimaryCategory = hierarchyPrimaryCategory|merge([page.categories|first]) -%}
+{%- endif -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- for category in hierarchyPrimaryCategory|reverse -%}
+  {%- set breadcrumbListItem = {
+      name: category.getTransAttribute(lang_id) ? category.getTransAttribute(lang_id) : category.name,
+      href: path('page_category_archive', {'id': category.id})
+  } -%}
+  {%- set breadcrumbList = breadcrumbList|merge([breadcrumbListItem]) -%}
+{%- endfor -%}
+{%- set breadcrumbListItem = {
+    name: title,
+    href: path('page_view', {'id': page.id})
+  }
+-%}
+{%- set breadcrumbList = breadcrumbList|merge([breadcrumbListItem]) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+{# parent category name #}
+<p class="lc-contentSection__title lc-contentSection__title--center">{{ (page.categories|first).getTransAttribute(lang_id) ? (page.categories|first).getTransAttribute(lang_id) : (page.categories|first).name }}</p>
+
+<div class="lc-contentsInner">
+  <article class="pageArticle">
+
+    <header class="pageArticle__header">
+      {# page title #}
+      <h1 class="pageArticle__title">{{ title }}</h1>
+      <div class="pageArticle__info">
+        <div class="pageArticle__status">
+          {# primary category name #}
+          <p class="pageCategory">{{ hierarchyPrimaryCategory[0].getTransAttribute(lang_id) ? hierarchyPrimaryCategory[0].getTransAttribute(lang_id) : hierarchyPrimaryCategory[0].name }}</p>
+          {# date #}
+          <p class="pageDate">
+            <time datetime="{{ page.getReleasedAt|date('Y-m-d') }}">{{ page.getReleasedAt|date('Y.m.d') }}</time>
+          </p>
+        </div>
+        {# sns buttons #}
+        <dl class="snsLinks">
+          <dt class="snsLinks__title">シェア</dt>
+          <dd class="snsLinks__item"><a href="https://twitter.com/intent/tweet?url={{ app.request.uri|url_encode }}&text={{ title|url_encode }}" target="_blank"><i class="snsLinks__icon lc-icon--snsTwitter"></i><span class="snsLinks__label">twitter</span></a></dd>
+          <dd class="snsLinks__item"><a href="https://www.facebook.com/share.php?u={{ app.request.uri|url_encode }}" target="_blank"><i class="snsLinks__icon lc-icon--snsFacebook"></i><span class="snsLinks__label">facebook</span></a></dd>
+        </dl>
+      </div>
+    </header>
+
+    <div class="pageArticle__content">
+      {# featued image #}
+      {%- if page.attribute('featured image') -%}
+        <figure class="pageArticle__eyecatch"><img src="{{ ('/uploads/media/'~get_entity_manager().find("MediaCoreBundle:Media", page.attribute('featured image')).path) }}" alt="eyecatch"></figure>
+      {%- endif -%}
+      {# the contents #}
+      {{ page.body|raw }}
+    </div>
+
+    <footer class="pageArticle__footer">
+      {# sns buttons #}
+      <dl class="snsLinks">
+        <dt class="snsLinks__title">シェア</dt>
+          <dd class="snsLinks__item"><a href="https://twitter.com/intent/tweet?url={{ app.request.uri|url_encode }}&text={{ title|url_encode }}" target="_blank"><i class="snsLinks__icon lc-icon--snsTwitter"></i><span class="snsLinks__label">twitter</span></a></dd>
+          <dd class="snsLinks__item"><a href="https://www.facebook.com/share.php?u={{ app.request.uri|url_encode }}" target="_blank"><i class="snsLinks__icon lc-icon--snsFacebook"></i><span class="snsLinks__label">facebook</span></a></dd>
+      </dl>
+    </footer>
+
+  </article>
+</div>
+
+{# Related Products #}
+{%- if page.attribute('related product ids') -%}
+  <aside class="lc-contentSection">
+    <h2 class="lc-contentSection__title">{{ #related_products_label# }}</h2>
+    <ul class="productArchive">
+      {%- set relations = page.attribute('related product ids') -%}
+      {%- set relationsIds = relations | php_explode(",") -%}
+      {%- set relationProducts = get_entity_manager().getRepository('EcCoreBundle:Product').createQueryBuilder('p').where('p.id in (:ids)').setParameter('ids', relationsIds).getQuery().getResult() -%}
+      {%- for relationProduct in relationProducts -%}
+        {%- set relationProductSkus = get_entity_manager().getRepository('EcCoreBundle:ProductSku').createQueryBuilder('ps').innerJoin('ps.product', 'p').where('p.id = :id').setParameter('id', relationProduct.id).getQuery().getResult() -%}
+        {%- set productAvailable = false -%}
+        {%- set isMultiplePrices = false -%}
+
+        {# confirm the stock and the min price in sku #}
+        {%- set minPrice = 0 -%}
+        {%- for productsku in relationProductSkus -%}
+          {%- if (productsku.getStockUnlimited or (productsku.getStock > 0)) -%}
+            {%- set productAvailable = true -%}
+            {%- if minPrice == 0 -%}
+              {%- set minPrice = productsku.price -%}
+            {%- else -%}
+              {%- if (productsku.price != minPrice) -%}
+                {%- set isMultiplePrices = true -%}
+                {%- if (productsku.price < minPrice) -%}
+                  {%- set minPrice = productsku.price -%}
+                {%- endif -%}
+              {%- endif -%}
+            {%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
+        {%- set relationProductName = relationProduct.attribute('product name', language) ? relationProduct.attribute('product name', language) : relationProduct.name -%}
+        <li class="productArchive__item">
+          <a href="{{ path('ec_product_detail', {'id': relationProduct.id}) }}">
+            <figure class="productArchive__figure"><img src="{% if relationProduct.attribute('image1') %}{{ ('/uploads/media/'~get_entity_manager().find('MediaCoreBundle:Media', relationProduct.attribute('image1')).path) }}{% else %}{{ asset('assets/img/no-image.png') }}{% endif %}" alt="{{ relationProductName|striptags }}"></figure>
+            <h3 class="productArchive__name">{{ relationProductName }}</h3>
+            <p class="productArchive__price">
+            {% if productAvailable %}
+              <span class="productArchive__price__main">{{ #unitFront# }}{{ (minPrice * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}{% if isMultiplePrices %}-{% endif %}</span>
+              {%- if curRatio != 1 -%}
+                <small class="productArchive__price__sub">({{ baseUnitFront }}{{ minPrice|price_format(decimalPoint) }}{{ baseUnitBack }})</small>
+              {%- endif -%}
+            {% else %}
+              {{ #no_stock# }}
+            {% endif %}
+            </p>
+          </a>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </aside>
+{%- endif -%}
+{# end Related Products #}
+
+</article>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

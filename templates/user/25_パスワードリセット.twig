@@ -1,0 +1,76 @@
+{# Reference: https://launchcart.jp/reference/25%e3%83%91%e3%82%b9%e3%83%af%e3%83%bc%e3%83%89%e3%83%aa%e3%82%bb%e3%83%83%e3%83%88/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = #password_reset_label# -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- set breadcrumbListItems = [
+    {
+      name: #password_reset_label# ,
+      href: app.request.uri
+    }
+  ]
+-%}
+{%- set breadcrumbList = breadcrumbList|merge(breadcrumbListItems) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #password_reset_label# }}</h1>
+
+  <div class="lc-contentsInner lc-contentsInner--form">
+    <form name="form1" id="form1" method="post" action="">
+      {{ form_widget(_form._token) }}
+
+      {# errors #}
+      {%- if not _form.vars.valid -%}
+        <p class="lc-contentSection__note error">{{ form_errors(_form) }}</p>
+      {%- endif -%}
+
+      {# input forms #}
+      <ul class="lc-form">
+        <li class="lc-form__item">
+          <div class="lc-form__columns">
+            <div class="lc-form__column">
+              <label class="lc-form__label">
+                <h4 class="lc-form__title is-required">{{ 'label.consumer.password' | trans({}, 'clients') }}</h4>
+                <p class="lc-form__detail">
+                  {{ form_widget(_form.new.first) }}
+                </p>
+              </label>
+            </div>
+            <div class="lc-form__column">
+              <label class="lc-form__label">
+                <h4 class="lc-form__title is-required">{{ #password_confirm# }}</h4>
+                <p class="lc-form__detail">
+                  {{ form_widget(_form.new.second) }}
+                </p>
+              </label>
+            </div>
+          </div>
+          {% if not (_form.new.vars.valid and _form.new.first.vars.valid and _form.new.second.vars.valid) %}<p class="lc-form__note error is-error">{{ form_errors(_form.new) }}{{ form_errors(_form.new.first) }}{{ form_errors(_form.new.second) }}</span>{% endif %}
+        </li>
+      </ul>
+
+      {# register #}
+      <p class="lc-contentsInner__buttons">
+        <button class="lc-button--submit" type="submit"><span class="lc-button__label">{{ #register_label# }}</span><i class="lc-button__icon lc-icon--check"></i></button>
+      </p>
+      
+    </form>
+  </div>
+
+</section>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

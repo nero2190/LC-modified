@@ -1,0 +1,14 @@
+{{ order_group.consumer.lastName }} {{ order_group.consumer.firstName }} 様
+
+この度はご注文ありがとうございます。
+注文はキャンセルされました。
+注文ID: {{ order_group.id }}
+
+またのご利用を、お待ちしております。
+
+------------------------------------
+{{ system_config("application_name") }}
+〒{{ system_config("company_zipcode") }}
+{{ system_config("company_address") }}
+TEL: {{ system_config("company_tel") }}
+{{ url('homepage') }}

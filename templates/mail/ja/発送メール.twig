@@ -1,0 +1,47 @@
+{% set curRatio = cur_unit_ratio() %}
+{% set unitBack = unit_back() %}
+{{ order.lastName }} {{ order.firstName }} 様
+
+平素はご利用いただきありがとうございます。
+以下の商品の発送が完了いたしましたのでお知らせいたします。
+
+発送日： {{ ""now""|date(""Y年n月j日"") }}
+発送方法： {{ order.delivery.getServiceName}}
+{% if order.getInquiryNumber %}
+問い合わせ番号： {{ order.getInquiryNumber }}
+{% endif %}
+
+----------
+　配送情報
+----------
+◎お届け先
+お名前： {{ order.getLastName}} {{ order.getFirstName}}　様
+郵便番号： 〒{{order.getZipcode}}
+住所： {{order.getAddress}}
+電話番号： {{order.getTel}}
+お届け日： {% if order.deliveryDay %}{{ order.deliveryDay }}{% else %}指定なし{% endif %}
+お届け時間： {% if order.deliveryTime %}{{ order.deliveryTime }}{% else %}指定なし{% endif %}
+
+----------
+　発送商品明細
+----------
+{% for detail in order.details %}
+商品コード： {{ detail.getProductCode }}
+商品名： {{ detail.getProductName }}{{ detail.getSkuDetailTitle1 }}{{ detail.getSkuDetailTitle2 }}
+単価： ￥ {{ detail.getPrice|number_format }}
+数量： {{ detail.getQuantity|number_format }}
+{% if (detail.additions|length > 0) %}
+{% for addition in detail.additions %}
+{{ addition.additionTitle }}x{{ addition.quantity }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+
+引き続き、ご愛顧のほどよろしくお願い申し上げます。
+
+------------------------------------
+{{ system_config("application_name") }}
+〒{{ system_config("company_zipcode") }}
+{{ system_config("company_address") }}
+TEL: {{ system_config("company_tel") }}
+{{ url('homepage') }}

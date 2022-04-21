@@ -1,0 +1,108 @@
+extends /_include/_layout.pug
+
+block title
+  title 积分纪录 | LC E-SHOP
+block header
+  - var isAuthorized = true;
+  include /_include/_header.pug
+block content
+
+  -
+    var breadcrumbList = [
+      {
+        name: '首页',
+        href: '/'
+      },
+      {
+        name: '我的帳戶',
+        href: '/ec/consumer/history/'
+      },
+      {
+        name: '积分纪录',
+        href: '/ec/consumer/point_history/'
+      }
+    ]
+  include /_include/_breadcrumblist.pug
+
+
+  section.lc-contentSection
+
+    h1.lc-contentSection__title.lc-contentSection__title--center 积分纪录
+
+    div.lc-contentsInner
+
+      p.lc-contentSection__note.lc-contentSection__note--large
+        | 当前积分: 
+        strong 290
+
+      p.lc-pagingNavi.lc-align--left <em>2</em> 件<br><br>
+
+      table.lc-table.lc-table--points
+        thead
+          tr
+            th 订货日期
+            th 积分
+        tbody
+          tr
+            th 2019/10/20
+            td
+              em + 4 (暂定)
+          tr
+            th 2019/10/20
+            td
+              em + 4 (暂定)
+          tr
+            th 2019/10/20
+            td
+              em + 4 (暂定)
+          tr
+            th 2019/10/20
+            td
+              em + 4
+          tr
+            th 2019/10/20
+            td
+              em + 4
+          tr
+            th 2019/10/20
+            td
+              em - 100
+          tr
+            th 2019/10/20
+            td
+              em + 4
+          tr
+            th 2019/10/20
+            td
+              em + 4
+          tr
+            th 2019/10/20
+            td
+              em + 4
+          tr
+            th 2019/10/20
+            td
+              em + 4
+
+      .lc-archiveGuide
+        .pagination_nav
+          a(href="/ec/consumer/point_history/")
+            span.lc-icon-laquo.ir &laquo;
+          strong.current 1
+          a(href="/ec/consumer/point_history/") 2
+          a(href="/ec/consumer/point_history/") 3
+          a(href="/ec/consumer/point_history/") 4
+          a(href="/ec/consumer/point_history/") 5
+          a(href="/ec/consumer/point_history/")
+            span.lc-icon-gt.ir &gt;
+          a(href="/ec/consumer/point_history/")
+            span.lc-icon-raquo.ir &raquo;
+
+      p.lc-contentsInner__buttons
+        a(href="/ec/consumer/history/").lc-button--cancel
+          i.lc-button__icon.lc-icon--arrowLeft
+          span.lc-button__label 返回
+
+    include /_include/_mypage-navi.pug
+    
+

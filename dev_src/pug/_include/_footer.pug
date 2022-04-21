@@ -1,0 +1,84 @@
+footer.l-footer
+  p.l-footer__pagetop
+    a.js-scroll(href="#top")
+      span.l-footer__pagetop__icon
+      | Page Top
+  ul.floatingNavi
+    li.floatingNavi__item
+      a.floatingNavi__button.floatingNavi__button--contact(href='#inquiry')
+        i.floatingNavi__icon.icon--mail
+        span.floatingNavi__label contact
+    li.floatingNavi__item
+      a.floatingNavi__button.floatingNavi__button--price(href='/prices/')
+        i.floatingNavi__icon ¥
+        span.floatingNavi__label 料金を見る
+        span.floatingNavi__balloon 料金シュミレーション
+  .l-footer__bannerBg.only-pc
+  .l-footer__banner.only-pc
+    .l-footer__bannerWrapper
+      a.l-footer__bannerLink(href='/download/')
+        img(src='https://launchcart.jp/admin/wp-content/themes/launchcart/ver2019/img/bn_download.jpg')
+      p.l-footer__cuponCode XXXYZ012345
+      button.l-footer__bannerButton(type='button'): span 閉じる
+  dl.footerPaymentMethods
+    .footerPaymentMethods__item
+      dt.footerPaymentMethods__label 可使用各种信用卡
+      dd.footerPaymentMethods__detail
+        p.footerPaymentMethods__method
+          img(src="/assets/img/icon/pay_alipay.svg", alt="Alipay")
+        p.footerPaymentMethods__method
+          img(src="/assets/img/icon/pay_unionpay.svg", alt="UnionPay")
+        p.footerPaymentMethods__method
+          img(src="/assets/img/icon/pay_wechat.svg", alt="WeChatPay")
+    .footerPaymentMethods__item
+      dt.footerPaymentMethods__label 可使用中国结算
+      dd.footerPaymentMethods__detail
+        p.footerPaymentMethods__method
+          img(src="/assets/img/icon/pay_visa.svg", alt="VISA")
+        p.footerPaymentMethods__method
+          img(src="/assets/img/icon/pay_master.svg", alt="MasterCard")
+        p.footerPaymentMethods__method
+          img(src="/assets/img/icon/pay_jcb.svg", alt="JCB")
+        p.footerPaymentMethods__method
+          img(src="/assets/img/icon/pay_amex.png", alt="American Express")
+        p.footerPaymentMethods__method
+          img(src="/assets/img/icon/pay_diners.svg", alt="Diners Club")
+  .l-footer__inner
+    .l-footer__navi
+      ul.footerNavi
+        li.footerNavi__item
+          a(href="/") 首页
+        li.footerNavi__item
+          a(href="/law/") 特约商户交易法
+      dl.footerNavi
+        .footerNavi__section
+          dt.footerNavi__label Account
+          dd.footerNavi__item
+            a(href="/auth/login/") 登入
+          dd.footerNavi__item
+            a(href="/auth/regist/") 注册
+        .footerNavi__section
+          dt.footerNavi__label Categories
+          - var menuList = ['女士们', '男子', '纯色', '印花', '旧衣服']
+          each item in menuList
+            dd.footerNavi__item
+              a(href="/ec/product/category/1/") #{ item }
+    .l-footer__contact
+      .l-footer__inquiry
+        p.l-footer__address
+          | 3-9-7 Takada, Toshima-ku, Tokyo 171-0033<br>
+          | TEL: +81 3 5956 9292
+        ul.snsLinks
+          li.snsLinks__item
+            a(href="" target="_blank")
+              i.snsLinks__icon.lc-icon--snsTwitter
+              span.snsLinks__label twitter
+          li.snsLinks__item
+            a(href="" target="_blank")
+              i.snsLinks__icon.lc-icon--snsFacebook
+              span.snsLinks__label facebook
+      p.l-footer__logo
+        a(href="/")
+          img(src="/assets/img/logo.svg", alt="LC E-SHOP" width="90")
+
+  p.l-footer__copyright: small &copy; 2019 Sterfield Co., Ltd.

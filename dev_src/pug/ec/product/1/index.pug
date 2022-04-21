@@ -1,0 +1,141 @@
+extends /_include/_layout.pug
+
+block title
+  title 商品评价 | 小熊夏季新款女装可爱卡通短袖t恤宽松韩版半袖 | LC E-SHOP
+block content
+
+  -
+    var breadcrumbList = [
+      {
+        name: '首页',
+        href: '/'
+      },
+      {
+        name: '女士们',
+        href: '/ec/product/category/1/'
+      },
+      {
+        name: '棉麻T恤',
+        href: '/ec/product/category/1/'
+      },
+      {
+        name: '小熊夏季新款女装可爱卡通短袖t恤宽松韩版半袖',
+        href: '/product/1/'
+      },
+      {
+        name: '商品评价',
+        href: '/ec/product/1/'
+      }
+    ]
+  include /_include/_breadcrumblist.pug
+
+
+  section.lc-contentSection
+    h1.lc-contentSection__title.lc-contentSection__title--center 商品评价
+    div.lc-contentsInner.lc-reviewsArchive
+      header.lc-productInfo
+        figure.lc-productInfo__figure
+          a.lc-productInfo__figure__inner(href="/product/1/")
+            img(src="/assets/img/img_product_01.jpg", alt="product name")
+        .lc-productInfo__text
+          h2.lc-productInfo__name
+            a(href="/product/1/") 小熊夏季新款女装可爱卡通短袖t恤宽松韩版半袖
+          .lc-productInfo__detail
+            div.lc-productInfo__review
+              p.lc-reviewStars.lc-reviewStars--large(data-grade="10")
+                - for (var i = 0; i < 5; i++)
+                  span
+              p.lc-reviewsArchive__number 4.8
+              p.lc-reviewsArchive__total 24件
+            dl.lc-productInfo__detail__list
+              .lc-productInfo__detail__item
+                dt.lc-productInfo__detail__label 价格
+                dd.lc-productInfo__detail__detail
+                  | 159.00CNY
+                  small (2,393JPY)
+      p.lc-contentsInner__buttons
+        button.lc-button--submit.js-lc--openModal(
+            type="button"
+            aria-controls="modalLangAddReview"
+            aria-haspopup="true"
+          )
+          span.lc-button__label 我要评价
+          i.lc-button__icon.lc-icon--star
+        
+      ul.lc-reviewsArchive__list
+        - for (var i = 0; i < 20; i++)
+          li.lc-reviewsArchive__item
+            .lc-reviewsArchive__reviewHeader
+              p.lc-reviewStars(data-grade="10")
+                - for (var ii = 0; ii < 5; ii++)
+                  span
+              h3.lc-reviewsArchive__reviewTitle 手感很好啊
+            p.lc-reviewsArchive__detail
+              | 手感很好啊，触感柔软、凉快，透气。15年买了一套，因为洗很勤，床单磨坏了，所以再买一套。
+            p.lc-reviewsArchive__nickname hogehoge
+      .lc-archiveGuide
+        p.lc-pagingNavi <em>64</em> 商品中 的 <em>1 - 20</em>件
+        .pagination_nav
+          a(href="/ec/product/category/1/")
+            span.lc-icon-laquo.ir &laquo;
+          strong.current 1
+          a(href="/ec/product/category/1/") 2
+          a(href="/ec/product/category/1/") 3
+          a(href="/ec/product/category/1/") 4
+          a(href="/ec/product/category/1/") 5
+          a(href="/ec/product/category/1/")
+            span.lc-icon-gt.ir &gt;
+          a(href="/ec/product/category/1/")
+            span.lc-icon-raquo.ir &raquo;
+      p.lc-contentsInner__buttons
+        button.lc-button--submit.js-lc--openModal(
+            type="button"
+            aria-controls="modalLangAddReview"
+            aria-haspopup="true"
+          )
+          span.lc-button__label 我要评价
+          i.lc-button__icon.lc-icon--star
+        a(href="/product/1/").lc-button--cancel
+          i.lc-button__icon.lc-icon--arrowLeft
+          span.lc-button__label 返回商品
+
+      .lc-modal#modalLangAddReview
+        .lc-modal__bg.js-lc--closeModal
+        .lc-modal__body.lc-modal__body--wide
+          h3.lc-modal__title 写评论
+          form(action="")
+            ul.lc-form
+              li.lc-form__item
+                label.lc-form__label.lc-form__label--half
+                  h4.lc-form__title.is-required 昵称
+                  p.lc-form__detail
+                    input(type="text")
+              li.lc-form__item
+                label.lc-form__label.lc-form__label--plain
+                  h4.lc-form__title.is-required 汇率
+                  div.lc-form__detail.lc-form__detail--stars
+                    input.js-lc--reviewStarsInput(type="hidden")
+                    p.lc-reviewStars.lc-reviewStars--large.js-lc--changeReviewStars(data-grade="10")
+                      - for (var i = 0; i < 5; i++)
+                        span
+                    p.lc-reviewStars__number.js-lc--reviewStarsNumber 5
+              li.lc-form__item
+                label.lc-form__label
+                  h4.lc-form__title.is-required 题目
+                  p.lc-form__detail
+                    input(type="text")
+              li.lc-form__item
+                label.lc-form__label
+                  h4.lc-form__title.is-required 内容
+                  p.lc-form__detail
+                    textarea(rows="5")
+                    
+            p.lc-modal__buttons
+              button(type="submit").lc-button--submit
+                span.lc-button__label 登入
+                i.lc-button__icon.lc-icon--check
+              button(type="button").lc-button--cancel.js-lc--closeModal
+                i.lc-button__icon.lc-icon--close
+                span.lc-button__label 取消
+
+      include /_include/_reviewstars-script.pug

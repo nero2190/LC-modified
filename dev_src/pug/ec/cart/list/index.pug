@@ -1,0 +1,109 @@
+extends /_include/_layout.pug
+
+block title
+  title 购物车 | LC E-SHOP
+block content
+
+  -
+    var breadcrumbList = [
+      {
+        name: '首页',
+        href: '/'
+      },
+      {
+        name: '购物车',
+        href: '/ec/cart/list/'
+      }
+    ]
+  include /_include/_breadcrumblist.pug
+
+
+  section.lc-contentSection
+    h1.lc-contentSection__title.lc-contentSection__title--center 购物车
+
+    - var step = 1;
+    include /_include/_steplist.pug
+
+    div.lc-contentsInner
+      p.lc-contentSection__note.lc-contentSection__note--large
+        | 商品金额总计: 
+        strong 318.00CNY 
+          small (4,786JPY)
+      ul.lc-list
+        li.lc-productInfo
+          figure.lc-productInfo__figure
+            a.lc-productInfo__figure__inner(href="/product/1/")
+              img(src="/assets/img/img_product_01.jpg", alt="product name")
+          .lc-productInfo__text
+            h2.lc-productInfo__name
+              a(href="/product/1/") 小熊夏季新款女装可爱卡通短袖t恤宽松韩版半袖
+            .lc-productInfo__detail
+              dl.lc-productInfo__detail__list
+                .lc-productInfo__detail__item
+                  dt.lc-productInfo__detail__label 价格
+                  dd.lc-productInfo__detail__detail
+                    | 159.00CNY
+                    small (2,393JPY)
+                .lc-productInfo__detail__item
+                  dt.lc-productInfo__detail__label 重量
+                  dd.lc-productInfo__detail__detail 0g
+            p.lc-productInfo__controls
+              span
+                | 数量&nbsp;&nbsp;
+                span.lc-selectBox
+                  select.lc-selectBox__select(name="quantity")
+                    - for (var i = 1; i <= 10; i++)
+                      option(value=i) #{i}
+              a(href="").lc-button--delete
+                span.lc-button__label 删除
+          dl.lc-productInfo__additions
+            .lc-productInfo__additions__item
+              dt.lc-productInfo__additions__name 礼品包装
+              dd.lc-productInfo__additions__detail
+                dl.lc-productInfo__detail__list
+                  .lc-productInfo__detail__item
+                    dt.lc-productInfo__detail__label 价格
+                    dd.lc-productInfo__detail__detail
+                      | 0.00CNY
+                      small (0JPY)
+                  .lc-productInfo__detail__item
+                    dt.lc-productInfo__detail__label 重量
+                    dd.lc-productInfo__detail__detail 0g
+              dd.lc-productInfo__controls
+                a(href="").lc-button--delete
+                  span.lc-button__label 删除
+        li.lc-productInfo
+          figure.lc-productInfo__figure
+            a.lc-productInfo__figure__inner(href="/product/1/")
+              img(src="/assets/img/img_product_02.jpg", alt="product name")
+          .lc-productInfo__text
+            h2.lc-productInfo__name
+              a(href="/product/1/") 小熊夏季新款女装可爱卡通短袖t恤宽松韩版半袖
+            .lc-productInfo__detail
+              dl.lc-productInfo__detail__list
+                .lc-productInfo__detail__item
+                  dt.lc-productInfo__detail__label 价格
+                  dd.lc-productInfo__detail__detail
+                    | 159.00CNY
+                    small (2,393JPY)
+                .lc-productInfo__detail__item
+                  dt.lc-productInfo__detail__label 重量
+                  dd.lc-productInfo__detail__detail 0g
+            p.lc-productInfo__controls
+              span
+                | 数量&nbsp;&nbsp;
+                span.lc-selectBox
+                  select.lc-selectBox__select(name="quantity")
+                    - for (var i = 1; i <= 10; i++)
+                      option(value=i) #{i}
+              a(href="").lc-button--delete
+                span.lc-button__label 删除
+      
+      form(action="/ec/cart/ship/", method="POST")
+        p.lc-contentsInner__buttons
+          button.lc-button--submit
+            span.lc-button__label 下一步 填写收件资料
+            i.lc-button__icon.lc-icon--arrow2Right
+          a(href="/").lc-button--cancel
+            i.lc-button__icon.lc-icon--arrowLeft
+            span.lc-button__label 继续购物

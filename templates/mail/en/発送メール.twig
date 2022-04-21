@@ -1,0 +1,47 @@
+{% set curRatio = cur_unit_ratio() %}
+{% set unitBack = unit_back() %}
+Dear {{ order.lastName }} {{ order.firstName }}
+
+Thank you for using our Online Store.
+We are contacting you to confirm your order.
+
+Delivery Date： {{ "now"|date("Y/n/j") }}
+Delivery Method： {{ order.delivery.getServiceName}}
+{% if order.getInquiryNumber %}
+Tracking Number： {{ order.getInquiryNumber }}
+{% endif %}
+
+----------
+　Shipping Information
+----------
+◎Shipping Address
+Delivery To： Dear {{ order.getLastName}} {{ order.getFirstName}}
+Postal Code： {{order.getZipcode}}
+Shipping Address： {{order.getAddress}}
+Phone Number： {{order.getTel}}
+Delivery Date： {% if order.deliveryDay %}{{ order.deliveryDay }}{% else %}No Preference{% endif %}
+Delivery Time： {% if order.deliveryTime %}{{ order.deliveryTime }}{% else %}No Preference{% endif %}
+
+----------
+　Order Contents
+----------
+{% for detail in order.details %}
+Product Code： {{ detail.getProductCode }}
+Product Name： {{ detail.getProductName }}{{ detail.getSkuDetailTitle1 }}{{ detail.getSkuDetailTitle2 }}
+Price per Product： ￥ {{ detail.getPrice|number_format }}
+Quantity： {{ detail.getQuantity|number_format }}
+{% if (detail.additions|length > 0) %}
+{% for addition in detail.additions %}
+{{ addition.additionTitle }}x{{ addition.quantity }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+
+Thank you for using our service, and we hope you continue to use our service in the future.
+
+------------------------------------
+{{ system_config("application_name") }}
+〒{{ system_config("company_zipcode") }}
+{{ system_config("company_address") }}
+TEL: {{ system_config("company_tel") }}
+{{ url('homepage') }}

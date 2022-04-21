@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "noImplicitAny": true,
+    "target": "es5",
+    "module": "commonjs",
+    "lib": ["dom", "dom.iterable", "es2015", "es2017"],
+    "typeRoots": [
+      "node_modules/@types",
+      "dev_src/ts/@types"
+    ]
+  }
+}

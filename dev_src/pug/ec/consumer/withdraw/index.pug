@@ -1,0 +1,68 @@
+extends /_include/_layout.pug
+
+block title
+  title 取消会员 | LC E-SHOP
+block header
+  - var isAuthorized = true;
+  include /_include/_header.pug
+block content
+
+  -
+    var breadcrumbList = [
+      {
+        name: '首页',
+        href: '/'
+      },
+      {
+        name: '我的帳戶',
+        href: '/ec/consumer/history/'
+      },
+      {
+        name: '取消会员',
+        href: '/ec/consumer/withdraw/'
+      }
+    ]
+  include /_include/_breadcrumblist.pug
+
+
+  section.lc-contentSection
+
+    h1.lc-contentSection__title.lc-contentSection__title--center 取消会员
+
+    div.lc-contentsInner.lc-contentsInner--form
+
+      p.lc-contentSection__note
+        | 取消會員後，註冊時的個人資料以及購物記錄等信息都將被消除不再恢復。
+        | ※已取消會員的ID以及Email郵箱不能用於再次註冊會員。
+        | 即便如此也要取消會員時，請按取消會員鍵。
+
+      form(action="", method="POST")
+
+        p.lc-modal__buttons
+          button(
+            type="submit", 
+            aria-controls="modalWithdraw"
+            aria-haspopup="true"
+          ).lc-button--submit.js-lc--openModal
+            span.lc-button__label 取消会员
+            i.lc-button__icon.lc-icon--close
+          a(href="/ec/consumer/history/").lc-button--cancel
+            i.lc-button__icon.lc-icon--arrowLeft
+            span.lc-button__label 返回
+
+    include /_include/_mypage-navi.pug
+
+  .lc-modal#modalWithdraw
+    .lc-modal__bg.js-lc--closeModal
+    .lc-modal__body
+      form(action="/", method="POST")
+        h3.lc-modal__title 要取消会员？
+        p.lc-modal__buttons
+          button(type="submit").lc-button--submit.js-lc--changeLangCurrency
+            span.lc-button__label OK
+            i.lc-button__icon.lc-icon--check
+          button(type="button").lc-button--cancel.js-lc--closeModal
+            i.lc-button__icon.lc-icon--arrowLeft
+            span.lc-button__label 返回
+    
+

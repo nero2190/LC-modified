@@ -1,0 +1,36 @@
+extends /_include/_layout.pug
+
+block title
+  title 注册 - 成功 | LC E-SHOP
+block header
+  - var isAuthorized = true;
+  include /_include/_header.pug
+block content
+
+  -
+    var breadcrumbList = [
+      {
+        name: '首页',
+        href: '/'
+      },
+      {
+        name: '注册 - 成功',
+        href: '/auth/regist/complete/'
+      }
+    ]
+  include /_include/_breadcrumblist.pug
+
+
+  section.lc-contentSection
+    h1.lc-contentSection__title.lc-contentSection__title--center 注册 - 成功
+
+    div.lc-contentsInner.lc-contentsInner--form
+
+      p.lc-contentSection__note.lc-contentSection__note--center.lc-contentSection__note--large 会员注册已完成，感谢您加入购物网站会员！
+        
+      p.lc-contentsInner__buttons
+        a(href="/").lc-button--cancel
+          i.lc-button__icon.lc-icon--arrowLeft
+          span.lc-button__label 返回首页
+    
+

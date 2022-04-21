@@ -1,0 +1,295 @@
+{%- set paramaters = {
+  lang: app.request.get('lang'),
+  range: app.request.get('range')
+} -%}
+{% if paramaters.range %}
+{%- set range = paramaters.range -%}
+{%- set range = range|split('-') -%}
+{% else %}
+{%- set range = [1, 10000] -%}
+{%- endif -%}
+{%- if app.request.get('json_check') -%}
+{%- set http_x = 'XMLHttpRequest' -%}
+{%- endif -%}
+
+{# get base currency unit #}
+{%- set baseCurrency = get_entity_manager().find('EcCoreBundle:Currency', system_config('base_currency')) -%}
+{%- set baseUnitFront = baseCurrency.getBeforeUnit() -%}
+{%- set baseUnitBack = baseCurrency.getAfterUnit() -%}
+
+{# In the case of Ajax, output JSON #}
+{%- if http_x == 'XMLHttpRequest' -%}
+{%- set em = get_entity_manager() -%}
+{%- set qb = em.getRepository('EcCoreBundle:Product').createQueryBuilder('p') -%}
+{%- set now = 'now'|date('Y-m-d H:i:s') -%} 
+{%- set products = qb.where('p.deleted_at is NULL').andWhere(qb.expr().orx(qb.expr().eq('p.release_status', '0'),qb. 
+expr().andx(qb.expr().eq('p.release_status', '2'),qb.expr().lte('p.released_at', '?1')))).orderBy('p.released_at', 'desc').setParameter('1', now).getQuery().getResult() -%}
+{
+  "status": "ok",
+  "request": {
+{%- for key in paramaters|keys -%}
+    "{{ key }}": "{{ paramaters[key] }}"{%- if not loop.last -%},
+{%- endif -%}
+{%- endfor -%} 
+  },
+  "products": [
+{%- set count = 0 -%}
+{%- set count_in_range = 0 -%}
+{%- for product in products -%}
+{%- set productskus = em.getRepository('EcCoreBundle:ProductSku').createQueryBuilder('ps').innerJoin('ps.product', 'p').where(' p.id = :id').setParameter('id', product.id).getQuery().getResult() -%}
+{%- set productAvailable = false -%}
+{%- for productsku in productskus -%}
+{%- if (productsku.getStockUnlimited or (productsku.getStock > 0)) -%}
+{%- set productAvailable = true -%}
+{%- endif -%}
+{%- endfor -%}
+{%- if (productAvailable) -%}
+{%- set productName = product.attribute('product name', language) ? product.attribute('product name', language) : product.name -%}
+{%- set count = count + 1 -%}
+{%- if (count >= range[0]) and (count <= range[1]) -%}
+{%- set count_in_range = count_in_range + 1 -%}
+{%- if count_in_range == 1 -%}
+    {
+{%- else -%}
+    , {
+{%- endif -%}
+      "id": {{ product.id }},
+      "url": "{{ path('ec_product_detail', { 'id': product.id }) }}",
+      "name": {{ productName|json_encode()|raw }},
+      "base_price": "{{ productskus[0].price|price_format(decimalPoint) }}",
+      "price": "{{ (curRatio * productskus[0].price)|price_format(decimalPoint) }}",
+      "image": "{%- if product.attribute('image1') -%}{{ ('/uploads/media/' ~ em.find("MediaCoreBundle:Media", product.attribute('image1')).path) }}{% else %}/images/no-image.png{%- endif -%}",
+      "description": "{%- if product.attribute('description', language) -%}{{ product.attribute('description', language)|json_encode()|raw|trim }}{%- endif -%}",
+      "categories": [
+{%- set excludedCategories = #excluded_categories# |split(',') -%}
+{%- set count_categories = 0 -%}
+{%- for category in product.categories -%}
+{%- set is_exclude_category = false -%}
+{%- set wraped_category = product_api.wrapProductCategory(category) -%}
+{%- if (wraped_category.getAncestors|length > 0) -%}
+{%- for ancestor in wraped_category.getAncestors -%}
+{%- if ancestor.node.name in excludedCategories -%}
+{%- set is_exclude_category = true -%}
+{%- endif -%}
+{%- endfor -%}
+{%- endif -%}
+{%- if not ((category.name in excludedCategories) or is_exclude_category) -%}
+{%- set count_categories = count_categories + 1 -%}
+{%- if count_categories == 1 -%}
+        {
+{%- else -%}
+        , {
+{%- endif -%}
+          "id": {{ category.id }},
+          "name": {% if category.getTransAttribute(lang_id) %}{{ category.getTransAttribute(lang_id)|json_encode()|raw }}{% else %}{{ category.name|json_encode()|raw }}{% endif %}
+        }
+{%- endif -%}
+{%- endfor -%}
+      ],
+      "releasedAt": "{{ product.releasedAt|date('c') }}"
+    }
+{%- endif -%}
+{%- endif -%}
+{%- endfor -%}
+  ],
+  "products_count": {{ count }}
+}
+
+{# In the case of not Ajax, output HTML #}
+{%- else %}
+
+{% set title = #search_result_label# %}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [{
+  name: title,
+  href: path('homepage') ~ 'search'
+}] -%}
+{% TemplateInclude "breadcrumb list" %}
+
+{# Search Result #}
+ <section class="lc-contentSection">
+  <h1 class="lc-contentSection__title"><span class="js-searchTitle"><script id="search_title" type="text/template">{¥ if: keyword ¥}&quot;{$ keyword $}&quot;{¥ endif ¥}{¥ if: no_keyword ¥}{{ #all_products_label# }}{¥ endif ¥}</script></span></h1>
+  <div class="archiveController">
+    <p class="lc-pagingNavi">{{ #pagingnavi_prev# }}<em><span class="js-searchCount"></span></em>{{ #pagingnavi_middle# }}<em><span class="js-searchStart"></span> - <span class="js-searchEnd"></span></em>{{ #pagingnavi_next# }}</p>
+    <dl class="archiveController__list">
+      <div class="archiveController__item">
+        <dt class="archiveController__label">{{ #pagingnavi_number# }}</dt>
+        <dd class="archiveController__form">
+          <div class="lc-selectBox">
+            <select class="lc-selectBox__select js-searchLimit">
+              <option value="30">30</option>
+              <option value="45">45</option>
+              <option value="60">60</option>
+            </select>
+          </div>
+        </dd>
+      </div>
+      <div class="archiveController__item">
+        <dt class="archiveController__label">{{ #order_by_label# }}</dt>
+        <dd class="archiveController__form">
+          <div class="lc-selectBox">
+            <select class="lc-selectBox__select js-searchOrder">
+              <option value="DESC/releasedAt">{{ #order_by_new# }}</option>
+              <option value="ASC/price">{{ #price_low_to_high# }}</option>
+              <option value="DESC/price">{{ #price_high_to_low# }}</option>
+            </select>
+          </div>
+        </dd>
+      </div>
+    </dl>
+  </div>
+   
+ {# Products #}
+  <ul class="productArchive lc_searchResults">
+    <script id="item_template" type="text/template">
+      <li class="productArchive__item">
+        <a href="{$ url $}">
+          <figure class="productArchive__figure"><img src="{$ image $}" alt="product image"></figure>
+          <h3 class="productArchive__name">{$ name $}</h3>
+          <p class="productArchive__price">
+            <span class="productArchive__price__main">{{ unitFront }}{$ price $}{{ unitBack }}</span>
+            {%- if curRatio != 1 -%}
+              <small class="productArchive__price__sub">({{ baseUnitFront }}{$ base_price $}{{ baseUnitBack }})</small>
+            {%- endif -%}
+          </p>
+        </a>
+      </li>
+    </script>
+    
+    {# no results #}
+    <script id="search_empty_template" type="text/template">
+      <p><br><br>{{ #no_result_label# }}</p>
+    </script>
+  </ul>
+  
+  {# paging navi #}
+  <div class="lc-archiveGuide">
+    <p class="lc-pagingNavi">{{ #pagingnavi_prev# }}<em><span class="js-searchCount"></span></em>{{ #pagingnavi_middle# }}<em><span class="js-searchStart"></span> - <span class="js-searchEnd"></span></em>{{ #pagingnavi_next# }}</p>
+    <div class="pagination_nav js-searchPager">
+      <script id="pager_template_prev" type="text/template"><a href="{$ url $}"><span class="icon-laquo ir">«</span></a></script>
+      <script id="pager_template_item" type="text/template"><a href="{$ url $}"><span>{$ number $}</span></a></script>
+      <script id="pager_template_current" type="text/template"><strong class="current">{$ number $}</strong></script>
+      <script id="pager_template_next" type="text/template"><a href="{$ url $}"><span class="icon-raquo ir">»</span></a></script>
+    </div>
+  </div>
+</section>
+{# end Search Result #}
+
+<style>
+@-webkit-keyframes sk-stretchdelay{0%,40%,100%{-webkit-transform:scaleY(0.4);transform:scaleY(0.4)}20%{-webkit-transform:scaleY(1);transform:scaleY(1)}}@keyframes sk-stretchdelay{0%,40%,100%{-webkit-transform:scaleY(0.4);transform:scaleY(0.4)}20%{-webkit-transform:scaleY(1);transform:scaleY(1)}}
+.spinner{width:50px;height:40px;text-align:center;font-size:10px;position:absolute;left:50%;left:calc(50%);top:50%;opacity:1;-webkit-transform:translate(-50%, -50%);-ms-transform:translate(-50%, -50%);transform:translate(-50%, -50%);-webkit-transition:0.5;transition:0.5}.spinner__rect{display:inline-block;height:100%;width:6px;background-color:#666;-webkit-animation:sk-stretchdelay 1.2s infinite ease-in-out;animation:sk-stretchdelay 1.2s infinite ease-in-out}.spinner__rect--2{-webkit-animation-delay:-1.1s;animation-delay:-1.1s}.spinner__rect--3{-webkit-animation-delay:-1.0s;animation-delay:-1.0s}.spinner__rect--4{-webkit-animation-delay:-0.9s;animation-delay:-0.9s}.spinner__rect--5{-webkit-animation-delay:-0.8s;animation-delay:-0.8s}.is-animated>.spinner{opacity:0}@media (max-width: 1023px){.spinner{left:50%}}
+.loading{visibility:hidden;width:100%;height:100%;background:rgba(255,255,255,0.8);position:fixed;left:0;top:0;z-index:1;opacity:0}
+.loading.is-active{visibility:visible;opacity:1}
+</style>
+<div class="loading"><div class="spinner"><div class="spinner__rect spinner__rect--1"></div> <div class="spinner__rect spinner__rect--2"></div> <div class="spinner__rect spinner__rect--3"></div> <div class="spinner__rect spinner__rect--4"></div> <div class="spinner__rect spinner__rect--5"></div></div></div>
+<script src="{{ asset('assets/js/moji.js') }}"></script>
+<script src="{{ asset('assets/js/lc-search.js') }}"></script>
+<script>
+$(function () {
+
+  var $searchForm = $('input[name="s"]');
+  var $searchLimit = $('.js-searchLimit'); // select menu for number of displayed items
+  var $searchOrder = $('.js-searchOrder'); // select menu for order(value="<order(DESC or ASC)>/<key>")
+  var limit = $searchLimit.length ? Number($searchLimit.val()) : 30;
+  var order = $searchOrder.length ? String($searchOrder.val()).split('/') : ['DESC', 'releasedAt'];
+  var searchedKeys = ['name', 'description', 'categories']; // 検索の対象となるキー
+  var lcMultiLangSearch = new LcMultiLangSearch({
+    // selectors for to output search results
+    selector: {
+      result: {
+        container: '.lc_searchResults', // container of items search results
+        title: '.js-searchTitle', // page title
+        number: '.js-searchCount', // number of items that is search result 
+        start: '.js-searchStart', // first number of item being displayed
+        end:'.js-searchEnd' // last number of item being displayed
+      },
+      pager: '.js-searchPager' // pager
+    },
+    // selectors for template
+    template: {
+      searchResultTitle: '#search_title', // title
+      searchResultsItem: '#item_template', // item of search result
+      searchResultEmpty: '#search_empty_template', // no result
+      // buttons in the pager.
+      pager: {
+        'item': '#pager_template_item', // link
+        'current': '#pager_template_current', // current
+        'prev': '#pager_template_prev', // prev
+        'next': '#pager_template_next', // next
+        'first': 'none', // first
+        'last': 'none' // last
+      }
+    },
+    onPopState(lcMultiLangSearch) {
+      $searchLimit.val(lcMultiLangSearch.pagerInfo.limit);
+      $searchOrder.val(lcMultiLangSearch.sort.order + '/' + lcMultiLangSearch.sort.key);
+    }
+  });
+  lcMultiLangSearch.init();
+
+  // initialize
+  var urlParams = lcMultiLangSearch.getUrlParams(location.href);
+  if (urlParams) {
+    $searchLimit.val(urlParams.limit ? Number(urlParams.limit) : limit);
+    $searchOrder.val((urlParams.sort_order ? urlParams.sort_order : order[0]) + '/' + (urlParams.sort_key ? urlParams.sort_key : order[1]));
+    lcMultiLangSearch.go({
+      keyword: decodeURI(String(urlParams.s).replace(/\+/g, ' ')),
+      searchedKeys: searchedKeys,
+      pagerInfo: {
+        limit: urlParams.limit ? Number(urlParams.limit) : limit,
+        current: urlParams.page ? Number(urlParams.page) : 1
+      },
+      sort: {
+        order: urlParams.sort_order ? urlParams.sort_order : order[0],
+        key: urlParams.sort_key ? urlParams.sort_key : order[1]
+      },
+      isInit: true
+    });
+  } else {
+    setSearch();
+  }
+
+  function setSearch ($form) {
+    var keyword = $form ? $form.find($searchForm.selector).val() : '';
+    lcMultiLangSearch.go({
+      keyword: keyword,
+      searchedKeys: searchedKeys,
+      pagerInfo: {
+        limit: lcMultiLangSearch.pagerInfo.limit
+      },
+      sort: {
+        order: lcMultiLangSearch.sort.order,
+        key: lcMultiLangSearch.sort.key
+      },
+    });
+  }
+
+  // change number of display
+  $searchLimit.on('change', function () {
+    lcMultiLangSearch.pagerInfo.limit = Number($(this).val());
+    lcMultiLangSearch.changePagination();
+  });
+  // change order
+  $searchOrder.on('change', function () {
+    var value = String($(this).val()).split('/');
+    lcMultiLangSearch.sort = {
+      order: value[0],
+      key: value[1]
+    };
+    lcMultiLangSearch.setUrlParams();
+    lcMultiLangSearch.sortItems();
+    lcMultiLangSearch.setResultItems(true);
+  });
+
+});
+</script>
+{# end Contents #}
+
+{% TemplateInclude "footer" %}
+
+{% endif %}{# endif In the case of Ajax, output JSON #}

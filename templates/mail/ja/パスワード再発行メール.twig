@@ -1,0 +1,17 @@
+{{ username }} 様
+ 
+平素はご利用いただきありがとうございます。
+ 
+以下のURLをクリックして、パスワードをリセットして下さい。
+うまくリンク先に移動しない場合は、URLをコピーしてブラウザのアドレスバーにペーストして下さい。
+ 
+{{ confirm_url }}
+ 
+引き続き、ご愛顧のほどよろしくお願い申し上げます。
+ 
+------------------------------------
+{{ system_config("application_name") }}
+〒{{ system_config("company_zipcode") }}
+{{ system_config("company_address") }}
+TEL: {{ system_config("company_tel") }}
+{{ url('homepage') }}

@@ -1,0 +1,94 @@
+extends /_include/_layout.pug
+
+block title
+  title 小熊夏季新款女装可爱卡通短袖t恤宽松韩版半袖 | LC E-SHOP
+block content
+
+  -
+    var breadcrumbList = [
+      {
+        name: '首页',
+        href: '/'
+      },
+      {
+        name: '女士们',
+        href: '/ec/product/category/1/'
+      },
+      {
+        name: '棉麻T恤',
+        href: '/ec/product/category/1/'
+      },
+      {
+        name: '小熊夏季新款女装可爱卡通短袖t恤宽松韩版半袖',
+        href: '/product/1/'
+      }
+    ]
+  include /_include/_breadcrumblist.pug
+
+  article
+    .productMainSection
+      header.productMainSection__header
+        h1.productMainSection__title 小熊夏季新款女装可爱卡通短袖t恤宽松韩版半袖
+        p.productMainSection__code BSW00352-H
+      figure.productImages
+        ul.productImages__main
+          - for (var i = 1; i <= 8; i++)
+            li.productImages__main__item
+              a.productImages__main__inner(href=`/assets/img/img_product_0${i}.jpg`, target="_blank")
+                img(src=`/assets/img/img_product_0${i}.jpg`, alt="product title")
+        div.productImages__thumbnails
+          ul.productImages__thumbnails__list
+            - for (var i = 1; i <= 8; i++)
+              li.productImages__thumbnails__item(data-index=(i - 1))
+                img(src=`/assets/img/img_product_0${i}.jpg`, alt="product title")
+      p.productMainSection__price
+        em <span class="js-lc--price">159.00</span>CNY
+        small (<span class="js-lc--basePrice">2,393</span>JPY)
+      .cartInArea
+                
+        include /_include/_productsku-script.pug
+        
+        form(action="", method="post")
+          input(type="hidden" name="product_sku_id")
+          dl.skuList
+            .skuList__item
+              dt.skuList__label 数量
+              dd.skuList__detail
+                .lc-selectBox
+                  select.lc-selectBox__select(name="quantity")
+                    - for (var i = 1; i <= 10; i++)
+                      option(value=i) #{i}
+          p.cartInArea__actions
+            button.lc-button--submit.lc-button--action.js-lc--cartin(type="submit")
+              span.lc-button__label 加入购物车
+              i.lc-button__icon.lc-icon--cart
+            button.lc-button--submit.lc-button--onlyIcon.js-lc--favorite(type="button", title="我的最爱")
+              span.lc-button__label 我的最爱
+              i.lc-button__icon.lc-icon--heart
+          dl.additionsForm
+            dt.additionsForm__title.lc-icon--plus OPTIONS
+            dd.additionsForm__item
+              label.additionsForm__label
+                input.additionsForm__input(type="checkbox", name="addition_quantity[1]", value="1")
+                .additionsForm__box
+                  p.additionsForm__name
+                    i.additionsForm__checkbox
+                    | 礼品包装
+                  p.additionsForm__price
+                    em 0.00CNY
+                    small (0JPY)
+                  p.additionsForm__detail 推荐用于礼品和纪念品
+            dd.additionsForm__item
+              label.additionsForm__label
+                input.additionsForm__input(type="checkbox", name="addition_quantity[2]", value="1")
+                .additionsForm__box
+                  p.additionsForm__name
+                    i.additionsForm__checkbox
+                    | 快点航班
+                  p.additionsForm__price
+                    em 1.00CNY
+                    small (15JPY)
+                  p.additionsForm__detail 船舶的优先级高于平时
+                
+
+

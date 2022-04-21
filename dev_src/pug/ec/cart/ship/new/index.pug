@@ -1,0 +1,168 @@
+extends /_include/_layout.pug
+
+block title
+  title 指定收货地址 | LC E-SHOP
+block content
+
+  -
+    var breadcrumbList = [
+      {
+        name: '首页',
+        href: '/'
+      },
+      {
+        name: '指定收货地址',
+        href: '/ec/cart/ship/new/'
+      }
+    ]
+  include /_include/_breadcrumblist.pug
+
+
+  section.lc-contentSection
+    h1.lc-contentSection__title.lc-contentSection__title--center 指定收货地址
+
+    - var step = 2;
+    include /_include/_steplist.pug
+
+    div.lc-contentsInner.lc-contentsInner--form
+      p.lc-contentSection__note.lc-contentSection__note--center 请输入下列所有项目（<i class="is-required"></i>必填）
+      form(action="/ec/cart/addition/", method="POST")
+        ul.lc-form
+          li.lc-form__item
+            .lc-form__columns
+              .lc-form__column
+                label.lc-form__label
+                  h4.lc-form__title.is-required 姓
+                  p.lc-form__detail
+                    input(type="text")
+              .lc-form__column
+                label.lc-form__label
+                  h4.lc-form__title.is-required 名
+                  p.lc-form__detail
+                    input(type="text")
+          li.lc-form__item
+            label.lc-form__label.lc-form__label--half
+              h4.lc-form__title.is-required 手机号码
+              p.lc-form__detail
+                input(type="text")
+          li.lc-form__item
+            label.lc-form__label
+              h4.lc-form__title.is-required 電子信箱
+              p.lc-form__detail
+                input(type="text")
+          li.lc-form__item
+            label.lc-form__label.lc-form__label--select
+              h4.lc-form__title.is-required 国家
+              p.lc-form__detail
+                select
+                  option 请选择国家或地区
+                  option china
+          li.lc-form__item
+            label.lc-form__label.lc-form__label--half
+              h4.lc-form__title.is-required 邮编号码
+              p.lc-form__detail
+                input(type="text")
+          li.lc-form__item
+            label.lc-form__label
+              h4.lc-form__title.is-required 省市县乡镇村
+              p.lc-form__detail
+                input(type="text")
+          li.lc-form__item
+            label.lc-form__label
+              h4.lc-form__title.is-required 详细地址
+              p.lc-form__detail
+                input(type="text")
+        h2.lc-heading--3 指定收货地址
+        ul.lc-form
+          li.lc-form__item
+            label.lc-form__label.lc-form__label--plain
+              p.lc-form__detail
+                input#checkbox_2.js-lc--confirmShipAddress(type="checkbox", checked)
+                label(for="checkbox_2") 同一收貨地址是購買信息
+        .js-lc--shipAddressArea
+          ul.lc-form
+            li.lc-form__item
+              .lc-form__columns
+                .lc-form__column
+                  label.lc-form__label
+                    h4.lc-form__title.is-required 姓
+                    p.lc-form__detail
+                      input(type="text")
+                .lc-form__column
+                  label.lc-form__label
+                    h4.lc-form__title.is-required 名
+                    p.lc-form__detail
+                      input(type="text")
+            li.lc-form__item
+              label.lc-form__label.lc-form__label--half
+                h4.lc-form__title.is-required 手机号码
+                p.lc-form__detail
+                  input(type="text")
+            li.lc-form__item
+              label.lc-form__label.lc-form__label--select
+                h4.lc-form__title.is-required 国家
+                p.lc-form__detail
+                  select
+                    option 请选择国家或地区
+                    option china
+            li.lc-form__item
+              label.lc-form__label.lc-form__label--half
+                h4.lc-form__title.is-required 邮编号码
+                p.lc-form__detail
+                  input(type="text")
+            li.lc-form__item
+              label.lc-form__label
+                h4.lc-form__title.is-required 省市县乡镇村
+                p.lc-form__detail
+                  input(type="text")
+            li.lc-form__item
+              label.lc-form__label
+                h4.lc-form__title.is-required 详细地址
+                p.lc-form__detail
+                  input(type="text")
+
+        p.lc-contentSection__note.lc-contentSection__note--center 
+          input#checkbox_1.js-confirmConsent(type="checkbox")
+          label(for="checkbox_1") 同意隐私政策
+
+          a(hre="").lc-button--cancel.js-lc--closeModal
+            span.lc-button__label 隐私政策
+            i.lc-button__icon.lc-icon--arrowRight
+                
+        p.lc-contentsInner__buttons
+          button(type="submit").lc-button--submit
+            span.lc-button__label 确认
+            i.lc-button__icon.lc-icon--arrowRight
+        
+        script.
+          $(function () {
+            if ($('.js-confirmConsent').length) {
+              var $confirmConcent = $('.js-confirmConsent');
+              var $form = $confirmConcent.closest('form');
+              var $submit = $form.find(':submit');
+              confirmConcent();
+              $confirmConcent.on('change', function () {
+                confirmConcent();
+              });
+              function confirmConcent () {
+                $submit.prop('disabled', !$confirmConcent.prop('checked'));
+              }
+            }
+            
+            if ($('.js-lc--confirmShipAddress').length) {
+              var $confirmShipAddressInput = $('.js-lc--confirmShipAddress');
+              confirmShipAddress();
+              $confirmShipAddressInput.on('change', function () {
+                confirmShipAddress();
+              });
+              function confirmShipAddress () {
+                if ($confirmShipAddressInput.prop('checked')) {
+                  $('.js-lc--shipAddressArea').hide();
+                } else {
+                  $('.js-lc--shipAddressArea').show();
+                }
+              }
+            }
+          });
+    
+

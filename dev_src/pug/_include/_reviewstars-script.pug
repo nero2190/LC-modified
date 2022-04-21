@@ -1,0 +1,42 @@
+script.
+  /**
+    * -------------------------------
+    * レビューの星 変更
+    */
+  $(function () {
+    var $reviewStars = $('.js-lc--changeReviewStars');
+    $reviewStars.each(function () {
+      var $reviewStar = $(this);
+      var $reviewStarsNumber = $reviewStar.next('.js-lc--reviewStarsNumber');
+      var $reviewStarsInput = $reviewStar.prev('.js-lc--reviewStarsInput');
+      var currentReviewGrade = $reviewStar.data('grade');
+      $reviewStar
+        .on('mouseenter', function (e) {
+          $reviewStar.addClass('is-changing');
+        })
+        .on('mouseleave', function (e) {
+          $reviewStar.removeClass('is-changing');
+          $reviewStar.attr('data-grade', currentReviewGrade);
+          $reviewStarsNumber.text(currentReviewGrade / 2);
+        })
+      $reviewStar.children('span')
+        .on('mousemove', function (e) {
+          var index = $reviewStar.children('span').index(this) + 1;
+          var x = e.pageX - this.getBoundingClientRect().left + window.pageXOffset;
+          var isFull = (x / $(this).width() > 0.5) ? true : false;
+          var reviewGrade = isFull ? index * 2 : index * 2 - 1;
+          $reviewStar.attr('data-grade', reviewGrade);
+          $reviewStarsNumber.text(reviewGrade / 2);
+        })
+        .on('click', function (e) {
+          var index = $reviewStar.children('span').index(this) + 1;
+          var x = e.pageX - this.getBoundingClientRect().left + window.pageXOffset;
+          var isFull = (x / $(this).width() > 0.5) ? true : false;
+          var reviewGrade = isFull ? index * 2 : index * 2 - 1;
+          $reviewStar.attr('data-grade', reviewGrade);
+          currentReviewGrade = reviewGrade;
+          $reviewStarsNumber.text(currentReviewGrade / 2);
+          $reviewStarsInput.val(currentReviewGrade);
+        });
+    });
+  });

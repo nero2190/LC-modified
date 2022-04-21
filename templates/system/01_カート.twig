@@ -1,0 +1,258 @@
+{# Reference: https://launchcart.jp/reference/1-%e3%82%ab%e3%83%bc%e3%83%88/ #}
+
+{# In the case of Ajax, output JSON #}
+{%- if http_x == 'XMLHttpRequest' -%}
+
+  {# success cart in #}
+  {%- if cart_api.count -%}
+    {%- set points = 0 -%}
+    {%- for cart_object in cart_api.objects -%}
+      {%- set productsku = get_entity_manager().find("EcCoreBundle:ProductSku", cart_object.productSkuId) -%}
+      {%- set points = points + (productsku.pointRate * productsku.price * cart_object.count * 0.01) -%}
+    {%- endfor -%}
+    {
+      "status": "ok",
+      "cart_count": {{ cart_api.count }},
+      "cart_total": "{{ cart_api.total }}",
+      "point_total": "{{ points|number_format }}"
+    }
+
+  {# fail cart in #}
+  {%- else -%}
+    {
+      "status": "no",
+      "message": "Sorry, failed cart in."
+    }
+  {%- endif -%}
+
+{# In the case of not Ajax, output HTML #}
+{%- else -%}
+
+  {# Variables Settings #}
+
+  {# insert to html head title #}
+  {%- set title = #cart_label# -%}
+
+  {# get base currency unit #}
+{%- set baseCurrency = get_entity_manager().find('EcCoreBundle:Currency', system_config('base_currency')) -%}
+{%- set baseUnitFront = baseCurrency.getBeforeUnit() -%}
+{%- set baseUnitBack = baseCurrency.getAfterUnit() -%}
+
+  {# end Variables Settings #}
+
+  {% TemplateInclude "header" %}
+
+  {# Contents #}
+
+  {# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+  {%- set breadcrumbList = [] -%}
+  {%- set breadcrumbListItem = {
+      name: #cart_label# ,
+      href: app.request.uri
+    }
+  -%}
+  {%- set breadcrumbList = breadcrumbList|merge([breadcrumbListItem]) -%}
+  {% TemplateInclude "breadcrumb list" %}
+
+  <section class="lc-contentSection">
+    <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #cart_label# }}</h1>
+    
+    {# step list #}
+    {%- set step = 1 -%}
+    {% TemplateInclude "step list" %}
+
+    <div class="lc-contentsInner">
+
+      {# error messages #}
+      {% if (error_msg|length > 0) or deleteErrMsg %}
+        <p class="lc-contentSection__note error">
+          {%- if (error_msg|length > 0) -%}
+            {{ #deleted_because_no_stock# }}<br>
+            {%- for productName in error_msg -%}
+              - {{ productName }}<br>
+            {%- endfor -%}
+          {%- endif -%}
+          {{ deleteErrMsg }}
+        </p>
+      {%- endif -%}
+
+      {%- set points = 0 -%}
+      {%- set cart = cart_api.objects -%}
+
+      {%- if (cart|length == 0) -%}
+        {# empty cart #}
+        <p class="lc-contentSection__note lc-contentSection__note--large lc-align--center">{{ #cart_is_empty# }}</p>
+
+      {%- else -%}
+        {# total product amount in the cart #}
+        <p class="lc-contentSection__note lc-contentSection__note--large">
+          {{ #total_price# }}:
+          <strong>
+            {{ #unitFront# }}<span class="js-lc--cartTotal">{{ (cart_api.total * curRatio)|price_format(decimalPoint) }}</span>{{ #unitBack# }}
+            {%- if curRatio != 1 -%}
+              <small class="productArchive__price__sub">({{ baseUnitFront }}<span class="js-lc--cartTotalBase">{{ cart_api.total|price_format(decimalPoint) }}</span>{{ baseUnitBack }})</small>
+            {%- endif -%}
+          </strong>
+        </p>
+
+        {# Items in the cart #}
+        <form action="{{ path("ec_client_cart_change") }}" name="form1" id="form1" method="POST">
+          <ul class="lc-list">
+            {%- for cart_object in cart|reverse -%}
+              {%- set productsku = get_entity_manager().find("EcCoreBundle:ProductSku", cart_object.productSkuId) -%}
+              {%- set product = productsku.product -%}
+              {%- set points = points + (productsku.pointRate * productsku.price * cart_object.count * 0.01) -%}
+              {%- set productName = product.attribute('product name', language) ? product.attribute('product name', language) : product.name -%}
+              <li class="lc-productInfo">
+                {# product image #}
+                <figure class="lc-productInfo__figure">
+                  <a class="lc-productInfo__figure__inner" href="{{ path('ec_product_detail', {'id': product.id}) }}">
+                    <img src="{% if product.attribute('image1') %}{{ ('/uploads/media/'~get_entity_manager().find('MediaCoreBundle:Media', product.attribute('image1')).path) }}{% else %}{{ asset('assets/img/no-image.png') }}{% endif %}" alt="{{ productName|striptags }}">
+                  </a>
+                </figure>
+                <div class="lc-productInfo__text">
+                  {# product name and skus titles #}
+                  <h2 class="lc-productInfo__name">
+                    <a href="{{ path('ec_product_detail', {'id': product.id}) }}">
+                      {{ productName }}
+                      {% if productsku.skuDetail1 %}&emsp;{% if productsku.skuDetail1.getTransAttribute(lang_id) %}{{ productsku.skuDetail1.getTransAttribute(lang_id) }}{% else %}{{ productsku.skuDetail1.title }}{% endif %}{% endif %}
+                      {% if productsku.skuDetail2 %}&emsp;{% if productsku.skuDetail2.getTransAttribute(lang_id) %}{{ productsku.skuDetail2.getTransAttribute(lang_id) }}{% else %}{{ productsku.skuDetail2.title }}{% endif %}{% endif %}
+                    </a>
+                  </h2>
+                  <div class="lc-productInfo__detail">
+                    <dl class="lc-productInfo__detail__list">
+                      {# unit price #}
+                      <div class="lc-productInfo__detail__item">
+                        <dt class="lc-productInfo__detail__label">{{ #unit_price_label# }}</dt>
+                        <dd class="lc-productInfo__detail__detail">
+                          {{ #unitFront# }}{{ (productsku.price * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}
+                          {%- if curRatio != 1 -%}
+                            <small class="productArchive__price__sub">({{ baseUnitFront }}{{ productsku.price|price_format(decimalPoint) }}{{ baseUnitBack }})</small>
+                          {%- endif -%}
+                        </dd>
+                      </div>
+                      {# weight #}
+                      <div class="lc-productInfo__detail__item">
+                        <dt class="lc-productInfo__detail__label">{{ #weight_label# }}</dt>
+                        <dd class="lc-productInfo__detail__detail">{{ productsku.weight|number_format }}g</dd>
+                      </div>
+                    </dl>
+                  </div>
+                  {# change item informations #}
+                  <p class="lc-productInfo__controls">
+                    <span>
+                      {{ #quantity_label# }}{% if (cart_object.regularInt > 0) %}/{{ #regular_interval_label# }}{% endif %}
+                      {# quantity #}
+                      <span class="lc-selectBox">
+                        <select class="lc-selectBox__select js-lc--changeCart" name="quantity[{{ productsku.id }}]">
+                          {%- for i in 1..10 -%}
+                            {%- if (i <= productsku.stock) or productsku.stockUnlimited -%}
+                              <option value="{{ i }}"{% if cart_object.count == i %} selected="selected"{% endif %}>{{ i }}</option>
+                            {%- endif -%}
+                          {%- endfor -%}
+                        </select>
+                      </span>
+                      {%- if (cart_object.regularInt > 0) -%}
+                        /
+                        {# regular interval #}
+                        <span class="lc-selectBox">
+                          <select class="lc-selectBox__select js-lc--changeCart" name="regular_int[{{ productsku.id }}]">
+                            {%- for regularInterval in productsku.product.regularIntervals -%}
+                              <option value="{{ regularInterval.id }}" {% if (regularInterval.id == cart_object.regularInt) %}selected="selected"{% endif %}>{{ regularInterval.value }}{{ ('regular.units.regular_interval.each_' ~ regularInterval.unit)|trans({}, 'clients') }}</option>
+                            {%- endfor -%}
+                          </select>
+                        </span>
+                      {%- endif -%}
+                    </span>
+                    <a class="lc-button--delete" href="{{ path('ec_client_cart_delete', {'sku': productsku.id}) }}"><span class="lc-button__label">{{ #delete_label# }}</span></a></p>
+                </div>
+                {# additions #}
+                {%- if (cart_object.additions|length > 0) -%}
+                  <dl class="lc-productInfo__additions">
+                    {%- for addition_object in cart_object.getAdditions -%}
+                      {% set addition = get_entity_manager().find("EcCoreBundle:Addition", addition_object.additionId) %}
+                      <div class="lc-productInfo__additions__item">
+                        <dt class="lc-productInfo__additions__name">{% if addition.getTitleTransAttribute(lang_id) %}{{ addition.getTitleTransAttribute(lang_id) }}{% else %}{{ addition.title }}{% endif %}</dt>
+                        <dd class="lc-productInfo__additions__detail">
+                          <dl class="lc-productInfo__detail__list">
+                            <div class="lc-productInfo__detail__item">
+                              <dt class="lc-productInfo__detail__label">{{ #unit_price_label# }}</dt>
+                              <dd class="lc-productInfo__detail__detail">
+                                {{ #unitFront# }}{{ (addition.price * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}
+                                {%- if curRatio != 1 -%}
+                                  <small class="productArchive__price__sub">({{ baseUnitFront }}{{ addition.price|price_format(decimalPoint) }}{{ baseUnitBack }})</small>
+                                {%- endif -%}
+                              </dd>
+                            </div>
+                            <input name="addition_quantity[{{ productsku.id ~ "_" ~ addition.id }}]" type="hidden" value="1">
+                          </dl>
+                        </dd>
+                        <dd class="lc-productInfo__controls"><a class="lc-button--delete" href="{{ path('ec_client_cart_delete_addition', {'sku' :productsku.id, 'addition': addition.id}) }}"><span class="lc-button__label">{{ #delete_label# }}</span></a></dd>
+                      </div>
+                    {%- endfor -%}
+                  </dl>
+                {%- endif -%}
+              </li>
+            {%- endfor -%}
+          </ul>
+        </form>
+
+        {# total points #}
+        <p class="lc-contentSection__note">
+          {{ #total_point_label# }}: <strong class="js-lc--pointTotal">{{ points|number_format }}</strong> {{ #point_unit# }}
+        </p>
+
+        <script>
+          //==========================================================
+          // change cart infomations
+          //==========================================================
+          $(function () {
+            var curRatio = {{ #curRatio# }};
+            var decimalPoint = {{ #decimalPoint# }};
+            $('.js-lc--changeCart').on('change', changeCart);
+            function changeCart () {
+              var params = $('#form1').serialize();
+              $('.js-lc--submit').prop('disabled', true);
+              $.ajax({
+                type: 'POST',
+                url: '{{ path("ec_client_cart_change") }}',
+                data: params,
+                dataType: 'json'
+              }).done(function (data) {
+                if(data.status == 'ok') {
+                  $('.js-lc--cartTotal').text(price_format(data.cart_total * curRatio, decimalPoint));
+                  $('.js-lc--cartTotalBase').text(price_format(data.cart_total, decimalPoint));
+                  $('.js-lc--pointTotal').text(number_format(data.point_total));
+                  $('.js-lc--cartBadge').text(data.cart_count);
+                } else {
+                  // fail
+                  console.error('Error: ' + data.message);
+                }
+              }).fail(function ( jqXHR, textStatus, errorThrown) {
+                // fail
+                console.error(textStatus + ': ' + errorThrown);
+              }).always(function () {
+                $('.js-lc--submit').prop('disabled', false);
+              });
+            }
+          });
+        </script>
+      {%- endif -%}
+      {# end Items in the cart #}
+
+      {# cartin #}
+      <form action="{{ path('ec_client_ship') }}" method="POST">
+        <p class="lc-contentsInner__buttons">
+          {%- if (cart|length > 0) -%}
+            <button type="submit" class="lc-button--submit js-lc--submit"><span class="lc-button__label">{{ #to_order# }}</span><i class="lc-button__icon lc-icon--arrow2Right"></i></button>
+          {%- endif -%}
+          <a class="lc-button--cancel" href="{{ path('homepage') }}"><i class="lc-button__icon lc-icon--arrowLeft"></i><span class="lc-button__label">{{ #continue_shopping# }}</span></a>
+        </p>
+      </form>
+    </div>
+  </section>
+
+  {# end Contents #}
+
+  {% TemplateInclude "footer" %}
+{%- endif -%}

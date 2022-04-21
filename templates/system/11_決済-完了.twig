@@ -1,0 +1,58 @@
+{# Reference: https://launchcart.jp/reference/11-%e6%b1%ba%e6%b8%88-%e5%ae%8c%e4%ba%86/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = #order_complete_label# -%}
+
+{# set LC analytics tag key #}
+{{ app.session.set('tagKey', app.request.get('aid')) }}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- set breadcrumbListItem = {
+    name: #order_complete_label# ,
+    href: app.request.uri
+  }
+-%}
+{%- set breadcrumbList = breadcrumbList|merge([breadcrumbListItem]) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #order_complete_label# }}</h1>
+  
+  {# step list #}
+  {%- set step = 7 -%}
+  {% TemplateInclude "step list" %}
+
+  <div class="lc-contentsInner lc-contentsInner--form">
+
+    <p class="lc-contentSection__note lc-contentSection__note--center lc-contentSection__note--large">{{ #message_order_complete# | raw }}</p>
+    <p class="lc-contentsInner__buttons"><a class="lc-button--submit" href="{{ path("homepage") }}"><i class="lc-button__icon lc-icon--arrowLeft"></i><span class="lc-button__label">{{ #back_to_top_label# }}</span></a></p>
+
+  </div>
+</section>
+
+{%- if order_group.payment.isChinesePayment or order_group.payment.isTwoCTwoPPayment -%}
+  {%- set securepay_url = url('ec_client_cart_card_securepay',{'consumerId': order_group.consumer.id, 'orderStr': order_group.getLastOrderPaymentId}) -%}
+  {%- if securepay_url -%}
+    <script>
+    window.onload = function () {
+      var timer = setTimeout(function () {
+        clearTimeout(timer);
+        location.href = '{{ securepay_url }}';
+      }, 500);
+    }
+    </script>
+  {%- endif -%}
+{%- endif -%}
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

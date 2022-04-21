@@ -1,0 +1,16 @@
+-
+  var steps = [
+    '购物车',
+    '指定<wbr>收货地址',
+    '送货<wbr>时间',
+    '选择<wbr>付款方式',
+    '确认<wbr>购物清单',
+    '支付',
+    '购买<wbr>成功'
+  ]
+
+ol.lc-stepList
+  - for (var i = 0; i < steps.length; i++)
+    li.lc-stepList__item(class = (step == i + 1) ? 'is-current' : '' )
+      i.lc-stepList__icon
+      span.lc-stepList__label !{ steps[i] }

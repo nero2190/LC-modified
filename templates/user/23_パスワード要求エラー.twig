@@ -1,0 +1,46 @@
+{# Reference: https://launchcart.jp/reference/23%e3%83%91%e3%82%b9%e3%83%af%e3%83%bc%e3%83%89%e8%a6%81%e6%b1%82%e3%82%a8%e3%83%a9%e3%83%bc/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = #request_passowrd_error_label# -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- set breadcrumbListItems = [
+    {
+      name: #request_passowrd_error_label# ,
+      href: app.request.uri
+    }
+  ]
+-%}
+{%- set breadcrumbList = breadcrumbList|merge(breadcrumbListItems) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #request_passowrd_error_label# }}</h1>
+
+  <div class="lc-contentsInner lc-contentsInner--form">
+
+    {# error #}
+    <p class="lc-contentSection__note error">{{ error }}</p>
+    
+    {# link to top page #}
+    <p class="lc-contentsInner__buttons">
+      <a class="lc-button--submit" href="{{ path('homepage') }}"><span class="lc-button__label">{{ #back_to_home_label# }}</span><i class="lc-button__icon lc-icon--arrowLeft"></i></a>
+    </p>
+
+  </div>
+
+</section>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

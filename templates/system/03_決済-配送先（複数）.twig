@@ -1,0 +1,146 @@
+{# Reference: https://launchcart.jp/reference/3-%e6%b1%ba%e6%b8%88-%e9%85%8d%e9%80%81%e5%85%88%ef%bc%88%e8%a4%87%e6%95%b0%ef%bc%89/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = #select_destination# -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- set breadcrumbListItem = {
+    name: #select_destination# ,
+    href: app.request.uri
+  }
+-%}
+{%- set breadcrumbList = breadcrumbList|merge([breadcrumbListItem]) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #select_destination# }}</h1>
+  
+  {# step list #}
+  {%- set step = 2 -%}
+  {% TemplateInclude "step list" %}
+
+  <div class="lc-contentsInner">
+    <form name="form1" id="form1" method="post" action="">
+      {%- if errorFlg -%}
+        <p class="lc-contentSection__note error">{{ error_quantity }}</p>
+      {%- endif -%}
+      <section class="lc-shipList">
+        <h2 class="lc-shipList__title">{{ #address_list_label# }}</h2>
+        <ul class="lc-shipList__list">
+          {%- set addresses = app.security.token.user.getAddress -%}
+
+          {# address list #}
+          {%- for key,address in addresses -%}
+            {%- for delivery in deliveries -%}
+              <li class="lc-shipList__item">
+                <div class="lc-shipList__box">
+                  <div class="lc-shipList__main">
+
+                    {# address #}
+                    <header class="lc-shipList__header">
+                      <h3 class="lc-shipList__name"><i class="c-inputUI c-inputUI--checkbox"></i>{{ address.lastName }} {{ address.firstName }}</h3>
+                      <p class="lc-shipList__tel">{{ address.tel }}</p>
+                    </header>
+                    <p class="lc-shipList__address">
+                      {% if address.country.id == 1 %}〒 {% endif %}{% if address.country.id != 20 %}{{ address.zipcode }}<br>{% endif %}
+                      {% if address.country.id == 1 %}{{ address.district }} {% endif %}{{ address.locality }} {{ address.street }}
+                    </p>
+
+                    {# products #}
+                    <ul class="lc-list">
+                      {%- for productsku in products[delivery.id] -%}
+                        {%- set product = productsku.product -%}
+                        {%- set productName = product.attribute('product name', language) ? product.attribute('product name', language) : product.name -%}
+                        <li class="lc-productInfo">
+                          {# product image #}
+                          <figure class="lc-productInfo__figure">
+                            <a class="lc-productInfo__figure__inner" href="{{ path('ec_product_detail', {'id': product.id}) }}">
+                              <img src="{% if product.attribute('image1') %}{{ ('/uploads/media/'~get_entity_manager().find('MediaCoreBundle:Media', product.attribute('image1')).path) }}{% else %}{{ asset('assets/img/no-image.png') }}{% endif %}" alt="{{ productName|striptags }}"/>
+                            </a>
+                          </figure>
+                          <div class="lc-productInfo__text">
+                            {# product name and skus titles #}
+                            <h2 class="lc-productInfo__name">
+                              <a href="{{ path('ec_product_detail', {'id': product.id}) }}">
+                                {{ productName }}
+                                {% if productsku.skuDetail1 %}&emsp;{% if productsku.skuDetail1.getTransAttribute(lang_id) %}{{ productsku.skuDetail1.getTransAttribute(lang_id) }}{% else %}{{ productsku.skuDetail1.title }}{% endif %}{% endif %}
+                                {% if productsku.skuDetail2 %}&emsp;{% if productsku.skuDetail2.getTransAttribute(lang_id) %}{{ productsku.skuDetail2.getTransAttribute(lang_id) }}{% else %}{{ productsku.skuDetail2.title }}{% endif %}{% endif %}
+                              </a>
+                            </h2>
+                            <div class="lc-productInfo__detail">
+                              <dl class="lc-productInfo__detail__list">
+                                <div class="lc-productInfo__detail__item">
+                                  <dt class="lc-productInfo__detail__label">{{ #purchase_quantity_label# }}</dt>
+                                  <dd class="lc-productInfo__detail__detail">{{ product_count[productsku.id]|number_format }}</dd>
+                                </div>
+                              </dl>
+                            </div>
+                            {# change item informations #}
+                            <p class="lc-productInfo__controls">
+                              <span>
+                                {{ #shipping_quantity_label# }}
+                                {# quantity #}
+                                <span class="lc-selectBox">
+                                  {%- if delivery_multi[address.id ~ "_" ~ delivery.id ~ "_" ~ productsku.id] is defined -%}
+                                    {% set deliveryMultiQuantity = delivery_multi[address.id ~ "_" ~ delivery.id ~ "_" ~ productsku.id] %}
+                                  {%- else -%}
+                                    {% set deliveryMultiQuantity = 0 %}
+                                  {%- endif -%}
+                                  <select class="lc-selectBox__select js-lc--changeCart" name="multi_{{ address.id }}_{{ delivery.id }}[{{ productsku.id }}]">
+                                    {%- for i in 0..product_count[productsku.id] -%}
+                                      {%- if (i <= productsku.stock) or productsku.stockUnlimited -%}
+                                        <option value="{{ i }}"{% if deliveryMultiQuantity == i %} selected="selected"{% endif %}>{{ i }}</option>
+                                      {%- endif -%}
+                                    {%- endfor -%}
+                                  </select>
+                                </span>
+                              </span>
+                            </p>
+                          </div>
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+
+                    {# delivery method #}
+                    <dl class="lc-shipList__info">
+                      <div class="lc-shipList__info__item">
+                        <dt class="lc-shipList__info__label">{{ #shipping_method_label# }}</dt>
+                        <dd class="lc-shipList__info__detail">{{ delivery.name }}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                </div>
+              </li>
+            {%- endfor -%}
+
+          {%- endfor -%}
+
+          {# add list #}
+          {%- if (addresses|length < 20) -%}
+            <li class="lc-shipList__item"><a class="lc-shipList__box lc-shipList__box--button" href="{{ path('ec_client_consumer_address_add') }}"><i class="lc-icon--plus"></i>{{ #add_address_label# }}</a></li>
+          {%- endif -%}
+
+        </ul>
+      </section>
+      <p class="lc-contentsInner__buttons">
+        {# to next step #}
+        <button class="lc-button--submit"><span class="lc-button__label">{{ #proceed_label# }}</span><i class="lc-button__icon lc-icon--arrow2Right"></i></button>
+        {# back #}
+        <a class="lc-button--cancel" href="{{ path('ec_client_cart_list') }}"><i class="lc-button__icon lc-icon--arrowLeft"></i><span class="lc-button__label">{{ #back_label# }}</span></a>
+      </p>
+    </form>
+  </div>
+</section>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

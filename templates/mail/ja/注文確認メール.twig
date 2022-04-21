@@ -1,0 +1,73 @@
+{% set languages = languages() %}
+{% for lang in languages|keys %}
+{% if order_group.option1 == lang %}
+{{ init_language(loop.index) }}
+{% endif %}
+{% endfor %}
+{% set language = language() %}
+{% set lang_id = language_id() %}
+{% set curRatio = cur_unit_ratio() %}
+{% set unitFront = unit_front() %}
+{% set unitBack = unit_back() %}
+{{ order_group.consumer.lastName }} {{ order_group.consumer.firstName }} 先生/女士
+
+感謝您一直愛用本網站。
+我們在此通知您，您的訂單已經被受理。
+※此郵件自動傳送在本網站購物的用戶。
+
+----------
+　消費金额
+----------
+訂單編號： {{ order_group.id }}
+商品金額總計： {{ order_group.getPaymentTotal|price_format }} JPY ({{ (order_group.getPaymentTotal * curRatio)|price_format }} {{ unitBack }})
+付款方式： {{ order_group.payment.getName }}
+其他諮詢： {{ order_group.getRequest }}
+
+----------
+　您的訂單內容
+----------
+{% for order in order_group.orders %}
+◎收貨地址: {{ loop.index }}
+收件人姓名： {{ order.getLastName}} {{ order.getFirstName}}　先生/女士
+郵編號碼： 〒{{ order.getZipcode }}
+收貨地址： {{ order.getAddress }}
+手機號碼： {{ order.getTel }}
+送貨日： {% if order.deliveryDay %}{{ order.deliveryDay }}{% else %}不指定{% endif %}
+送貨時間段： {% if order.deliveryTime %}{{ order.deliveryTime }}{% else %}不指定{% endif %}
+
+{% for detail in order.details %}
+商品編號： {{ detail.getProductCode }}
+商品名称： {{ detail.getProductName }}{{ detail.getSkuDetailTitle1 }}
+價格： {{ detail.getPrice|price_format }} JPY ({{ (detail.getPrice * curRatio)|price_format }}TWD)
+數量： {{ detail.getQuantity|number_format }}
+{% if (detail.additions|length > 0) %}
+{% for addition in detail.additions %}
+{{ addition.additionTitle }}x{{ addition.quantity }}={{ addition.price|price_format }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+郵費： {{ order.getDeliveryFee|price_format }} JPY ({{ (order.getDeliveryFee * curRatio)|price_format }}TWD)
+{% endfor %}
+
+----------
+小計 {{ (order_group.getProductTotal+order_group.getAdditionTotal)|price_format }} JPY{# ({{ (order_group.getProductTotal+order_group.getAdditionTotal) * curRatio|price_format }}TWD) #} 
+積分優惠 -{{ order_group.getUsePoint|price_format }} JPY{# ({{ (order_group.getUsePoint * curRatio)|price_format }}TWD) #} 
+郵費 {{ order_group.getDeliveryFee|price_format }} JPY{# ({{ (order_group.getDeliveryFee * curRatio)|price_format }}TWD) #} 
+手續費 {{ order_group.getCharge|price_format }} JPY{# ({{ (order_group.getCharge * curRatio)|price_format }}TWD) #} 
+積分優惠 -{{ order_group.getUsePoint|price_format }} JPY{# ({{ (order_group.getUsePoint * curRatio)|price_format }}TWD) #} 
+優惠券優惠 -{{ order_group.getUseCoupon|price_format }} JPY{# ({{ (order_group.getUseCoupon * curRatio)|price_format }}TWD) #} 
+----------
+商品金額總計 {{ order_group.getPaymentTotal|price_format }} JPY{# ({{ (order_group.getPaymentTotal * curRatio)|price_format }}TWD) #} 
+
+本次使用積分 {{ order_group.getUsePoint|price_format }} pt
+本次預計獲得積分 {{ order_group.getAddPoint|price_format }} pt
+現有積分 {{ order_group.consumer.getPoint|price_format }} pt
+
+忠心期待您再次光臨本網站。
+
+------------------------------------
+{{ system_config("application_name") }}
+〒{{ system_config("company_zipcode") }}
+{{ system_config("company_address") }}
+TEL: {{ system_config("company_tel") }}
+{{ url('homepage') }}

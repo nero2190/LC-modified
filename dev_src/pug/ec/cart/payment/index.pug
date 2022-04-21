@@ -1,0 +1,71 @@
+extends /_include/_layout.pug
+
+block title
+  title 选择付款方式 | LC E-SHOP
+block content
+
+  -
+    var breadcrumbList = [
+      {
+        name: '首页',
+        href: '/'
+      },
+      {
+        name: '选择付款方式',
+        href: '/ec/cart/payment/'
+      }
+    ]
+  include /_include/_breadcrumblist.pug
+
+
+  section.lc-contentSection
+    h1.lc-contentSection__title.lc-contentSection__title--center 选择付款方式
+
+    - var step = 4;
+    include /_include/_steplist.pug
+
+    div.lc-contentsInner.lc-contentsInner--form
+      form(action="/ec/cart/confirm/", method="POST")
+        
+        h2.lc-heading--2 关于产品
+
+        dl
+          dt.lc-heading--3 商品金额总计
+            small （不包含邮费，手续费）
+          dd.lc-contentSection__note
+            strong 318.00CNY 
+              small (4,786JPY)
+
+        ul.lc-form
+          li.lc-form__item
+            label.lc-form__label.lc-form__label--select
+              h4.lc-form__title.is-required 付款方式
+              p.lc-form__detail
+                select
+                  option 请选择付款方式
+                  option card
+          li.lc-form__item
+            label.lc-form__label.lc-form__label--half
+              h4.lc-form__title 请输入积分号码
+              p.lc-form__detail
+                input(type="text", value="0")
+              p.lc-align--right
+                small / 剩余积分: 0分
+          li.lc-form__item
+            label.lc-form__label.lc-form__label--half
+              h4.lc-form__title 请输入优惠券号码
+              p.lc-form__detail
+                input(type="text")
+          li.lc-form__item
+            label.lc-form__label
+              h4.lc-form__title 其他咨询
+              p.lc-form__detail
+                textarea
+            
+        p.lc-contentsInner__buttons
+          button.lc-button--submit
+            span.lc-button__label 下一步
+            i.lc-button__icon.lc-icon--arrow2Right
+          button(type="button", onclick="history.back();").lc-button--cancel
+            i.lc-button__icon.lc-icon--arrowLeft
+            span.lc-button__label 返回

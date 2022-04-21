@@ -1,0 +1,56 @@
+extends /_include/_layout.pug
+
+block title
+  title 登入 | LC E-SHOP
+block content
+
+  -
+    var breadcrumbList = [
+      {
+        name: '首页',
+        href: '/'
+      },
+      {
+        name: '登入',
+        href: '/auth/login/'
+      }
+    ]
+  include /_include/_breadcrumblist.pug
+
+
+  section.lc-contentSection
+    h1.lc-contentSection__title.lc-contentSection__title--center 登入
+
+    .lc-tab.lc-tab--form
+      .lc-tab__list
+        .lc-tab__tab.is-active 登入
+        a.lc-tab__tab(href="/auth/regist/") 注册
+      .lc-tab__panel.is-active
+        form(action="/ec/consumer/history/")
+          ul.lc-form
+            li.lc-form__item
+              label.lc-form__label
+                h4.lc-form__title.is-required 電子信箱
+                p.lc-form__detail
+                  input(type="text")
+            li.lc-form__item
+              label.lc-form__label
+                h4.lc-form__title.is-required 密码
+                p.lc-form__detail
+                  input(type="text")
+                  
+          p.lc-contentsInner__buttons
+            button(type="submit").lc-button--submit
+              span.lc-button__label 登入
+              i.lc-button__icon.lc-icon--arrowRight
+            a(href="/auth/password_request/").lc-button--cancel.js-lc--closeModal
+              span.lc-button__label 忘记密码
+              i.lc-button__icon.lc-icon--arrowRight
+
+    p.lc-contentSection__note.lc-contentSection__note--center 不注册会员，开始结帐请这里
+    p.lc-contentsInner__buttons
+      a(href="/ec/cart/ship/new/").lc-button--submit
+        span.lc-button__label 购买程序
+        i.lc-button__icon.lc-icon--arrowRight
+    
+

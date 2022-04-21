@@ -1,0 +1,55 @@
+script.
+  $(function () {
+    var $window = $(window);
+
+    //==========================================================
+    // Modal
+    //==========================================================
+    $('.js-lc--openModal').on('click', function() {
+      var $trigger = $(this);
+      $('#' + $trigger.attr('aria-controls')).addClass('is-active');
+      $('#' + $trigger.attr('aria-controls')).find('.lc-modal__body').css({
+        top: ($window.scrollTop() + 60) + 'px'
+      });
+      return false;
+    })
+    $('.js-lc--closeModal').on('click', function () {
+      $('.lc-modal').removeClass('is-active');
+    })
+
+    //==========================================================
+    // Tab
+    //==========================================================
+    if ($('.lc-tab[role="application"]').length) {
+      $('.lc-tab[role="application"]').each(function () {
+        var $wrapper = $(this);
+        var $tab = $wrapper.find('.lc-tab__tab');
+        var $tabPanel = $wrapper.find('.lc-tab__panel');
+        $tab.on('click', function () {
+          var $currentTab = $(this);
+          $tab.removeClass('is-active');
+          $tabPanel.removeClass('is-active');
+          $currentTab.addClass('is-active');
+          $('#' + $currentTab.attr('aria-controls')).addClass('is-active');
+        })
+      })
+    }
+
+    //==========================================================
+    // Forms
+    //==========================================================
+    var $form__items = $('.lc-form__item');
+    if ($form__items.length) {
+      $form__items.each(function (index, form__item) {
+        var $form__item = $(form__item);
+        var $label = $form__item.find('.lc-form__label');
+        var $input = $form__item.find('input, select, textarea');
+        $label.filter(':has(.error)').addClass('is-errored');
+        $input.on('focus', function () {
+          $label.addClass('is-focused');
+        }).on('blur', function () {
+          $label.removeClass('is-focused');
+        })
+      })
+    }
+  });

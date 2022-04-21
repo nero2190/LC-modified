@@ -1,0 +1,110 @@
+{# Reference: https://launchcart.jp/reference/20%e3%83%9e%e3%82%a4%e3%83%9a%e3%83%bc%e3%82%b8-%e5%ae%9a%e6%9c%9f%e8%b3%bc%e5%85%a5%e7%b7%a8%e9%9b%86/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = #purchase_history_label# -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- set breadcrumbListItems = [
+    {
+      name: #mypage_label# ,
+      href: path('ec_client_consumer')
+    },
+    {
+      name: #purchase_history_label# ,
+      href: path('ec_client_consumer_regular_list')
+    },
+    {
+      name: #subscription_detail_label# ,
+      href: path('ec_client_consumer_regular_detail', {'id': order_regular.id})
+    },
+    {
+      name: #edit_label# ,
+      href: app.request.uri
+    }
+  ]
+-%}
+{%- set breadcrumbList = breadcrumbList|merge(breadcrumbListItems) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #purchase_history_label# }}</h1>
+
+  <div class="lc-contentsInner lc-contentsInner--form">
+    <form name="form1" id="form1" method="POST" action="">
+      {{ form_widget(form._token) }}
+      {%- if not form.vars.valid -%}
+        <p class="lc-contentSection__note error">{{ form_errors(form) }}</p>
+      {%- endif -%}
+      <ul class="lc-form">
+        <li class="lc-form__item">
+          <label class="lc-form__label lc-form__label--select">
+            <h4 class="lc-form__title">{{ #quantity_label# }}</h4>
+            <p class="lc-form__detail">
+              <select name="{{ form.quantity.vars.full_name }}">
+                {%- for option in form.quantity.vars.choices -%}
+                  {%- set label = option.label|split('||') -%}
+                  <option value="{{ option.value }}"{% if option.value == form.quantity.vars.value %} selected="selected"{% endif %}>{{ label[0] }}{{ label[1]|trans({}, 'clients') }}</option>
+                {%- endfor -%}
+              </select>
+            </p>
+          </label>
+          {% if not form.quantity.vars.valid %}<p class="lc-form__note error is-error">{{ form_errors(form.quantity) }}</p>{% endif %}
+        </li>
+        <li class="lc-form__item">
+          <label class="lc-form__label lc-form__label--select">
+            <h4 class="lc-form__title is-required">{{ #regular_interval_label# }}</h4>
+            <p class="lc-form__detail">
+              <select name="{{ form.regular_interval.vars.full_name }}">
+                {%- for option in form.regular_interval.vars.choices -%}
+                  {%- set label = option.label|split('||') -%}
+                  <option value="{{ option.value }}"{% if option.value == form.quantity.vars.value %} selected="selected"{% endif %}>{{ label[0] }}{{ label[1]|trans({}, 'clients') }}</option>
+                {%- endfor -%}
+              </select>
+            </p>
+          </label>
+          {% if not form.regular_interval.vars.valid %}<p class="lc-form__note error is-error">{{ form_errors(form.regular_interval) }}</p>{% endif %}
+        </li>
+        <li class="lc-form__item">
+          <label class="lc-form__label lc-form__label--select">
+            <h4 class="lc-form__title is-required">{{ #next_delivery_date_label# }}</h4>
+            <p class="lc-form__detail">
+              {{ form_widget(form.next_delivery_month) }}
+            </p>
+          </label>
+          &nbsp;-&nbsp;
+          <label class="lc-form__label lc-form__label--select">
+            <p class="lc-form__detail">
+              {{ form_widget(form.arrive_day) }}
+            </p>
+          </label>
+          {% if not form.next_delivery_month.vars.valid %}<p class="lc-form__note error is-error">{{ form_errors(form.next_delivery_month) }}</p>{% endif %}
+          {% if not form.arrive_day.vars.valid %}<p class="lc-form__note error is-error">{{ form_errors(form.arrive_day) }}</p>{% endif %}
+        </li>
+      </ul>
+
+      <p class="lc-contentsInner__buttons">
+        {# register #}
+        <button class="lc-button--submit" type="submit"><span class="lc-button__label">{{ #submit_label# }}</span></button>
+        {# back #}
+        <a class="lc-button--cancel" href="{{ path('ec_client_consumer_regular_detail', {'id': order_regular.id}) }}"><i class="lc-button__icon lc-icon--arrowLeft"></i><span class="lc-button__label">{{ #back_label# }}</span></a>
+      </p>
+    </form>
+  </div>
+
+  {# mypage navi #}
+  {% TemplateInclude "mypage navi" %}
+
+</section>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

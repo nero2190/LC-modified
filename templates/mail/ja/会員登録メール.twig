@@ -1,0 +1,21 @@
+{{ consumer.getLastName }} {{ consumer.getFirstName }} 様
+
+平素はご利用いただきありがとうございます。
+会員登録が完了いたしましたのでお知らせ致します。
+
+以下の画面よりログインいただきますようお願いします:
+
+◆ログインページ
+{{ url('homepage') }}/auth/login
+
+◆ログインID
+{{ consumer.getUsername }}
+
+引き続き、ご愛顧のほどよろしくお願い申し上げます。
+
+------------------------------------
+{{ system_config("application_name") }}
+〒{{ system_config("company_zipcode") }}
+{{ system_config("company_address") }}
+TEL: {{ system_config("company_tel") }}
+{{ url('homepage') }}

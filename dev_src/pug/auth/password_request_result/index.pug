@@ -1,0 +1,27 @@
+extends /_include/_layout.pug
+
+block title
+  title 更改密碼出錯 | LC E-SHOP
+block content
+
+  -
+    var breadcrumbList = [
+      {
+        name: '首页',
+        href: '/'
+      },
+      {
+        name: '更改密碼出錯',
+        href: '/auth/password_request_result/'
+      }
+    ]
+  include /_include/_breadcrumblist.pug
+
+
+  section.lc-contentSection
+    h1.lc-contentSection__title.lc-contentSection__title--center 更改密碼出錯
+
+    div.lc-contentsInner.lc-contentsInner--form
+      p.lc-contentSection__note.lc-contentSection__note--center.lc-contentSection__note--large 密码已寄出，請依照MAIL上的手續完成密碼重新設定。
+    
+

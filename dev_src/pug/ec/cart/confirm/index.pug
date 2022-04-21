@@ -1,0 +1,144 @@
+extends /_include/_layout.pug
+
+block title
+  title 确认购物清单 | LC E-SHOP
+block content
+
+  -
+    var breadcrumbList = [
+      {
+        name: '首页',
+        href: '/'
+      },
+      {
+        name: '确认购物清单',
+        href: '/ec/cart/confirm/'
+      }
+    ]
+  include /_include/_breadcrumblist.pug
+
+
+  section.lc-contentSection
+    h1.lc-contentSection__title.lc-contentSection__title--center 确认购物清单
+
+    - var step = 5;
+    include /_include/_steplist.pug
+
+    div.lc-contentsInner
+      form(action="/ec/cart/card/", method="POST")
+
+        p.lc-contentsInner__buttons
+          button.lc-button--submit.lc-button--action
+            span.lc-button__label 提交订单
+            i.lc-button__icon.lc-icon--check
+        
+        table.lc-table.lc-table--numbers
+          tbody
+            tr
+              th 商品金额总计
+              td
+                em 318.00CNY
+              td (4,780JPY)
+            tr
+              th 附加商品总计
+              td
+                em 0.00CNY
+              td (0JPY)
+            tr
+              th 邮费
+              td
+                em 0.00CNY
+              td (0JPY)
+            tr
+              th 手续费
+              td
+                em 0.00CNY
+              td (0JPY)
+            tr
+              th 积分优惠
+              td
+                em -0.00CNY
+              td (0JPY)
+            tr
+              th 优惠券优惠
+              td
+                em -0.00CNY
+              td (0JPY)
+        p.lc-contentSection__note.lc-contentSection__note--large.lc-align--right
+          | 总计: 
+          strong 318.00CNY 
+            small (4,786JPY)
+        
+        h2.lc-heading--3 积分
+        table.lc-table.lc-table--numbers
+          tbody
+            tr
+              th 目前积分本次
+              td
+                em 0分
+            tr
+              th 使用积分本次
+              td
+                em -0分
+            tr
+              th 预计获得积分
+              td
+                em +40分
+            tr
+              th 共计积分
+              td
+                em 0分
+        
+
+        section.lc-shipList
+          h2.lc-shipList__title 收货地址一览
+          ul.lc-shipList__list
+            li.lc-shipList__item
+              .lc-shipList__box
+                .lc-shipList__main
+                  header.lc-shipList__header
+                    h3.lc-shipList__name 星野 翔太
+                    p.lc-shipList__tel 09012345678
+                  p.lc-shipList__address
+                    | 171-0033
+                    | 東京都豊島区高田3ー9−7 ダイワビル
+                  ul.lc-list
+                    li.lc-productInfo
+                      figure.lc-productInfo__figure
+                        a.lc-productInfo__figure__inner(href="/product/1/")
+                          img(src="/assets/img/img_product_02.jpg", alt="product name")
+                      .lc-productInfo__text
+                        h2.lc-productInfo__name
+                          a(href="/product/1/") 小熊夏季新款女装可爱卡通短袖t恤宽松韩版半袖
+                        .lc-productInfo__detail
+                          dl.lc-productInfo__detail__list
+                            .lc-productInfo__detail__item
+                              dt.lc-productInfo__detail__label 价格
+                              dd.lc-productInfo__detail__detail
+                                | 159.00CNY
+                                small (2,393JPY)
+                            .lc-productInfo__detail__item
+                              dt.lc-productInfo__detail__label 数量
+                              dd.lc-productInfo__detail__detail 1
+                  dl.lc-shipList__info
+                    .lc-shipList__info__item
+                      dt.lc-shipList__info__label 送货方式
+                      dd.lc-shipList__info__detail EMS
+                    .lc-shipList__info__item
+                      dt.lc-shipList__info__label 送货时间
+                      dd.lc-shipList__info__detail 2019/10/10 14:00 - 16:00
+        
+        h2.lc-heading--3 付款方式
+        p credit
+
+        h2.lc-heading--3 其他咨询
+        p 不指定
+
+            
+        p.lc-contentsInner__buttons
+          button.lc-button--submit.lc-button--action
+            span.lc-button__label 提交订单
+            i.lc-button__icon.lc-icon--check
+          button(type="button", onclick="history.back();").lc-button--cancel
+            i.lc-button__icon.lc-icon--arrowLeft
+            span.lc-button__label 返回

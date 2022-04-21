@@ -1,0 +1,80 @@
+extends /_include/_layout.pug
+
+block title
+  title 指定收货地址 | LC E-SHOP
+block header
+  - var isAuthorized = true;
+  include /_include/_header.pug
+block content
+
+  -
+    var breadcrumbList = [
+      {
+        name: '首页',
+        href: '/'
+      },
+      {
+        name: '追加新地址',
+        href: '/ec/consumer/address/add/'
+      }
+    ]
+  include /_include/_breadcrumblist.pug
+
+
+  section.lc-contentSection
+
+    h1.lc-contentSection__title.lc-contentSection__title--center 追加新地址
+
+    div.lc-contentsInner.lc-contentsInner--form
+      p.lc-contentSection__note.lc-contentSection__note--center 请输入下列所有项目（<i class="is-required"></i>必填）
+      form(action="/ec/consumer/address/list/", method="POST")
+        ul.lc-form
+          li.lc-form__item
+            .lc-form__columns
+              .lc-form__column
+                label.lc-form__label
+                  h4.lc-form__title.is-required 姓
+                  p.lc-form__detail
+                    input(type="text")
+              .lc-form__column
+                label.lc-form__label
+                  h4.lc-form__title.is-required 名
+                  p.lc-form__detail
+                    input(type="text")
+          li.lc-form__item
+            label.lc-form__label
+              h4.lc-form__title.is-required 手机号码
+              p.lc-form__detail
+                input(type="text")
+          li.lc-form__item
+            label.lc-form__label.lc-form__label--select
+              h4.lc-form__title.is-required 国家
+              p.lc-form__detail
+                select
+                  option 请选择国家或地区
+                  option china
+          li.lc-form__item
+            label.lc-form__label
+              h4.lc-form__title.is-required 邮编号码
+              p.lc-form__detail
+                input(type="text")
+          li.lc-form__item
+            label.lc-form__label
+              h4.lc-form__title.is-required 省市县乡镇村
+              p.lc-form__detail
+                input(type="text")
+          li.lc-form__item
+            label.lc-form__label
+              h4.lc-form__title.is-required 详细地址
+              p.lc-form__detail
+                input(type="text")
+                
+        p.lc-contentsInner__buttons
+          button(type="submit").lc-button--submit
+            span.lc-button__label 登入
+            i.lc-button__icon.lc-icon--arrowRight
+          button(type="button", onclick="history.back();").lc-button--cancel
+            i.lc-button__icon.lc-icon--arrowLeft
+            span.lc-button__label 返回
+
+    include /_include/_mypage-navi.pug

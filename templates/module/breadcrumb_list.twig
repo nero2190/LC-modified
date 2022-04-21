@@ -1,0 +1,20 @@
+<div class="l-breadcrumbList">
+  <ol class="l-breadcrumbList__list" itemscope="" itemtype="https://schema.org/BreadcrumbList">
+    <li class="l-breadcrumbList__item" itemprop="itemListElement" itemscope="" itemtype="https://schema.org/ListItem">
+      <a itemtype="https://schema.org/Thing" itemprop="item" href="{{ path('homepage') }}">
+        <span itemprop="name">{{ #top_page# }}</span>
+        <meta itemprop="position" content="1"/>
+      </a>
+    </li>
+    {%- set countItems = 1 -%}
+    {%- for item in breadcrumbList -%}
+      {%- set countItems = countItems + 1 -%}
+      <li class="l-breadcrumbList__item" itemprop="itemListElement" itemscope="" itemtype="https://schema.org/ListItem">
+        <a itemtype="https://schema.org/Thing" itemprop="item" href="{{ item.href }}">
+          <span itemprop="name">{{ item.name }}</span>
+          <meta itemprop="position" content="{{ countItems }}"/>
+        </a>
+      </li>
+    {%- endfor -%}
+  </ol>
+</div>

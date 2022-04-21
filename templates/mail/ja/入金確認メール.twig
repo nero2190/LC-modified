@@ -1,0 +1,62 @@
+{% set curRatio = cur_unit_ratio() %}
+{% set unitBack = unit_back() %}
+{{ order_group.consumer.lastName }} {{ order_group.consumer.firstName }} 様
+
+平素はご利用いただきありがとうございます。
+以下のご注文に対し、ご入金が確認できましたのでお知らせ致します。
+
+----------
+　ご請求金額
+----------
+注文ID： {{ order_group.id }}
+お支払合計： ￥ {{ order_group.getPaymentTotal|number_format }}
+ご決済方法： {{ order_group.payment.getName }}
+メッセージ： {{ order_group.getRequest }}
+
+----------
+　ご注文商品明細
+----------
+{% for order in order_group.orders %}
+◎お届け先{{ loop.index }}
+お名前： {{ order.getLastName}} {{ order.getFirstName}}　様
+郵便番号： 〒{{order.getZipcode}}
+住所： {{order.getAddress}}
+電話番号： {{order.getTel}}
+お届け日： {% if order.deliveryDay %}{{ order.deliveryDay }}{% else %}指定なし{% endif %}
+お届け時間： {% if order.deliveryTime %}{{ order.deliveryTime }}{% else %}指定なし{% endif %}
+{% for detail in order.details %}
+商品コード： {{ detail.getProductCode }}
+商品名： {{ detail.getProductName }}{{ detail.getSkuDetailTitle1 }}
+単価： ￥ {{ detail.getPrice|number_format }}
+数量： {{ detail.getQuantity|number_format }}
+{% if (detail.additions|length > 0) %}
+{% for addition in detail.additions %}
+{{ addition.additionTitle }}x{{ addition.quantity }}={{ addition.price }}
+{% endfor %}
+{% endif %}
+{% endfor %}
+送料： ￥ {{ order.getDeliveryFee }}
+{% endfor %}
+
+----------
+小　計 ￥ {{ (order_group.getProductTotal+order_group.getAdditionTotal)|number_format }}
+値引き ￥ -{{ order_group.getUsePoint|number_format }}
+送　料 ￥ {{ order_group.getDeliveryFee|number_format }}
+手数料 ￥ {{ order_group.getCharge|number_format }}
+ポイント ￥ -{{ order_group.getUsePoint|number_format }}
+クーポン ￥ -{{ order_group.getUseCoupon|number_format }}
+----------
+合　計 ￥ {{ order_group.getPaymentTotal|number_format }}
+
+ご使用ポイント {{ order_group.getUsePoint|number_format }} pt
+今回加算される加算ポイント {{ order_group.getAddPoint|number_format }} pt
+現在の所持ポイント {{ order_group.consumer.getPoint }} pt
+
+引き続き、ご愛顧のほどよろしくお願い申し上げます。
+
+------------------------------------
+{{ system_config("application_name") }}
+〒{{ system_config("company_zipcode") }}
+{{ system_config("company_address") }}
+TEL: {{ system_config("company_tel") }}
+{{ url('homepage') }}

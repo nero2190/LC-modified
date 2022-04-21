@@ -1,0 +1,286 @@
+{# Reference: https://launchcart.jp/reference/8-%e6%b1%ba%e6%b8%88-%e3%82%ab%e3%83%bc%e3%83%89%e6%83%85%e5%a0%b1%e5%85%a5%e5%8a%9b/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = #enter_credit_card_info_label# -%}
+
+{# get base currency unit #}
+{%- set baseCurrency = get_entity_manager().find('EcCoreBundle:Currency', system_config('base_currency')) -%}
+{%- set baseUnitFront = baseCurrency.getBeforeUnit() -%}
+{%- set baseUnitBack = baseCurrency.getAfterUnit() -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- set breadcrumbListItem = {
+    name: #enter_credit_card_info_label# ,
+    href: app.request.uri
+  }
+-%}
+{%- set breadcrumbList = breadcrumbList|merge([breadcrumbListItem]) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #enter_credit_card_info_label# }}</h1>
+  
+  {# step list #}
+  {%- set step = 6 -%}
+  {% TemplateInclude "step list" %}
+
+  <div class="lc-contentsInner lc-contentsInner--form">
+
+    {# errors #}
+    {%- if (errors|length > 0) -%}
+      {%- for error in errors -%}
+        <p class="lc-contentSection__note error">
+          {{ error }}
+        </p>
+      {%- endfor -%}
+    {%- elseif (isFormValid == false) -%}
+      <p class="lc-contentSection__note error">
+        {{ form_errors(form) }}
+      </p>
+    {%- endif -%}
+
+    <form action="" method="post" name="form1" id="{{ form.vars.id }}">
+      {{ form_widget(form._token) }}
+      {% if form.token is defined %}{{ form_widget(form.token) }}{% endif %}
+      {% if form.tokennumber is defined %}{{ form_widget(form.tokennumber) }}{% endif %}
+      <input name="hdnSendChk" type="hidden" id="hdnSendChk" value="">
+
+      {# total cost #}
+      <dl>
+        <dt class="lc-heading--3">{{ #total_cost_label# }}</dt>
+        <dd class="lc-contentSection__note">
+          <strong>
+            {{ #unitFront# }}{{ (total * curRatio)|price_format(decimalPoint) }}{{ #unitBack# }}
+            {%- if curRatio != 1 -%}
+              <small class="productArchive__price__sub">({{ baseUnitFront }}{{ total|price_format(decimalPoint) }}{{ baseUnitBack }})</small>
+            {%- endif -%}
+          </strong>
+        </dd>
+      </dl>
+
+      {# registered card in the login account #}
+      {%- if (form.member_card_number.vars.value != '') -%}
+        <dl>
+          <dt class="lc-heading--3">{{ #registed_cardno_label# }}</dt>
+          <dd class="lc-contentSection__note">
+            {{ form_widget(form.member_card_number) }}
+            {%- for index, mode in form.enable_card_member_buy.children -%}
+              <input type="radio" name="{{ mode.vars.full_name }}" id="{{ mode.vars.id }}" value="{{ mode.vars.value }}"{% if mode.vars.checked %} checked="checked"{% endif %}>
+              <label for="{{ mode.vars.id }}">{{ (mode.vars.label)|trans({},'clients') }} {% if index == 0%}: <strong>{{form.member_card_number.vars.value}}</strong>{% endif %}</label>
+            {%- endfor -%}
+          </dd>
+        </dl>
+        <hr>
+        <h3 class="lc-heading--3">{{ #new_card_info_label# }}</h3>
+        <br>
+      {%- endif -%}
+
+      {# input card information  #}
+      <ul class="lc-form">
+        <li class="lc-form__item">
+          <label class="lc-form__label lc-form__label--half">
+            <h4 class="lc-form__title">{{ #cardno_label# }}</h4>
+            <p class="lc-form__detail">
+              {{ form_widget(form.cardno, { attr: { placeholder: #placeholder_cardno# } }) }}
+            </p>
+          </label>
+          {% if not form.cardno.vars.valid %}<p class="lc-form__note error is-error">{{ form_errors(form.cardno) }}</p>{% endif %}
+          <p class="lc-form__note"><small>{{ #cardno_note# | raw }}</small></p>
+        </li>
+        <li class="lc-form__item">
+          <label class="lc-form__label lc-form__label--half">
+            <h4 class="lc-form__title">{{ #csc_label# }}</h4>
+            <p class="lc-form__detail">
+              {{ form_widget(form.csc) }}
+            </p>
+          </label>
+          {% if not form.csc.vars.valid %}<p class="lc-form__note error is-error">{{ form_errors(form.csc) }}</p>{% endif %}
+          <p class="lc-form__note">
+            <small>* 
+              <button class="js-lc--openModal" type="button" aria-controls="modalCSC" aria-haspopup="true">{{ #csc_position_label# }}<i class="lc-icon--arrow2Right"></i></button>
+            </small>
+          </p>
+        </li>
+        <li class="lc-form__item">
+          <label class="lc-form__label lc-form__label--select">
+            <h4 class="lc-form__title is-required">{{ #card_exp_label# }}</h4>
+            <p class="lc-form__detail">
+              {{ form_widget(form.exp_mm) }}
+            </p>
+          </label>&nbsp;
+          <label class="lc-form__label lc-form__label--select">
+            <h4 class="lc-form__title"></h4>
+            <p class="lc-form__detail">
+              {{ form_widget(form.exp_yy) }}
+            </p>
+          </label>
+          {% if not (form.exp_mm.vars.valid and form.exp_yy.vars.valid) %}<p class="lc-form__note error is-error">{{ form_errors(form.exp_mm) }}{{ form_errors(form.exp_yy) }}</p>{% endif %}
+          <p class="lc-form__note"><small>{{ #card_exp_note# }}</small></p>
+        </li>
+        <li class="lc-form__item">
+          <label class="lc-form__label lc-form__label--half">
+            <h4 class="lc-form__title">{{ #card_holder_label# }}</h4>
+            <p class="lc-form__detail">
+              {{ form_widget(form.cardname, { attr: { placeholder: #placeholder_card_holder# } }) }}
+            </p>
+          </label>
+          {% if not form.cardname.vars.valid %}<p class="lc-form__note error is-error">{{ form_errors(form.cardname) }}</p>{% endif %}
+          <p class="lc-form__note"><small>{{ #card_holder_note# }}</small></p>
+        </li>
+        {%- if form.paymode is defined -%}
+          <li class="lc-form__item">
+            <label class="lc-form__label lc-form__label--select">
+              <h4 class="lc-form__title is-required">{{ #paymode_label# }}</h4>
+              <p class="lc-form__detail">
+                {{ form_widget(form.paymode) }}
+              </p>
+            </label>
+            {% if not form.paymode.vars.valid %}<p class="lc-form__note error is-error">{{ form_errors(form.paymode) }}</p>{% endif %}
+          </li>
+        {%- endif -%}
+        {%- if showPaytimes -%}
+          <li class="lc-form__item">
+            <label class="lc-form__label lc-form__label--select">
+              <h4 class="lc-form__title is-required">{{ #paytimes_label# }}</h4>
+              <p class="lc-form__detail">
+                {{ form_widget(form.paytimes) }}
+              </p>
+            </label>
+            {% if not form.paytimes.vars.valid %}<p class="lc-form__note error is-error">{{ form_errors(form.paytimes) }}</p>{% endif %}
+          </li>
+        {%- endif -%}
+      </ul>
+      
+      <p class="lc-contentsInner__buttons">
+        {# to payment #}
+        <button class="lc-button--submit js-lc--submit"><span class="lc-button__label">{{ #payment_label# }}</span><i class="lc-button__icon lc-icon--arrow2Right"></i></button>
+        {# back #}
+        <button class="lc-button--cancel" type="button" onclick="history.back();"><i class="lc-button__icon lc-icon--arrowLeft"></i><span class="lc-button__label">{{ #back_label# }}</span></button>
+      </p>
+    </form>
+
+    {# Modal: help for CSC #}
+    <div class="lc-modal" id="modalCSC">
+      <div class="lc-modal__bg js-lc--closeModal"></div>
+      <div class="lc-modal__body">
+        <h3 class="lc-modal__title">{{ #csc_position_label# }}</h3>
+        <ul class="lc-form">
+          <li class="lc-form__item">
+            <p class="lc-form__note">
+              <small>
+                {{ #csc_explanation# | raw }}
+              </small>
+              <img src="/assets/img/img_securitycode.gif" alt="{{ #csc_position_label# }}" width="240"/>
+            </p>
+          </li>
+          <p class="lc-modal__buttons">
+            <button class="lc-button--cancel js-lc--closeModal" type="button"><i class="lc-button__icon lc-icon--close"></i><span class="lc-button__label">close</span></button>
+          </p>
+        </ul>
+      </div>
+    </div>
+
+    {# Modal: sending card information #}
+    <div class="lc-modal" id="modalPayment">
+      <div class="lc-modal__bg"></div>
+      <div class="lc-modal__body">
+        <h3 class="lc-modal__title">{{ #data_sending_label# }}</h3>
+        <p class="lc-form__note lc-align--center">{{ #please_wait# | raw }}</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+{#
+  card token module
+  doStart() is required call on submit.
+  If preLoad() is defined, it will be called on success of get token.
+  If onFail() is defined, it will be called on fail of get token.
+#}
+{{ include('card_token.html.twig') }}
+<script>
+function preLoad () {
+  openModal($('#modalPayment'));
+  $('#hdnSendChk').val('submit');
+  $("#{{ form.vars.id }}").submit();
+}
+function onFail () {
+  $('.js-lc--submit')
+    .prop('disabled', false)
+    .css('visibility', 'visible');
+  $('.lc-modal').removeClass('is-active');
+}
+$(function () {
+
+  $('.js-lc--submit').on('click', function () {
+    $('.js-lc--submit')
+      .prop('disabled', true)
+      .css('visiblity', 'hidden');
+    {%- if (form.member_card_number.vars.value != '') -%}
+      if ($('#{{ form.enable_card_member_buy.vars.id }}_0').is(':checked')) {
+        openModal($('#modalPayment'));
+        $('#hdnSendChk').val('submit');
+        $("#{{ form.vars.id }}").submit();
+      } else {
+        doStart();
+      }
+    {%- else -%}
+      doStart();
+    {%- endif -%}
+    return false;
+  });
+
+  {%- if form.token is defined -%}
+    /**
+    * observe the token value in a input form
+    */
+    var tokenFormElement = document.getElementById('{{ form.token.vars.id }}');
+    var tokenValueObserver = new MutationObserver(function (mutations) {
+      mutations.forEach(function (mutation) {
+        if(!tokenFormElement.value) {
+          onFail();
+        }
+      });
+    });
+    tokenValueObserver.observe(tokenFormElement, {
+      attributes: true
+    });
+  {%- endif -%}
+
+  {%- if (form.member_card_number.vars.value != '') -%}
+    onChangeMemberBy();
+    $('[name*="{{ form.enable_card_member_buy.vars.name }}"]').on('click', function() {
+        onChangeMemberBy();
+    });
+    function onChangeMemberBy () {
+      var inputCard = $('#{{ form.enable_card_member_buy.vars.id }}_0').is(':checked');
+      $('#{{ form.cardno.vars.id }}').attr('disabled', inputCard);
+      $('#{{ form.csc.vars.id }}').attr('disabled', inputCard);
+      $('#{{ form.exp_mm.vars.id }}').attr('disabled', inputCard);
+      $('#{{ form.exp_yy.vars.id }}').attr('disabled', inputCard);
+      $('#{{ form.cardname.vars.id }}').attr('disabled', inputCard);
+      {%- if form.paymode is defined -%}
+        $('#{{ form.paymode.vars.id }}').attr('disabled', false);
+      {%- endif -%}
+      {%-if showPaytimes -%}
+        $('#{{ form.paytimes.vars.id }}').attr('disabled', false);
+      {%- endif -%}
+    }
+  {%- endif -%}
+
+});
+</script>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}

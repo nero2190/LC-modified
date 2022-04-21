@@ -1,0 +1,168 @@
+■ インデックステンプレート
+
+○ トップページ
+<language>
+featured_products_title: 推薦商品, 推荐商品, Featured Products, おすすめ商品
+ranking_title: 人氣排行, 人气排行, Top Sellers, 人気商品ランキング
+<common>
+language: language()
+lang_id: language_id()
+curRatio: cur_unit_ratio()
+unitFront: unit_front()
+unitBack: unit_back()
+decimalPoint: system_config('decimal_place')
+
+○ 検索結果
+<language>
+<common>
+language: language()
+lang_id: language_id()
+curRatio: cur_unit_ratio()
+unitFront: unit_front()
+unitBack: unit_back()
+decimalPoint: system_config('decimal_place')
+http_x: app.request.server.get('HTTP_X_REQUESTED_WITH')
+
+------------
+
+■ アーカイブテンプレート
+○ 商品
+<language>
+no_stock: 商品已售完, 商品已售完, Sold Out, 在庫なし
+quantity_label: 數量, 数量, Quantity, 個数
+cart_in: 加入購物車, 加入购物车, Add to Cart, カートに入れる
+favorited_product: 我的最愛, 我的最爱, Favorited Product, お気に入り
+about_product: 关于产品, 關於產品, About the Product, 商品について
+description_label: 說明, 说明, Description, 説明
+detail_label: 詳細, 详细, Detail, 詳細情報
+related_products_label: 相關產品, 相关产品, Related Products, 関連商品
+<common>
+excluded_categories: 'Featured Products,Top Sellers'
+language: language()
+lang_id: language_id()
+curRatio: cur_unit_ratio()
+unitFront: unit_front()
+unitBack: unit_back()
+decimalPoint: system_config('decimal_place')
+productskus: product.productSku
+
+○ 商品-カテゴリアーカイブ
+<language>
+pagingnavi_prev: , , In products of all ,
+pagingnavi_middle:  商品中 的 ,  商品中 的 ,,  商品中 
+pagingnavi_next: 件, 件, , 件
+pagingnavi_number: 顯示號碼, 显示号码, Displayed Results, 表示件数
+order_by_label: 排序順序, 排序順序, Sort Order, 並び順
+order_by_new: 新訂單, 新订单, New, 新着順
+price_low_to_high: 價格從低到高, 价格从低到高, Price Low to High, 安い順
+price_high_to_low: 價格從高到低, 价格从高到低, Price High to Low, 高い順
+<common>
+excluded_categories: 'Featured Products,Top Sellers'
+language: language()
+lang_id: language_id()
+curRatio: cur_unit_ratio()
+unitFront: unit_front()
+unitBack: unit_back()
+decimalPoint: system_config('decimal_place')
+dispNum: system_config('product_disp_num')
+currentDispNum: app.request.get('disp_number')
+currentOrderBy: app.request.get('orderby')
+
+○ ページ
+<language>
+related_products_label: 相關產品, 相关产品, Related Products, 関連商品
+<common>
+language: language()
+lang_id: language_id()
+curRatio: cur_unit_ratio()
+unitFront: unit_front()
+unitBack: unit_back()
+decimalPoint: system_config('decimal_place')
+
+○ ページ-カテゴリアーカイブ
+<language>
+<common>
+language: language()
+lang_id: language_id()
+
+○ 商品レビュー
+<language>
+pagingnavi_prev: , , In Reviews of all ,
+pagingnavi_middle:  件中 的 ,  件中 的 ,,  件中 
+pagingnavi_next: 件, 件, , 件
+<common>
+language: language()
+lang_id: language_id()
+curRatio: cur_unit_ratio()
+unitFront: unit_front()
+unitBack: unit_back()
+decimalPoint: system_config('decimal_place')
+
+------------
+
+■ モジュールテンプレート
+
+○ html head
+siteName: system_config('application_name')
+siteDescription: system_config('application_description')
+
+○ header
+<language>
+mypage: 我的帳戶, 我的帐户, Your Account, マイページ
+login: 登入, 登入, Login, ログイン
+cart: 購物車, 购物车, Cart, カート
+category: 商品分類, 商品分类, Categories, カテゴリー
+lang_currency_setting: 語言・幣種設置, 语言・币种设置, Lang/Currency, 言語・通貨設定
+lang_setting: 語言, 语言, Language, 言語
+currency_setting: 幣種, 币种, Currency, 通貨
+save_changes: 保存更改, 保存更改, Save Changes, 設定保存
+cancel: 取消, 取消, Cancel, 取消
+<common>
+navCategories: '1,2,3,4,5'
+currency_exchange_use_flg: system_config('currency_exchange_use_flg')
+supported_currencies: system_config('currency')
+is_multilingual: system_config('is_multilingual')
+languages: languages()
+
+○ footer
+<language>
+avalable_credit_cards: 可使用各種信用卡, 可使用各种信用卡, Avalable Credit Cards, 対応クレジットカード
+avalable_chinese_payment: 可使用中國結算, 可使用中国结算, Avalable Chinese Payment, 中国決済が使えます
+top_page: 首頁, 首页, Home, トップページ
+merchants_exchange_act: 特約商戶交易法, 特约商户交易法, Merchants Exchange Act, 特定商取引法に基づく表示
+mypage: 我的帳戶, 我的帐户, Your Account, マイページ
+login: 登入, 登入, Login, ログイン
+logout: 登出, 登出, Logout, ログアウト
+create_account: 註冊, 注册, Create Account, 会員登録
+<common>
+navCategories: '1,2,3,4,5'
+
+------------
+
+■ システムテンプレート
+○ カート
+<language>
+cart_label: 購物車, 购物车, Shopping Cart, カート
+deleted_because_no_stock: 以下商品已售完，無法加入購物車, 以下商品已售完，無法加入購物車, The following item is for out of stock, has been removed from the cart., 以下の商品は在庫がなくなりましたので、カートから削除されました。
+cart_is_empty: 有沒有的產品，在購物車中。, 有没有的产品，在购物车中。, Your Shopping Cart is empty, 現在カートに入っている商品はございません。
+total_price: 商品金額總計, 商品金额总计, Total, 商品合計
+price_label: 價格, 价格, Price, 単価
+weight_label: 重量, 重量, Weight, 重量
+quantity_label: 數量, 数量, Quantity, 個数
+regular_interval_label: 送貨頻率, 送货频率, Delivery Frequency, 配送頻度
+delete_label: 刪除, 删除, Delete, 削除
+to_order: 下一步 填寫收件資料, 下一步 填写收件资料, Proceed with Check Out, 購入手続きへ
+continue_shopping: 繼續購物, 继续购物, Continue Shopping, ショッピングを続ける
+total_point_label: 本次預計獲得積分
+<common>
+language: language()
+lang_id: language_id()
+curRatio: cur_unit_ratio()
+unitFront: unit_front()
+unitBack: unit_back()
+decimalPoint: system_config('decimal_place')
+http_x: app.request.server.get('HTTP_X_REQUESTED_WITH')
+
+------------
+
+■ ユーザーテンプレート

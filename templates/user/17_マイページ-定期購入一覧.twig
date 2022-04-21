@@ -1,0 +1,109 @@
+{# Reference: https://launchcart.jp/reference/17%e3%83%9e%e3%82%a4%e3%83%9a%e3%83%bc%e3%82%b8-%e5%ae%9a%e6%9c%9f%e8%b3%bc%e5%85%a5%e4%b8%80%e8%a6%a7/ #}
+
+{# Variables Settings #}
+
+{# insert to html head title #}
+{%- set title = #purchase_history_label# -%}
+
+{# get base currency unit #}
+{%- set baseCurrency = get_entity_manager().find('EcCoreBundle:Currency', system_config('base_currency')) -%}
+{%- set baseUnitFront = baseCurrency.getBeforeUnit() -%}
+{%- set baseUnitBack = baseCurrency.getAfterUnit() -%}
+
+{# end Variables Settings #}
+
+{% TemplateInclude "header" %}
+
+{# Contents #}
+
+{# Breadcrumb list (this variable setting method is written in module template "breadcrumb list") #}
+{%- set breadcrumbList = [] -%}
+{%- set breadcrumbListItems = [
+    {
+      name: #mypage_label# ,
+      href: path('ec_client_consumer')
+    },
+    {
+      name: #purchase_history_label# ,
+      href: app.request.uri
+    }
+  ]
+-%}
+{%- set breadcrumbList = breadcrumbList|merge(breadcrumbListItems) -%}
+{% TemplateInclude "breadcrumb list" %}
+
+<section class="lc-contentSection">
+  <h1 class="lc-contentSection__title lc-contentSection__title--center">{{ #purchase_history_label# }}</h1>
+
+  {# tab #}
+  <div class="lc-tab">
+
+    {# tab list #}
+    <div class="lc-tab__list" role="tablist">
+      {# link to purchase history of all #}
+      <a class="lc-tab__tab" href="{{ path('ec_client_consumer_history') }}">{{ #all_label# }}</a>
+      <div class="lc-tab__tab is-active">{{ #subscription_label# }}</div>
+    </div>
+
+    {# tab panel #}
+    <div class="lc-tab__panel is-active">
+
+      {# number of history items #}
+      <p class="lc-pagingNavi">{{ #pagingnavi_prev# }} <em>{{ _pager.adapter.getTotalResults|number_format }}</em> {{ #pagingnavi_next# }}<br><br></p>
+
+      <ul class="lc-list">
+        {%- for result in _pager.getResults -%}
+          {%- set productsku = result.getProductSku -%}
+          {%- set product = productsku.product -%}
+          {%- set productName = product.attribute('product name', language) ? product.attribute('product name', language) : product.name -%}
+          <li class="lc-productInfo">
+
+            {# product image #}
+            <figure class="lc-productInfo__figure">
+              <a class="lc-productInfo__figure__inner" href="{{ path('ec_client_consumer_regular_detail', {'id': result.id}) }}">
+                <img src="{% if product.attribute('image1') %}{{ ('/uploads/media/'~get_entity_manager().find('MediaCoreBundle:Media', product.attribute('image1')).path) }}{% else %}{{ asset('assets/img/no-image.png') }}{% endif %}" alt="{{ productName|striptags }}">
+              </a>
+            </figure>
+
+            <div class="lc-productInfo__text">
+              {# product name #}
+              <h2 class="lc-productInfo__name"><a href="{{ path('ec_client_consumer_regular_detail', {'id': result.id}) }}">{{ productName }}</a></h2>
+
+              <div class="lc-productInfo__detail">
+                <dl class="lc-productInfo__detail__list">
+
+                  {# next delivery date #}
+                  <div class="lc-productInfo__detail__item">
+                    <dt class="lc-productInfo__detail__label">{{ #next_delivery_date# }}</dt>
+                    <dd class="lc-productInfo__detail__detail">{{ (result.getNextDeliveryMonth ~ '-' ~ result.getArriveDay(true))|date("Y.m.d") }}</dd>
+                  </div>
+
+                  {# purchase date #}
+                  <div class="lc-productInfo__detail__item">
+                    <dt class="lc-productInfo__detail__label">{{ #purchase_date_label# }}</dt>
+                    <dd class="lc-productInfo__detail__detail">{{ result.getCreatedAt|date("Y.m.d H:i") }}</dd>
+                  </div>
+
+                </dl>
+              </div>
+            </div>
+          </li>
+        {%- endfor -%}
+      </ul>
+
+      {# pager #}
+      <div class="lc-archiveGuide">
+        {% RenderPager %}
+      </div>
+      
+    </div>
+  </div>
+
+  {# mypage navi #}
+  {% TemplateInclude "mypage navi" %}
+
+</section>
+
+{# end Contents #}
+
+{% TemplateInclude "footer" %}
